@@ -4,9 +4,15 @@ import { Button, ButtonProps } from "../ui/button";
 import CustomModal from "./custom-modal";
 import { MediaBucket } from "./media-bucket";
 interface Props extends ButtonProps {
-  onSelected: (media: Media) => void;
+  onSelected?: (media: Media) => void;
+  selectedMedia?: Media;
 }
-export const MediaButton = ({ onSelected, children, ...rest }: Props) => {
+export const MediaButton = ({
+  onSelected,
+  selectedMedia,
+  children,
+  ...rest
+}: Props) => {
   const { setOpen, setClose } = useModal();
 
   return (
@@ -21,8 +27,10 @@ export const MediaButton = ({ onSelected, children, ...rest }: Props) => {
           >
             <>
               <MediaBucket
+                selectedMedia={selectedMedia}
                 onSelected={(media) => {
-                  onSelected(media), setClose();
+                  onSelected && onSelected(media);
+                  setClose();
                 }}
               />
             </>

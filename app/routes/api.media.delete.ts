@@ -18,7 +18,8 @@ export async function action({ request, params }: LoaderFunctionArgs) {
           { success: false, error: "Media not found" },
           { status: 404 },
         );
-      const result = await deleteResource(media.publicId);
+      console.log(media.publicId);
+      const result = await deleteResource(media.publicId, media.resourceType);
       if (result.result === "ok") await deleteMedia(media.id);
       else throw new Error(result.result);
     } catch (error) {

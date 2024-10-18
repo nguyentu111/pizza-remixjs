@@ -16,7 +16,7 @@ export async function action({ request }: LoaderFunctionArgs) {
   }
   await Promise.all(
     files.map(async (file) => {
-      console.log("file type", file.type);
+      console.log("file type", file, file.type, file.name, file, { ...file });
       const fileData = await file.arrayBuffer();
       const fileBuffer = Buffer.from(fileData);
       try {
@@ -24,13 +24,16 @@ export async function action({ request }: LoaderFunctionArgs) {
         if (rs.secure_url)
           await createMedia({
             bytes: rs.bytes,
-            displayName: rs.display_name,
+            displayName: file.name,
             height: rs.height,
             publicId: rs.public_id,
             resourceType: rs.resource_type,
             url: rs.url,
             width: rs.width,
-            format: rs.format,
+            format: file.name.split(".").pop() ?? rs.format,
+            altText: file.name,
+            caption: null,
+            description: null,
           });
       } catch (error) {
         console.log(error);

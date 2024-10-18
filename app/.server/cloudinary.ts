@@ -47,6 +47,11 @@ export const upload = async (file: Buffer) => {
   if (!result || !result.url) throw new Error("Upload failed.");
   return result;
 };
-export const deleteResource = async (publicId: string) => {
-  return (await cloudinary.uploader.destroy(publicId)) as { result: string };
+export const deleteResource = async (
+  publicId: string,
+  resource_type: "image" | "video" | "raw" = "image",
+) => {
+  return (await cloudinary.uploader.destroy(publicId, { resource_type })) as {
+    result: string;
+  };
 };

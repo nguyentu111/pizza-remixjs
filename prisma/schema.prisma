@@ -25,17 +25,26 @@ model Password {
   userId String @unique
 }
 
+enum ResourceType {
+  video
+  image
+  raw
+}
+
 model Media {
-  id           String   @id @default(cuid())
+  id           String       @id @default(cuid())
   publicId     String
   displayName  String
-  resourceType String
-  width        Int
-  height       Int
+  resourceType ResourceType
+  width        Int?
+  height       Int?
   bytes        Int
   url          String
-  format       String
-  createdAt    DateTime @default(now())
+  format       String?
+  caption      String? // New field for caption
+  altText      String? // New field for alt text
+  description  String? // New field for description
+  createdAt    DateTime     @default(now())
 }
 
 model Note {
