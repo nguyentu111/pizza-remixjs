@@ -2,7 +2,12 @@ import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
 
 import type { User } from "~/models/user.server";
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 const DEFAULT_REDIRECT = "/";
 
 /**

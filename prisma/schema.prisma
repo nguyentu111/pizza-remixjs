@@ -25,6 +25,19 @@ model Password {
   userId String @unique
 }
 
+model Media {
+  id           String   @id @default(cuid())
+  publicId     String
+  displayName  String
+  resourceType String
+  width        Int
+  height       Int
+  bytes        Int
+  url          String
+  format       String
+  createdAt    DateTime @default(now())
+}
+
 model Note {
   id    String @id @default(cuid())
   title String

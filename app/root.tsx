@@ -12,6 +12,7 @@ import {
 
 import { getUser } from "~/session.server";
 import stylesheet from "~/tailwind.css";
+import { ModalProvider } from "./components/providers/modal-provider";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -32,7 +33,9 @@ export default function App() {
         <Links />
       </head>
       <body className="h-full">
-        <Outlet />
+        <ModalProvider>
+          <Outlet />
+        </ModalProvider>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
