@@ -1,8 +1,8 @@
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { UploadMediaActionResponse } from "~/routes/api.media.upload";
-import { useState } from "react";
-
+import { useState, useRef } from "react";
+import { useFetcher } from "@remix-run/react";
+type UploadMediaActionResponse = { success: boolean; error: string };
 export const UploadFile = ({
   onUploaded,
 }: {
@@ -10,8 +10,9 @@ export const UploadFile = ({
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [data, setData] = useState<UploadMediaActionResponse | null>();
   const [isDragging, setIsDragging] = useState(false); // State for drag status
+  const fetcher = useFetcher<UploadMediaActionResponse>();
+  const inputRef = useRef<HTMLInputElement | null>(null); // Create a ref for the input
 
   const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (
     event,
@@ -20,31 +21,17 @@ export const UploadFile = ({
     setSelectedFiles(files);
   };
 
-  // const handleSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
-  //   event.preventDefault();
-  //   setIsSubmitting(true);
-  //   const formData = new FormData();
-  //   selectedFiles.forEach((file) => {
-  //     formData.append("files", file); // Append each file to the FormData object
-  //   });
-  //   fetch("/api/media/upload", {
-  //     method: "POST",
-  //     body: formData,
-  //   })
-  //     .then((response) => response.json())
-  //     .then((data: UploadMediaActionResponse) => {
-  //       setData(data);
-  //       onUploaded && onUploaded(data);
-  //     })
-
-  //     .finally(() => setIsSubmitting(false));
-  // };
-
   const handleDrop: React.DragEventHandler<HTMLLabelElement> = (event) => {
     event.preventDefault();
     setIsDragging(false); // Reset dragging state
     const files = Array.from(event.dataTransfer.files);
     setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
+
+    if (inputRef.current) {
+      const dataTransfer = new DataTransfer();
+      files.forEach((file) => dataTransfer.items.add(file));
+      inputRef.current.files = dataTransfer.files; // Set the files to the input using ref
+    }
   };
 
   const handleDragOver: React.DragEventHandler<HTMLLabelElement> = (event) => {
@@ -57,9 +44,10 @@ export const UploadFile = ({
   };
 
   return (
-    <form
+    <fetcher.Form
+      encType="multipart/form-data"
       className="space-y-2 flex flex-col"
-      action="/api/media/upload"
+      action="/admin"
       method="post"
     >
       <label
@@ -85,16 +73,22 @@ export const UploadFile = ({
         )}
         <Input
           type="file"
-          name="file"
+          name="files"
           multiple
           className="h-[300px] hidden"
           onChange={handleFileChange}
+          ref={inputRef} // Attach the ref to the input
         />
       </label>
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Uploading..." : "Upload File"}
+      <Button
+        type="submit"
+        disabled={fetcher.state === "submitting"}
+        name="_action"
+        value="upload-media"
+      >
+        {fetcher.state === "submitting" ? "Uploading..." : "Upload File"}
       </Button>
-      {data && (data.success ? "Uploaded" : "Failed")}
-    </form>
+      {fetcher.data && (fetcher.data.success ? "Uploaded" : fetcher.data.error)}
+    </fetcher.Form>
   );
 };

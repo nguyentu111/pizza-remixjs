@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { useUser } from "~/utils";
+import { useUser } from "~/lib/utils";
 
 export default function NoteIndexPage() {
   const user = useUser();

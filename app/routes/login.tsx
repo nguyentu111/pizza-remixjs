@@ -1,15 +1,13 @@
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import { useEffect, useRef } from "react";
+import { z } from "zod";
+import { safeAction } from "~/lib/utils";
 
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect, validateEmail } from "~/utils";
+import { validateEmail } from "~/lib/utils";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
@@ -17,50 +15,35 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json({});
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const formData = await request.formData();
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
-  const remember = formData.get("remember");
+export const action = safeAction(
+  z.object({
+    email: z.string(),
+    password: z.string(),
+    redirectTo: z.string(),
+    remember: z.optional(z.string()),
+  }),
+  async ({ request }, { email, password, redirectTo, remember }) => {
+    if (!validateEmail(email)) {
+      return json({ errors: "email invalid", success: false }, { status: 400 });
+    }
 
-  if (!validateEmail(email)) {
-    return json(
-      { errors: { email: "Email is invalid", password: null } },
-      { status: 400 },
-    );
-  }
+    const user = await verifyLogin(email, password);
 
-  if (typeof password !== "string" || password.length === 0) {
-    return json(
-      { errors: { email: null, password: "Password is required" } },
-      { status: 400 },
-    );
-  }
+    if (!user) {
+      return json(
+        { errors: "Invalid email or password", success: false },
+        { status: 400 },
+      );
+    }
 
-  if (password.length < 8) {
-    return json(
-      { errors: { email: null, password: "Password is too short" } },
-      { status: 400 },
-    );
-  }
-
-  const user = await verifyLogin(email, password);
-
-  if (!user) {
-    return json(
-      { errors: { email: "Invalid email or password", password: null } },
-      { status: 400 },
-    );
-  }
-
-  return createUserSession({
-    redirectTo,
-    remember: remember === "on" ? true : false,
-    request,
-    userId: user.id,
-  });
-};
+    return createUserSession({
+      redirectTo,
+      remember: remember === "on" ? true : false,
+      request,
+      userId: user.id,
+    });
+  },
+);
 
 export const meta: MetaFunction = () => [{ title: "Login" }];
 
@@ -70,11 +53,10 @@ export default function LoginPage() {
   const actionData = useActionData<typeof action>();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
-    if (actionData?.errors?.email) {
+    if (actionData?.fieldErrors?.email) {
       emailRef.current?.focus();
-    } else if (actionData?.errors?.password) {
+    } else if (actionData?.fieldErrors?.password) {
       passwordRef.current?.focus();
     }
   }, [actionData]);
@@ -100,13 +82,13 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 autoComplete="email"
-                aria-invalid={actionData?.errors?.email ? true : undefined}
+                aria-invalid={actionData?.fieldErrors?.email ? true : undefined}
                 aria-describedby="email-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.errors?.email ? (
+              {actionData?.fieldErrors?.email ? (
                 <div className="pt-1 text-red-700" id="email-error">
-                  {actionData.errors.email}
+                  {actionData.fieldErrors.email}
                 </div>
               ) : null}
             </div>
@@ -126,19 +108,24 @@ export default function LoginPage() {
                 name="password"
                 type="password"
                 autoComplete="current-password"
-                aria-invalid={actionData?.errors?.password ? true : undefined}
+                aria-invalid={
+                  actionData?.fieldErrors?.password ? true : undefined
+                }
                 aria-describedby="password-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.errors?.password ? (
+              {actionData?.fieldErrors?.password ? (
                 <div className="pt-1 text-red-700" id="password-error">
-                  {actionData.errors.password}
+                  {actionData.fieldErrors.password}
                 </div>
               ) : null}
             </div>
           </div>
 
           <input type="hidden" name="redirectTo" value={redirectTo} />
+          {actionData?.errors && (
+            <p className="text-destructive">{actionData.errors}</p>
+          )}
           <button
             type="submit"
             className="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400"
@@ -160,6 +147,7 @@ export default function LoginPage() {
                 Remember me
               </label>
             </div>
+
             <div className="text-center text-sm text-gray-500">
               Don&apos;t have an account?{" "}
               <Link

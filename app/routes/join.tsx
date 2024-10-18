@@ -6,80 +6,72 @@ import type {
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import { useEffect, useRef } from "react";
+import { z } from "zod";
+import { ActionResultType } from "~/actions/type";
+import { safeAction } from "~/lib/utils";
 
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect, validateEmail } from "~/utils";
+import { safeRedirect, validateEmail } from "~/lib/utils";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
   return json({});
 };
+export const action = safeAction(
+  z.object({
+    email: z.string().min(1),
+    fullName: z.string().min(1),
+    username: z.string().min(1),
+    password: z.string().min(1),
+    redirectTo: z.optional(z.string()),
+  }),
+  async (
+    { request },
+    { email, fullName, password, username, redirectTo },
+  ): Promise<ActionResultType> => {
+    const redirect = safeRedirect(redirectTo, "/");
+    if (!validateEmail(email)) {
+      return json({ errors: "invalid email", success: false }, { status: 400 });
+    }
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const formData = await request.formData();
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
-
-  if (!validateEmail(email)) {
-    return json(
-      { errors: { email: "Email is invalid", password: null } },
-      { status: 400 },
-    );
-  }
-
-  if (typeof password !== "string" || password.length === 0) {
-    return json(
-      { errors: { email: null, password: "Password is required" } },
-      { status: 400 },
-    );
-  }
-
-  if (password.length < 8) {
-    return json(
-      { errors: { email: null, password: "Password is too short" } },
-      { status: 400 },
-    );
-  }
-
-  const existingUser = await getUserByEmail(email);
-  if (existingUser) {
-    return json(
-      {
-        errors: {
-          email: "A user already exists with this email",
-          password: null,
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      return json(
+        {
+          errors: "A user already exists with this email",
+          success: false,
         },
-      },
-      { status: 400 },
-    );
-  }
+        { status: 403 },
+      );
+    }
 
-  const user = await createUser(email, password);
+    const user = await createUser({ email, fullName, username }, password);
 
-  return createUserSession({
-    redirectTo,
-    remember: false,
-    request,
-    userId: user.id,
-  });
-};
+    return createUserSession({
+      redirectTo: redirect,
+      remember: false,
+      request,
+      userId: user.id,
+    });
+  },
+);
 
 export const meta: MetaFunction = () => [{ title: "Sign Up" }];
 
 export default function Join() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? undefined;
-  const actionData = useActionData<typeof action>();
+  const actionData = useActionData<Awaited<typeof action>>();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (actionData?.errors?.email) {
+    console.log({ actionData });
+    if (actionData?.fieldErrors?.email) {
       emailRef.current?.focus();
-    } else if (actionData?.errors?.password) {
+    } else if (actionData?.fieldErrors?.password) {
       passwordRef.current?.focus();
     }
   }, [actionData]);
@@ -105,13 +97,67 @@ export default function Join() {
                 name="email"
                 type="email"
                 autoComplete="email"
-                aria-invalid={actionData?.errors?.email ? true : undefined}
+                aria-invalid={actionData?.fieldErrors?.email ? true : undefined}
                 aria-describedby="email-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.errors?.email ? (
+              {actionData?.fieldErrors?.email ? (
                 <div className="pt-1 text-red-700" id="email-error">
-                  {actionData.errors.email}
+                  {actionData.fieldErrors.email}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="fullName"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Full Name
+            </label>
+            <div className="mt-1">
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                required
+                aria-invalid={
+                  actionData?.fieldErrors?.fullName ? true : undefined
+                }
+                aria-describedby="fullName-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.fieldErrors?.fullName ? (
+                <div className="pt-1 text-red-700" id="fullName-error">
+                  {actionData.fieldErrors.fullName}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Username
+            </label>
+            <div className="mt-1">
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                aria-invalid={
+                  actionData?.fieldErrors?.username ? true : undefined
+                }
+                aria-describedby="username-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.fieldErrors?.username ? (
+                <div className="pt-1 text-red-700" id="username-error">
+                  {actionData.fieldErrors.username}
                 </div>
               ) : null}
             </div>
@@ -130,20 +176,26 @@ export default function Join() {
                 ref={passwordRef}
                 name="password"
                 type="password"
+                required
                 autoComplete="new-password"
-                aria-invalid={actionData?.errors?.password ? true : undefined}
+                aria-invalid={
+                  actionData?.fieldErrors?.password ? true : undefined
+                }
                 aria-describedby="password-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.errors?.password ? (
+              {actionData?.fieldErrors?.password ? (
                 <div className="pt-1 text-red-700" id="password-error">
-                  {actionData.errors.password}
+                  {actionData.fieldErrors.password}
                 </div>
               ) : null}
             </div>
           </div>
 
           <input type="hidden" name="redirectTo" value={redirectTo} />
+          {actionData?.errors && (
+            <p className="text-destructive">{actionData.errors}</p>
+          )}
           <button
             type="submit"
             className="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400"

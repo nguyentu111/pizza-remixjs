@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 
 import { getNoteListItems } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
-import { useUser } from "~/utils";
+import { useUser } from "~/lib/utils";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await requireUserId(request);

@@ -6,7 +6,6 @@ import {
   UploadApiErrorResponse,
   UploadApiResponse,
 } from "cloudinary";
-
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME, // Your Cloudinary cloud name
   api_key: process.env.CLOUDINARY_API_KEY, // Your Cloudinary API key

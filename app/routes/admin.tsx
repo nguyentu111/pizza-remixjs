@@ -1,26 +1,33 @@
 import { Media, User } from "@prisma/client";
 import { ActionFunction, json, LoaderFunction } from "@remix-run/node";
-import { Outlet } from "@remix-run/react";
+import { Link, NavLink, Outlet } from "@remix-run/react";
+import {
+  deleteMediaAction,
+  updateMediaAction,
+  uploadMedia,
+} from "~/actions/media";
 import { getAllMedia, updateMedia } from "~/models/media.server";
 import { requireUser } from "~/session.server";
+import { cn } from "~/lib/utils";
 
 export const action: ActionFunction = async ({ request }) => {
+  const user = await requireUser(request);
   const formData = await request.formData();
   const method = request.method;
-  const values = Object.fromEntries(formData) as { [key: string]: any };
-  if (values._action === "update-media") {
-    const { id, caption, altText, description } = values;
-    try {
-      await updateMedia(id, { caption, altText, description });
-      return json({ success: true, error: null });
-    } catch (error) {
-      return json(
-        { error: (error as Error).message, success: false },
-        { status: 500 },
-      );
+  const values = Object.fromEntries(formData) as any;
+  if (method === "POST") {
+    if (values._action === "update-media") {
+      return updateMediaAction(values);
+    }
+    if (values._action === "upload-media") {
+      return uploadMedia(formData);
     }
   }
-
+  if (method === "DELETE") {
+    if (values._action === "delete-media") {
+      return deleteMediaAction(request);
+    }
+  }
   return null;
 };
 export const loader: LoaderFunction = async ({ request }) => {
@@ -32,7 +39,42 @@ export type AdminLayoutData = { user: User; media: Media[] };
 export default function AdminLayout() {
   return (
     <div className="flex h-full">
-      <div className="bg-gray-100 h-full min-w-[400px]">Side bar</div>
+      <div className="bg-gray-100 h-full min-w-[300px]">
+        <nav>
+          <ul>
+            <li>
+              <NavLink
+                to="/admin/users"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Users
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/permissions"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Permisions
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/roles"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Roles
+              </NavLink>
+            </li>
+          </ul>
+        </nav>
+      </div>
       <div>
         <Outlet />
       </div>
