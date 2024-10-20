@@ -2,14 +2,16 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useState, useRef } from "react";
 import { useFetcher } from "@remix-run/react";
+import { MediaType } from "@prisma/client";
 type UploadMediaActionResponse = { success: boolean; error: string };
 export const UploadFile = ({
   onUploaded,
+  mediaType,
 }: {
+  mediaType: MediaType;
   onUploaded?: (result: UploadMediaActionResponse) => void;
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false); // State for drag status
   const fetcher = useFetcher<UploadMediaActionResponse>();
   const inputRef = useRef<HTMLInputElement | null>(null); // Create a ref for the input
@@ -50,6 +52,7 @@ export const UploadFile = ({
       action="/admin"
       method="post"
     >
+      <input name="type" value={mediaType} hidden />
       <label
         className={`h-[200px] border-dashed p-4 rounded border-2 ${isDragging ? "border-blue-500" : "border-black"}`}
         onDrop={handleDrop}

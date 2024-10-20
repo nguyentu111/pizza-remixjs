@@ -1,16 +1,22 @@
-import { Media } from "@prisma/client";
+import { Media, MediaType } from "@prisma/client";
 import { useModal } from "../providers/modal-provider";
 import { Button, ButtonProps } from "../ui/button";
 import CustomModal from "./custom-modal";
 import { MediaBucket } from "./media-bucket";
 interface Props extends ButtonProps {
   onSelected?: (media: Media) => void;
-  selectedMedia?: Media;
+  onCancled?: () => void;
+  selectedMedia?: string;
+  mediaType: MediaType;
+  fetchData?: () => Promise<any>;
 }
 export const MediaButton = ({
   onSelected,
+  onCancled,
   selectedMedia,
   children,
+  mediaType,
+  fetchData,
   ...rest
 }: Props) => {
   const { setOpen, setClose } = useModal();
@@ -27,14 +33,16 @@ export const MediaButton = ({
           >
             <>
               <MediaBucket
+                mediaType={mediaType}
                 selectedMedia={selectedMedia}
                 onSelected={(media) => {
                   onSelected && onSelected(media);
-                  setClose();
                 }}
+                onCancled={() => onCancled && onCancled()}
               />
             </>
           </CustomModal>,
+          fetchData,
         );
       }}
       {...rest}

@@ -13,6 +13,8 @@ import {
 import { getUser } from "~/session.server";
 import stylesheet from "~/tailwind.css";
 import { ModalProvider } from "./components/providers/modal-provider";
+import { Toaster } from "./components/ui/toaster";
+import { prisma } from "./lib/db.server";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -20,7 +22,7 @@ export const links: LinksFunction = () => [
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  return json({ user: await getUser(request) });
+  return json({ user: await getUser(prisma, request) });
 };
 
 export default function App() {
@@ -36,6 +38,7 @@ export default function App() {
         <ModalProvider>
           <Outlet />
         </ModalProvider>
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

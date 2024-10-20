@@ -8,49 +8,66 @@ import { safeAction } from "~/lib/utils";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { validateEmail } from "~/lib/utils";
+import {
+  ActionResultType,
+  ActionZodResponse,
+  RawActionResult,
+} from "~/lib/type";
+import { DEFAULT_REDIRECT } from "~/lib/config.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
   return json({});
 };
-
-export const action = safeAction(
-  z.object({
-    email: z.string(),
-    password: z.string(),
-    redirectTo: z.string(),
-    remember: z.optional(z.string()),
-  }),
-  async ({ request }, { email, password, redirectTo, remember }) => {
-    if (!validateEmail(email)) {
-      return json({ errors: "email invalid", success: false }, { status: 400 });
-    }
-
-    const user = await verifyLogin(email, password);
-
-    if (!user) {
-      return json(
-        { errors: "Invalid email or password", success: false },
-        { status: 400 },
-      );
-    }
-
-    return createUserSession({
-      redirectTo,
-      remember: remember === "on" ? true : false,
-      request,
-      userId: user.id,
-    });
+const LoginSchema = z.object({
+  email: z.string(),
+  password: z.string(),
+  redirectTo: z.string(),
+  remember: z.optional(z.string()),
+});
+export const action = safeAction([
+  {
+    schema: LoginSchema,
+    action: async (
+      { request },
+      { email, password, redirectTo, remember },
+    ): ActionZodResponse<typeof LoginSchema> => {
+      if (!validateEmail(email)) {
+        return json(
+          { error: "email invalid", success: false },
+          { status: 400 },
+        );
+      }
+      const user = await verifyLogin(email, password);
+      if (!user) {
+        return json(
+          { error: "Invalid email or password", success: false },
+          { status: 400 },
+        );
+      }
+      if (user.status === "banned")
+        return json({ error: "This account has been banned.", success: false });
+      return createUserSession({
+        redirectTo,
+        remember: remember === "on" ? true : false,
+        request,
+        userId: user.id,
+      });
+    },
+    method: "POST",
   },
-);
+]);
 
 export const meta: MetaFunction = () => [{ title: "Login" }];
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/notes";
-  const actionData = useActionData<typeof action>();
+  const redirectTo = searchParams.get("redirectTo") || DEFAULT_REDIRECT;
+  const actionData =
+    useActionData<
+      RawActionResult<z.inferFlattenedErrors<typeof LoginSchema>["fieldErrors"]>
+    >();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -60,7 +77,7 @@ export default function LoginPage() {
       passwordRef.current?.focus();
     }
   }, [actionData]);
-
+  console.log(actionData);
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8">
@@ -123,8 +140,8 @@ export default function LoginPage() {
           </div>
 
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          {actionData?.errors && (
-            <p className="text-destructive">{actionData.errors}</p>
+          {actionData?.error && (
+            <p className="text-destructive">{actionData.error}</p>
           )}
           <button
             type="submit"

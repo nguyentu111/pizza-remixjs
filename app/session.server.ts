@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
 
@@ -32,11 +33,11 @@ export async function getUserId(
   return userId;
 }
 
-export async function getUser(request: Request) {
+export async function getUser(db: Prisma.TransactionClient, request: Request) {
   const userId = await getUserId(request);
   if (userId === undefined) return null;
 
-  const user = await getUserById(userId);
+  const user = await getUserById(db, userId);
   if (user) return user;
 
   throw await logout(request);
@@ -54,10 +55,13 @@ export async function requireUserId(
   return userId;
 }
 
-export async function requireUser(request: Request) {
+export async function requireUser(
+  db: Prisma.TransactionClient,
+  request: Request,
+) {
   const userId = await requireUserId(request);
 
-  const user = await getUserById(userId);
+  const user = await getUserById(db, userId);
   if (user) return user;
 
   throw await logout(request);

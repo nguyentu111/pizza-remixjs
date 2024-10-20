@@ -4,60 +4,70 @@ import { useFetcher } from "@remix-run/react";
 import { DeleteApiResponse } from "cloudinary";
 import { CheckIcon, Loader } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
-import { getSmallImageUrl } from "~/lib/utils";
+import { bytesToMB, getSmallImageUrl } from "~/lib/utils";
 import { cn, useMatchesData } from "~/lib/utils";
 import { Button } from "../ui/button";
-import { Media } from "@prisma/client";
+import { Media, MediaType } from "@prisma/client";
 import { format } from "date-fns";
 import { FileIcon } from "@radix-ui/react-icons";
 import { AdminLayoutData } from "~/routes/admin";
-import { ActionResultType } from "~/actions/type";
+import { ActionResultType } from "~/lib/type";
+import { useModal } from "../providers/modal-provider";
 
 export const MediaBucket = ({
   onSelected,
+  onCancled,
   selectedMedia,
+  mediaType,
 }: {
-  selectedMedia?: Media;
+  mediaType: MediaType;
+  selectedMedia?: string;
   onSelected?: (item: Media) => void;
+  onCancled?: () => void;
 }) => {
-  const [item, setItem] = useState<null | Media>(null);
-  const fetcherDelete = useFetcher<ActionResultType>();
   const { media, user } = useMatchesData<AdminLayoutData>("routes/admin");
-
+  const [item, setItem] = useState<Media | undefined>(
+    media.find((m) => m.publicId === selectedMedia),
+  );
+  const fetcherDelete = useFetcher<ActionResultType>();
+  const { setClose } = useModal();
   return (
     <div>
       <Tabs defaultValue="library" className="">
         <TabsList className="ml-4">
-          <TabsTrigger value="upload">Upload file</TabsTrigger>
-          <TabsTrigger value="library">Media library</TabsTrigger>
+          <TabsTrigger value="upload">Tải lên</TabsTrigger>
+          <TabsTrigger value="library">Thư viện</TabsTrigger>
         </TabsList>
         <TabsContent value="upload" className="w-full min-h-[330px] px-4">
-          <UploadFile />
+          <UploadFile mediaType={mediaType} />
         </TabsContent>
         <TabsContent value="library" className="w-full ">
           <div className="flex flex-col">
             <div className="overflow-auto border-t border-b-2 border-gray-400 h-[330px]">
               <div className="flex justify-between gap-2 h-full items-stretch">
                 <div className="flex flex-wrap flex-1 min-w-[100px] gap-4 py-4 px-4 h-full overflow-auto">
-                  {media.map((r) => (
-                    <MediaItem
-                      key={r.id}
-                      data={r as unknown as Media}
-                      onClick={() => setItem(r as unknown as Media)}
-                      isChoosen={
-                        item
-                          ? r.id === item.id
-                          : selectedMedia
-                            ? selectedMedia.id === r.id
-                            : false
-                      }
-                    />
-                  ))}
+                  {media.map(
+                    (r) =>
+                      r.type === mediaType && (
+                        <MediaItem
+                          key={r.id}
+                          data={r as unknown as Media}
+                          onClick={() => setItem(r as unknown as Media)}
+                          isChoosen={
+                            item
+                              ? r.id === item.id
+                              : selectedMedia
+                                ? selectedMedia === r.publicId
+                                : false
+                          }
+                        />
+                      ),
+                  )}
                   {media.length === 0 && (
-                    <div className="col-span-full ">Bucket is empty.</div>
+                    <div className="col-span-full ">Kho thư viện trống.</div>
                   )}
                 </div>
-                <div className=" overflow-auto">
+                <div className="overflow-y-auto w-[40%] overflow-x-hidden py-4">
                   {item && (
                     <div>
                       <div className="flex gap-2">
@@ -75,16 +85,19 @@ export const MediaBucket = ({
                           </div>
                         )}
                         <div>
-                          <p className="font-bold overflow-hidden truncate">
+                          <p className="font-bold overflow-hidden line-clamp-1 max-w-[300px]">
                             {item.displayName}
                           </p>
                           <p>
-                            Created at :{" "}
+                            Tạo lúc :{" "}
                             {format(item.createdAt, "HH:ii:ss dd/MM/yyyy")}
                           </p>
-                          <p>
-                            {item.width} x {item.height}
-                          </p>
+                          {item.width && item.height && (
+                            <p>
+                              {item.width} x {item.height}
+                            </p>
+                          )}
+                          <p>{bytesToMB(item.bytes)} MB</p>
                           <fetcherDelete.Form
                             action={`/admin?id=${item?.id}`}
                             method="delete"
@@ -99,7 +112,7 @@ export const MediaBucket = ({
                                 !item || fetcherDelete.state === "submitting"
                               }
                             >
-                              Delete this file
+                              Xóa file này
                             </Button>
                           </fetcherDelete.Form>
                         </div>
@@ -110,13 +123,26 @@ export const MediaBucket = ({
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end justify-end gap-2 sm:flex-row ml-auto pt-2.5 w-full px-4">
+            <div className="flex  items-end justify-end gap-2 sm:flex-row ml-auto pt-2.5 w-full px-4">
               <Button
-                onClick={() => item && onSelected && onSelected(item)}
+                onClick={() => {
+                  setClose();
+                  onCancled && onCancled();
+                }}
+                className=""
+                variant={"outline"}
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={() => {
+                  setClose();
+                  item && onSelected && onSelected(item);
+                }}
                 disabled={!item || fetcherDelete.state === "submitting"}
                 className=""
               >
-                Use selected file
+                Dùng file đã chọn
               </Button>
             </div>
           </div>
@@ -149,7 +175,7 @@ const MediaItem = ({
       data.format === "svg" ? (
         <img
           className="w-full h-[100px] object-cover"
-          src={getSmallImageUrl(data.url, 500, 500)}
+          src={getSmallImageUrl(data.url)}
         />
       ) : (
         <div className="flex items-center justify-center h-full">

@@ -1,5 +1,5 @@
 import { Media } from "@prisma/client";
-import { prisma } from "~/.server/db.server";
+import { prisma } from "~/lib/db.server";
 
 export const getAllMedia = async () =>
   await prisma.media.findMany({ orderBy: { createdAt: "desc" } });

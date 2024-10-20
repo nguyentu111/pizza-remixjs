@@ -1,16 +1,17 @@
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  MetaFunction,
-} from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 import { z } from "zod";
-import { ActionResultType } from "~/actions/type";
-import { safeAction } from "~/lib/utils";
+import { ActionResultType, RawActionResult } from "~/lib/type";
+import { ca, safeAction } from "~/lib/utils";
 
-import { createUser, getUserByEmail } from "~/models/user.server";
+import {
+  createUser,
+  getUserByEmail,
+  getUserByUsername,
+  User,
+} from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/lib/utils";
 
@@ -19,63 +20,91 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   if (userId) return redirect("/");
   return json({});
 };
-export const action = safeAction(
-  z.object({
-    email: z.string().min(1),
-    fullName: z.string().min(1),
-    username: z.string().min(1),
-    password: z.string().min(1),
-    redirectTo: z.optional(z.string()),
-  }),
-  async (
-    { request },
-    { email, fullName, password, username, redirectTo },
-  ): Promise<ActionResultType> => {
-    const redirect = safeRedirect(redirectTo, "/");
-    if (!validateEmail(email)) {
-      return json({ errors: "invalid email", success: false }, { status: 400 });
-    }
+const JoinSchema = z.object({
+  email: z.string().min(1),
+  fullName: z.string().min(1),
+  username: z.string().min(1),
+  password: z.string().min(1),
+  redirectTo: z.optional(z.string()),
+});
 
-    const existingUser = await getUserByEmail(email);
-    if (existingUser) {
-      return json(
-        {
-          errors: "A user already exists with this email",
-          success: false,
-        },
-        { status: 403 },
-      );
-    }
+export const action = safeAction([
+  {
+    schema: JoinSchema,
+    method: "POST",
+    action: ca(
+      async (
+        { request },
+        { email, fullName, password, username, redirectTo },
+      ): Promise<
+        ActionResultType<
+          z.inferFlattenedErrors<typeof JoinSchema>["fieldErrors"]
+        >
+      > => {
+        const redirect = safeRedirect(redirectTo, "/");
+        if (!validateEmail(email)) {
+          return json(
+            { error: "invalid email", success: false },
+            { status: 400 },
+          );
+        }
+        const existingUser1 = await getUserByEmail(email);
+        if (existingUser1) {
+          return json(
+            {
+              error: "A user already exists with this email",
+              success: false,
+            },
+            { status: 403 },
+          );
+        }
+        const existingUser2 = await getUserByUsername(username);
+        if (existingUser2) {
+          return json(
+            {
+              error: "A user already exists with this username",
+              success: false,
+            },
+            { status: 403 },
+          );
+        }
+        const user: User = await createUser(
+          { email, fullName, username },
+          { password },
+        );
 
-    const user = await createUser({ email, fullName, username }, password);
-
-    return createUserSession({
-      redirectTo: redirect,
-      remember: false,
-      request,
-      userId: user.id,
-    });
+        return createUserSession({
+          redirectTo: redirect,
+          remember: false,
+          request,
+          userId: user.id,
+        });
+      },
+    ),
   },
-);
+]);
 
 export const meta: MetaFunction = () => [{ title: "Sign Up" }];
 
 export default function Join() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? undefined;
-  const actionData = useActionData<Awaited<typeof action>>();
+  const actionData =
+    useActionData<
+      RawActionResult<z.inferFlattenedErrors<typeof JoinSchema>["fieldErrors"]>
+    >();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     console.log({ actionData });
-    if (actionData?.fieldErrors?.email) {
+    if (actionData?.fieldErrors?.password) {
       emailRef.current?.focus();
     } else if (actionData?.fieldErrors?.password) {
       passwordRef.current?.focus();
     }
   }, [actionData]);
-
+  console.log({ actionData });
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8">
@@ -91,7 +120,6 @@ export default function Join() {
               <input
                 ref={emailRef}
                 id="email"
-                required
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
                 name="email"
@@ -121,7 +149,6 @@ export default function Join() {
                 id="fullName"
                 name="fullName"
                 type="text"
-                required
                 aria-invalid={
                   actionData?.fieldErrors?.fullName ? true : undefined
                 }
@@ -148,7 +175,6 @@ export default function Join() {
                 id="username"
                 name="username"
                 type="text"
-                required
                 aria-invalid={
                   actionData?.fieldErrors?.username ? true : undefined
                 }
@@ -176,7 +202,6 @@ export default function Join() {
                 ref={passwordRef}
                 name="password"
                 type="password"
-                required
                 autoComplete="new-password"
                 aria-invalid={
                   actionData?.fieldErrors?.password ? true : undefined
@@ -193,8 +218,8 @@ export default function Join() {
           </div>
 
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          {actionData?.errors && (
-            <p className="text-destructive">{actionData.errors}</p>
+          {actionData?.error && (
+            <p className="text-destructive">{actionData.error}</p>
           )}
           <button
             type="submit"

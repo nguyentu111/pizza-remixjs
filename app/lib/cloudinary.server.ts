@@ -1,4 +1,4 @@
-import { CLOUD_FOLDER } from "./config";
+import { CLOUD_FOLDER } from "./config.server";
 import {
   v2 as cloudinary,
   DeleteApiResponse,

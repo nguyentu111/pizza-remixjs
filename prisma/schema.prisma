@@ -7,22 +7,28 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum UserStatus {
+  banned
+  on
+}
+
 model User {
   id        String     @id @default(cuid())
   email     String     @unique
   username  String     @unique @db.VarChar(100) // New field for username
   fullName  String     @db.VarChar(255) // New field for full name
-  status    Int?       @db.TinyInt // New field for status
+  status    UserStatus @default(on)
   createdAt DateTime   @default(now()) // New field for created_at
   updatedAt DateTime   @updatedAt // New field for updated_at
   notes     Note[]
   roles     UserRole[] // New relation to UserRole
+  avatarId  String?
+  avatarUrl String?
   Password  Password?
 }
 
 model Password {
-  hash String
-
+  hash   String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String @unique
 }
@@ -33,11 +39,18 @@ enum ResourceType {
   raw
 }
 
+enum MediaType {
+  product
+  user
+  other
+}
+
 model Media {
   id           String       @id @default(cuid())
   publicId     String
   displayName  String
   resourceType ResourceType
+  type         MediaType
   width        Int?
   height       Int?
   bytes        Int
@@ -64,7 +77,7 @@ model Note {
 // New model for Role
 model Role {
   id          String   @id @default(cuid())
-  name        String   @db.VarChar(100) // New field for role name
+  name        String   @unique @db.VarChar(100) // New field for role name
   description String?  @db.Text // New field for role description
   createdAt   DateTime @default(now()) // New field for created_at
   updatedAt   DateTime @updatedAt // New field for updated_at
@@ -76,7 +89,7 @@ model Role {
 // New model for Permission
 model Permission {
   id          String   @id @default(cuid())
-  name        String   @db.VarChar(100) // New field for permission name
+  name        String   @unique @db.VarChar(100) // New field for permission name
   description String?  @db.Text // New field for permission description
   createdAt   DateTime @default(now()) // New field for created_at
   updatedAt   DateTime @updatedAt // New field for updated_at

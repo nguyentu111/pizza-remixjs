@@ -1,16 +1,9 @@
-import { Media } from "@prisma/client";
-import {
-  ActionFunction,
-  ActionFunctionArgs,
-  json,
-  LoaderFunction,
-} from "@remix-run/node";
-import { error } from "console";
-import { deleteResource, upload } from "~/.server/cloudinary";
+import { Media, MediaType } from "@prisma/client";
+import { ActionFunctionArgs, json } from "@remix-run/node";
+import { deleteResource, upload } from "~/lib/cloudinary.server";
 import {
   createMedia,
   deleteMedia,
-  getAllMedia,
   getMedia,
   updateMedia,
 } from "~/models/media.server";
@@ -31,12 +24,19 @@ export const updateMediaAction = async (
 };
 export const uploadMedia = async (formData: FormData) => {
   const files = formData.getAll("files") as File[] | null; // Retrieve the file from the form data
+  const type = formData.get("type") as MediaType;
+  console.log({ type });
   if (!files || files.length === 0 || files[0]?.size === 0) {
     return json(
       { error: "No file uploaded.", success: false },
       { status: 400 },
     );
   }
+  if (!type)
+    return json(
+      { error: "Media type is required.", success: false },
+      { status: 400 },
+    );
   await Promise.all(
     files.map(async (file) => {
       const fileData = await file.arrayBuffer();
@@ -56,6 +56,7 @@ export const uploadMedia = async (formData: FormData) => {
             altText: file.name,
             caption: null,
             description: null,
+            type,
           });
       } catch (error) {
         console.log(error);
@@ -67,6 +68,13 @@ export const uploadMedia = async (formData: FormData) => {
     }),
   );
   return json({ success: true, error: null }, { status: 200 });
+};
+
+export const uploadSingleFile = async (file: File) => {
+  const fileData = await file.arrayBuffer();
+  const fileBuffer = Buffer.from(fileData);
+  const rs = await upload(fileBuffer);
+  return rs;
 };
 export const deleteMediaAction = async (
   request: ActionFunctionArgs["request"],

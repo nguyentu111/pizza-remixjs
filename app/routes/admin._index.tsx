@@ -7,7 +7,9 @@ export default function AdminHome() {
   const matchdata = useMatchesData("routes/admin");
   return (
     <div>
-      <MediaButton />
+      <MediaButton mediaType="product" className="" variant={"link"}>
+        {"Choose image"}
+      </MediaButton>
     </div>
   );
 }
