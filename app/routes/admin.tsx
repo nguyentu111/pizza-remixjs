@@ -1,46 +1,51 @@
-import { Media, User } from "@prisma/client";
+import { Media, Staff } from "@prisma/client";
 import { ActionFunction, json, LoaderFunction } from "@remix-run/node";
-import { Form, Link, NavLink, Outlet } from "@remix-run/react";
+import { Form, NavLink, Outlet } from "@remix-run/react";
+import { LogOut } from "lucide-react";
 import {
   deleteMediaAction,
   updateMediaAction,
   uploadMedia,
 } from "~/actions/media.server";
-import { getAllMedia, updateMedia } from "~/models/media.server";
-import { requireUser } from "~/session.server";
-import { cn, useUser } from "~/lib/utils";
-import { prisma } from "~/lib/db.server";
 import { Button } from "~/components/ui/button";
-import { LogOut } from "lucide-react";
+import { PermissionsEnum } from "~/lib/config.server";
+import { prisma } from "~/lib/db.server";
+import { ca, cn, useStaff } from "~/lib/utils";
+import { getAllMedia } from "~/models/media.server";
+import { requireStaff } from "~/session.server";
+import { requirePermissions } from "~/use-cases/permission.server";
 
-export const action: ActionFunction = async ({ request }) => {
-  const user = await requireUser(prisma, request);
+export const action: ActionFunction = ca(async ({ request }) => {
+  const user = await requireStaff(prisma, request);
   const formData = await request.formData();
   const method = request.method;
   const values = Object.fromEntries(formData) as any;
   if (method === "POST") {
     if (values._action === "update-media") {
+      await requirePermissions(prisma, user.id, [PermissionsEnum.UpdateMedia]);
       return updateMediaAction(values);
     }
     if (values._action === "upload-media") {
+      await requirePermissions(prisma, user.id, [PermissionsEnum.UpLoadMedia]);
       return uploadMedia(formData);
     }
   }
   if (method === "DELETE") {
     if (values._action === "delete-media") {
+      await requirePermissions(prisma, user.id, [PermissionsEnum.DeleteMedia]);
       return deleteMediaAction(request);
     }
   }
   return null;
-};
+});
 export const loader: LoaderFunction = async ({ request }) => {
-  const user = await requireUser(prisma, request);
+  const staff = await requireStaff(prisma, request);
   const media = await getAllMedia();
-  return json({ user, media }, { status: 200 });
+  return json({ staff, media }, { status: 200 });
 };
-export type AdminLayoutData = { user: User; media: Media[] };
+export type AdminLayoutData = { staff: Staff; media: Media[] };
 export default function AdminLayout() {
-  const user = useUser();
+  const staff = useStaff();
   return (
     <div className="flex h-full">
       <div className="bg-gray-100 h-full min-w-[200px] flex flex-col justify-between py-4">
@@ -48,12 +53,12 @@ export default function AdminLayout() {
           <ul>
             <li>
               <NavLink
-                to="/admin/users"
+                to="/admin/staffs"
                 className={({ isActive }) =>
                   cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
                 }
               >
-                Users
+                Staffs
               </NavLink>
             </li>
             <li>
@@ -80,11 +85,8 @@ export default function AdminLayout() {
         </nav>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <img
-              className="rounded-full w-10 h-10"
-              src={user.avatarUrl ?? ""}
-            />
-            <div className="font-bold capitalize">{user.fullName}</div>
+            <img className="rounded-full w-10 h-10" src={staff.image ?? ""} />
+            <div className="font-bold capitalize">{staff.fullname}</div>
           </div>
           <Form action="/logout" method="post">
             <Button

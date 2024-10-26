@@ -1,4 +1,4 @@
-import { $Enums, UserStatus } from "@prisma/client";
+import { $Enums, StaffStatus } from "@prisma/client";
 import { z } from "zod";
 const MAX_FILE_SIZE = 5000000;
 function checkFileType(file: File) {
@@ -16,17 +16,18 @@ export const fileSchema = z
   .refine((file) => file?.size < MAX_FILE_SIZE, "Max size is 5MB.")
   .refine((file) => checkFileType(file), "Only image formats are supported.");
 
-export const insertUserSchema = z
+export const insertStaffSchema = z
   .object({
     username: z.string().min(1),
-    fullName: z.string().min(1),
-    status: z.nativeEnum(UserStatus).default("on").optional(),
-    email: z.string().email(),
+    fullname: z.string().min(1),
+    address: z.string().optional(),
+    status: z.nativeEnum(StaffStatus).default("on").optional(),
     password: z.string().min(4),
     passwordConfirm: z.string().min(4),
-    avatarId: z.string().optional(),
-    avatarUrl: z.string().optional(),
+    image: z.string().optional(),
     "roles[]": z.array(z.string()).optional(),
+    phoneNumbers: z.string().length(10),
+    salary: z.number().optional(),
   })
   .superRefine(({ passwordConfirm, password }, ctx) => {
     if (passwordConfirm !== password) {
@@ -38,12 +39,11 @@ export const insertUserSchema = z
     }
   });
 // Define the update user schema
-export const updateUserSchema = z
+export const updateStaffSchema = z
   .object({
     username: z.string().min(1).optional(),
-    fullName: z.string().min(1).optional(),
-    status: z.nativeEnum(UserStatus).default("on").optional(),
-    email: z.string().email().optional(),
+    fullname: z.string().min(1).optional(),
+    status: z.nativeEnum(StaffStatus).default("on").optional(),
     password: z
       .string()
       .optional()
@@ -61,9 +61,12 @@ export const updateUserSchema = z
       .string()
       .optional()
       .transform((val) => (val === "" ? undefined : val)),
-    avatarId: z.string().optional(),
-    avatarUrl: z.string().optional(),
+    image: z.string().optional(),
     "roles[]": z.array(z.string()).optional(),
+    // .transform((r) => (r === undefined ? [] : r)),
+    address: z.string().optional(),
+    phoneNumbers: z.string().length(10).optional(),
+    salary: z.number().optional(),
   })
   .superRefine(({ passwordConfirm, password }, ctx) => {
     if (passwordConfirm !== password) {

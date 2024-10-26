@@ -10,7 +10,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-import { getUser } from "~/session.server";
+import { getStaff } from "~/session.server";
 import stylesheet from "~/tailwind.css";
 import { ModalProvider } from "./components/providers/modal-provider";
 import { Toaster } from "./components/ui/toaster";
@@ -22,7 +22,7 @@ export const links: LinksFunction = () => [
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  return json({ user: await getUser(prisma, request) });
+  return json({ staff: await getStaff(prisma, request) });
 };
 
 export default function App() {

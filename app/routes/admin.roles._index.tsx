@@ -1,30 +1,30 @@
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
+import { ErrorBoundary } from "~/components/shared/error-boudary";
+
+import { json, LoaderFunctionArgs } from "@remix-run/node";
+import { EditIcon, TrashIcon } from "lucide-react";
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Table,
-  TableCell,
-  TableHeader,
   TableBody,
+  TableCell,
   TableHead,
+  TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Button } from "~/components/ui/button";
-import { useState, useEffect } from "react";
-import {
-  createRole,
-  deleteRole,
-  getAllRoles,
-  getRoleByName,
-} from "~/models/role.server";
-import { json } from "@remix-run/node";
-import { ca, safeAction } from "~/lib/utils";
-import { z } from "zod";
 import { useForm } from "~/hooks/use-form";
-import { getAllPermissions } from "~/models/permission.server";
-import { Input } from "~/components/ui/input";
-import { EditIcon, Trash, TrashIcon } from "lucide-react";
+import { PermissionsEnum } from "~/lib/config.server";
 import { prisma } from "~/lib/db.server";
+import { getAllPermissions } from "~/models/permission.server";
+import { getAllRoles } from "~/models/role.server";
+import { requireStaffId } from "~/session.server";
+import { requirePermissions } from "~/use-cases/permission.server";
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const userId = await requireStaffId(request);
+  await requirePermissions(prisma, userId, [PermissionsEnum.ViewRoles]);
   const roles = await getAllRoles();
   const permissions = await getAllPermissions(prisma);
   return json({ roles, permissions });
@@ -35,12 +35,12 @@ export default function RoleManagement() {
     <>
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h1 className="text-2xl font-bold">Quản lí quyền</h1>
+          <h1 className="text-2xl font-bold">Quản lí vai trò</h1>
           <nav className="text-sm text-gray-600">
             <a href="/admin" className="hover:underline">
               Trang chủ
             </a>{" "}
-            &gt; Quản lí quyền
+            &gt; Quản lí vai trò
           </nav>
         </div>
       </div>
@@ -89,7 +89,7 @@ function RoleTable() {
         <div className="flex">
           <Button asChild>
             <Link to="/admin/roles/add" className="mr-4">
-              Thêm quyền
+              Thêm vai trò
             </Link>
           </Button>
 
@@ -137,3 +137,4 @@ function RoleTable() {
     </div>
   );
 }
+export { ErrorBoundary };

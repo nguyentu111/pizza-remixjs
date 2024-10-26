@@ -1,6 +1,6 @@
 // app/controllers/role.controller.ts
 
-import { Permission, Prisma, PrismaClient, Role, User } from "@prisma/client";
+import { Permission, Prisma, PrismaClient, Role, Staff } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -80,5 +80,17 @@ export const updateRolePermssions = (
       permissionId,
     })),
     skipDuplicates: true, // Skip creating duplicates (already existing RolePermission records)
+  });
+};
+export const getStaffRoles = async (
+  db: Prisma.TransactionClient,
+  staffId: Staff["id"],
+) => {
+  return await db.role.findMany({
+    where: {
+      staffRoles: {
+        some: { staffId },
+      },
+    },
   });
 };

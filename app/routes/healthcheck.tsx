@@ -2,7 +2,9 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 
 import { prisma } from "~/lib/db.server";
+import { ErrorBoundary } from "~/components/shared/error-boudary";
 
+export { ErrorBoundary };
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const host =
     request.headers.get("X-Forwarded-Host") ?? request.headers.get("host");

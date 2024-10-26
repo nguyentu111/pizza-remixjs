@@ -11,6 +11,9 @@ import {
   getAllPermissions,
 } from "~/models/permission.server";
 import { prisma } from "~/lib/db.server";
+import { FormField } from "~/components/shared/form/form-field";
+import { Label } from "~/components/ui/label";
+import { InputField } from "~/components/shared/form/form-items/input-field";
 
 export const loader = async () => {
   const permissions = await getAllPermissions(prisma);
@@ -18,16 +21,18 @@ export const loader = async () => {
 };
 const addPermissionSchema = z.object({
   name: z.string().min(1),
+  group: z.string().min(1),
   description: z.optional(z.string()),
+  displayName: z.string().min(1),
 });
 export const action: ActionFunction = safeAction([
   {
-    action: ca(async ({}, { name, description }) => {
-      await createPermission({ name, description });
+    action: async ({}, { name, description, displayName, group }) => {
+      await createPermission({ name, description, displayName, group });
       return json({
         success: true,
       });
-    }),
+    },
     method: "POST",
     schema: addPermissionSchema,
   },
@@ -46,29 +51,37 @@ export const action: ActionFunction = safeAction([
 
 export default function PermissionManagement() {
   const permissions = useLoaderData<typeof loader>();
-  const { createInput, fetcher, formRef, actionData, ErrorMessage } =
-    useForm<typeof addPermissionSchema>();
+  const { fetcher, formRef, control } = useForm<typeof addPermissionSchema>({});
   const fetcherDelete = useFetcher<{ error: null | string }>();
 
   return (
     <div>
       <fetcher.Form ref={formRef} method="post" action="/admin/permissions">
-        {createInput(
-          { name: "name", placeholder: "Permission name" },
-          { label: "Name" },
-        )}
-        {createInput(
-          { name: "description", placeholder: "Permission description" },
-          { label: "Description" },
-        )}
+        <FormField control={control} name={"name"}>
+          <Label>Name</Label>
+          <InputField />
+        </FormField>
+        <FormField control={control} name={"displayName"}>
+          <Label>displayName</Label>
+          <InputField />
+        </FormField>
+        <FormField control={control} name={"group"}>
+          <Label>Nhóm</Label>
+          <InputField />
+        </FormField>
+        <FormField control={control} name={"description"}>
+          <Label>Permission description</Label>
+          <InputField />
+        </FormField>
 
-        <ErrorMessage />
         <Button type="submit">Add Permission</Button>
       </fetcher.Form>
       <Table>
         <thead>
           <tr>
             <th>Name</th>
+            <th>Display Name</th>
+            <th>Group</th>
             <th>Description</th>
           </tr>
         </thead>
@@ -76,6 +89,8 @@ export default function PermissionManagement() {
           {permissions.map((permission) => (
             <tr key={permission.id}>
               <td>{permission.name}</td>
+              <td>{permission.displayName}</td>
+              <td>{permission.group}</td>
               <td>{permission.description}</td>
               <td>
                 <fetcherDelete.Form

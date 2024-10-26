@@ -5,9 +5,8 @@ import { useEffect, useRef } from "react";
 import { z } from "zod";
 import { safeAction } from "~/lib/utils";
 
-import { verifyLogin } from "~/models/user.server";
-import { createUserSession, getUserId } from "~/session.server";
-import { validateEmail } from "~/lib/utils";
+import { verifyLogin } from "~/models/staff.server";
+import { createStaffSession, getStaffId } from "~/session.server";
 import {
   ActionResultType,
   ActionZodResponse,
@@ -16,12 +15,12 @@ import {
 import { DEFAULT_REDIRECT } from "~/lib/config.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const userId = await getUserId(request);
+  const userId = await getStaffId(request);
   if (userId) return redirect("/");
   return json({});
 };
 const LoginSchema = z.object({
-  email: z.string(),
+  username: z.string(),
   password: z.string(),
   redirectTo: z.string(),
   remember: z.optional(z.string()),
@@ -31,28 +30,28 @@ export const action = safeAction([
     schema: LoginSchema,
     action: async (
       { request },
-      { email, password, redirectTo, remember },
+      { username, password, redirectTo, remember },
     ): ActionZodResponse<typeof LoginSchema> => {
-      if (!validateEmail(email)) {
-        return json(
-          { error: "email invalid", success: false },
-          { status: 400 },
-        );
-      }
-      const user = await verifyLogin(email, password);
+      // if (!validateUsername(username)) {
+      //   return json(
+      //     { error: "username invalid", success: false },
+      //     { status: 400 },
+      //   );
+      // }
+      const user = await verifyLogin(username, password);
       if (!user) {
         return json(
-          { error: "Invalid email or password", success: false },
+          { error: "Invalid username or password", success: false },
           { status: 400 },
         );
       }
       if (user.status === "banned")
         return json({ error: "This account has been banned.", success: false });
-      return createUserSession({
+      return createStaffSession({
         redirectTo,
         remember: remember === "on" ? true : false,
         request,
-        userId: user.id,
+        staffId: user.id,
       });
     },
     method: "POST",
@@ -68,11 +67,11 @@ export default function LoginPage() {
     useActionData<
       RawActionResult<z.inferFlattenedErrors<typeof LoginSchema>["fieldErrors"]>
     >();
-  const emailRef = useRef<HTMLInputElement>(null);
+  const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (actionData?.fieldErrors?.email) {
-      emailRef.current?.focus();
+    if (actionData?.fieldErrors?.username) {
+      usernameRef.current?.focus();
     } else if (actionData?.fieldErrors?.password) {
       passwordRef.current?.focus();
     }
@@ -84,28 +83,30 @@ export default function LoginPage() {
         <Form method="post" className="space-y-6">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="username"
               className="block text-sm font-medium text-gray-700"
             >
-              Email address
+              Tên tài khoản
             </label>
             <div className="mt-1">
               <input
-                ref={emailRef}
-                id="email"
+                ref={usernameRef}
+                id="username"
                 required
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={true}
-                name="email"
-                type="email"
-                autoComplete="email"
-                aria-invalid={actionData?.fieldErrors?.email ? true : undefined}
-                aria-describedby="email-error"
+                name="username"
+                type="username"
+                autoComplete="username"
+                aria-invalid={
+                  actionData?.fieldErrors?.username ? true : undefined
+                }
+                aria-describedby="username-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.fieldErrors?.email ? (
-                <div className="pt-1 text-red-700" id="email-error">
-                  {actionData.fieldErrors.email}
+              {actionData?.fieldErrors?.username ? (
+                <div className="pt-1 text-red-700" id="username-error">
+                  {actionData.fieldErrors.username}
                 </div>
               ) : null}
             </div>
@@ -170,7 +171,7 @@ export default function LoginPage() {
               <Link
                 className="text-blue-500 underline"
                 to={{
-                  pathname: "/join",
+                  pathname: "/admin/join",
                   search: searchParams.toString(),
                 }}
               >

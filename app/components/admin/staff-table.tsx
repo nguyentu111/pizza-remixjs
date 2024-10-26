@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { Customer, Staff } from "@prisma/client";
 import { Link } from "@remix-run/react";
 import { format } from "date-fns";
 import { EditIcon, TrashIcon } from "lucide-react";
@@ -14,19 +14,19 @@ import {
 } from "~/components/ui/table"; // Use Shadcn UI Table components
 import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
-import { useUser } from "~/lib/utils";
+import { useStaff } from "~/lib/utils";
 
-export function UserTable({ users }: { users: User[] }) {
-  const currentUser = useUser();
+export function StaffTable({ staffs }: { staffs: Staff[] }) {
+  const currentStaff = useStaff();
   const [searchTerm, setSearchTerm] = useState("");
   const { fetcher: fetcherDelete } = useForm({});
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const filteredUsers = users.filter((user) =>
-    user.fullName.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredStaffs = staffs.filter((staff) =>
+    staff.fullname.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const paginatedUsers = filteredUsers.slice(
+  const totalPages = Math.ceil(filteredStaffs.length / itemsPerPage);
+  const paginatedStaffs = filteredStaffs.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
@@ -46,8 +46,8 @@ export function UserTable({ users }: { users: User[] }) {
         </div>
         <div className="flex">
           <Button asChild>
-            <Link to="/admin/users/add" className="mr-4">
-              Thêm tài khoản
+            <Link to="/admin/staffs/add" className="mr-4">
+              Thêm tài khoản nhân viên
             </Link>
           </Button>
           <Input
@@ -64,41 +64,41 @@ export function UserTable({ users }: { users: User[] }) {
           <TableRow>
             <TableHead>Avatar</TableHead>
             <TableHead>Fullname</TableHead>
-            <TableHead>Email</TableHead>
             <TableHead>Username</TableHead>
+            <TableHead>PhoneNumbers</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedUsers.map((user) => (
-            <TableRow key={user.id}>
+          {paginatedStaffs.map((staff) => (
+            <TableRow key={staff.id}>
               <TableCell>
                 <img
-                  src={user.avatarUrl as string}
-                  alt={`${user.fullName}'s avatar`}
+                  src={staff.image as string}
+                  alt={`${staff.fullname}'s avatar`}
                   className="w-20 h-20 rounded-full"
                 />
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  {user.fullName}{" "}
-                  {currentUser.id === user.id && (
+                  {staff.fullname}{" "}
+                  {currentStaff.id === staff.id && (
                     <div className="text-green-700 border-2 border-green-700 rounded-xl w-fit px-1 py-0.5 text-xs">
                       You
                     </div>
                   )}
                 </div>
               </TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.username}</TableCell>
-              <TableCell>{user.status}</TableCell>
-              <TableCell>{format(user.createdAt, "dd/MM/yyyy")}</TableCell>
+              <TableCell>{staff.username}</TableCell>
+              <TableCell>{staff.phoneNumbers}</TableCell>
+              <TableCell>{staff.status}</TableCell>
+              <TableCell>{format(staff.createdAt, "dd/MM/yyyy")}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <fetcherDelete.Form
-                    action={`/admin/users/${user.id}`}
+                    action={`/admin/staffs/${staff.id}`}
                     method="DELETE"
                   >
                     <Button variant={"ghost-destructive"}>
@@ -106,7 +106,7 @@ export function UserTable({ users }: { users: User[] }) {
                     </Button>
                   </fetcherDelete.Form>
                   <Button asChild>
-                    <Link to={`/admin/users/${user.id}`}>
+                    <Link to={`/admin/staffs/${staff.id}`}>
                       <EditIcon className="w-4 h-4" />
                     </Link>
                   </Button>

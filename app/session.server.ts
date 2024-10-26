@@ -1,9 +1,8 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, Staff } from "@prisma/client";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
 
-import type { User } from "~/models/user.server";
-import { getUserById } from "~/models/user.server";
+import { getStaffById } from "~/models/staff.server";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
@@ -18,68 +17,68 @@ export const sessionStorage = createCookieSessionStorage({
   },
 });
 
-const USER_SESSION_KEY = "userId";
+const STAFF_SESSION_KEY = "STAFF_SESSION";
 
 export async function getSession(request: Request) {
   const cookie = request.headers.get("Cookie");
   return sessionStorage.getSession(cookie);
 }
 
-export async function getUserId(
+export async function getStaffId(
   request: Request,
-): Promise<User["id"] | undefined> {
+): Promise<Staff["id"] | undefined> {
   const session = await getSession(request);
-  const userId = session.get(USER_SESSION_KEY);
-  return userId;
+  const staffId = session.get(STAFF_SESSION_KEY);
+  return staffId;
 }
 
-export async function getUser(db: Prisma.TransactionClient, request: Request) {
-  const userId = await getUserId(request);
-  if (userId === undefined) return null;
+export async function getStaff(db: Prisma.TransactionClient, request: Request) {
+  const staffId = await getStaffId(request);
+  if (staffId === undefined) return null;
 
-  const user = await getUserById(db, userId);
-  if (user) return user;
+  const staff = await getStaffById(db, staffId);
+  if (staff) return staff;
 
   throw await logout(request);
 }
 
-export async function requireUserId(
+export async function requireStaffId(
   request: Request,
   redirectTo: string = new URL(request.url).pathname,
 ) {
-  const userId = await getUserId(request);
-  if (!userId) {
+  const staffId = await getStaffId(request);
+  if (!staffId) {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-    throw redirect(`/login?${searchParams}`);
+    throw redirect(`/admin/login?${searchParams}`);
   }
-  return userId;
+  return staffId;
 }
 
-export async function requireUser(
+export async function requireStaff(
   db: Prisma.TransactionClient,
   request: Request,
 ) {
-  const userId = await requireUserId(request);
+  const staffId = await requireStaffId(request);
 
-  const user = await getUserById(db, userId);
-  if (user) return user;
+  const staff = await getStaffById(db, staffId);
+  if (staff) return staff;
 
   throw await logout(request);
 }
 
-export async function createUserSession({
+export async function createStaffSession({
   request,
-  userId,
+  staffId,
   remember,
   redirectTo,
 }: {
   request: Request;
-  userId: string;
+  staffId: string;
   remember: boolean;
   redirectTo: string;
 }) {
   const session = await getSession(request);
-  session.set(USER_SESSION_KEY, userId);
+  session.set(STAFF_SESSION_KEY, staffId);
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {

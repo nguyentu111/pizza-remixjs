@@ -32,6 +32,7 @@ export const uploadMedia = async (formData: FormData) => {
       { status: 400 },
     );
   }
+
   if (!type)
     return json(
       { error: "Media type is required.", success: false },

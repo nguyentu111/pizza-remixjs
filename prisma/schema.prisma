@@ -7,30 +7,84 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum UserStatus {
+enum CustomerStatus {
   banned
   on
 }
 
-model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  username  String     @unique @db.VarChar(100) // New field for username
-  fullName  String     @db.VarChar(255) // New field for full name
-  status    UserStatus @default(on)
-  createdAt DateTime   @default(now()) // New field for created_at
-  updatedAt DateTime   @updatedAt // New field for updated_at
-  notes     Note[]
-  roles     UserRole[] // New relation to UserRole
-  avatarId  String?
-  avatarUrl String?
-  Password  Password?
+enum StaffStatus {
+  banned
+  on
 }
 
-model Password {
-  hash   String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
+model Customer {
+  id           String            @id @default(cuid())
+  phoneNumbers String            @db.VarChar(10) // 
+  fullname     String            @db.VarChar(255) // New field for full name
+  status       CustomerStatus    @default(on)
+  avatarId     String?
+  avatarUrl    String?
+  Password     CustomerPassword?
+  Orders       Order[]
+
+  createdAt            DateTime       @default(now()) // New field for created_at
+  updatedAt            DateTime       @updatedAt // New field for updated_at
+  customerPassword     String
+  StaffPassword        StaffPassword? @relation(fields: [staffPasswordStaffId], references: [staffId])
+  staffPasswordStaffId String?
+}
+
+// model Staff {
+//   id           String         @id @default(cuid())
+//   email        String         @unique
+//   username     String         @unique @db.VarChar(100)
+//   phoneNumbers String         @unique @db.VarChar(10)
+//   fullName     String         @db.VarChar(255) // New field for full name
+//   status       UserStatus     @default(on)
+//   roles        StaffRole[] // New relation to UserRole
+//   avatarId     String?
+//   avatarUrl    String?
+//   Password     StaffPassword?
+//   createdAt    DateTime       @default(now()) // New field for created_at
+//   updatedAt    DateTime       @updatedAt // New field for updated_at
+// }
+
+model Staff {
+  id            String         @id @default(uuid())
+  username      String         @unique
+  phoneNumbers  String         @unique
+  fullname      String
+  image         String?
+  address       String?
+  salary        Int?
+  status        StaffStatus    @default(on)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  Roles         StaffRole[]
+  OrdersChef    Order[]        @relation("ChefOrders")
+  OrdersShipper Order[]        @relation("ShipperOrders")
+  Coupons       Coupon[]       @relation("CouponsCreatedBy")
+  Imports       Import[]
+  Exports       Export[]
+  Deliveries    Delivery[]
+  Password      StaffPassword?
+}
+
+model CustomerPassword {
+  hash       String
+  customerId String   @unique
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([customerId]) // Added index for foreign key
+}
+
+model StaffPassword {
+  hash     String
+  staffId  String     @unique
+  staff    Staff      @relation(fields: [staffId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  Customer Customer[] // Relation to Customer
+
+  @@index([staffId]) // Added index for foreign key
 }
 
 enum ResourceType {
@@ -62,34 +116,23 @@ model Media {
   createdAt    DateTime     @default(now())
 }
 
-model Note {
-  id    String @id @default(cuid())
-  title String
-  body  String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
-}
-
 // New model for Role
 model Role {
-  id          String   @id @default(cuid())
-  name        String   @unique @db.VarChar(100) // New field for role name
-  description String?  @db.Text // New field for role description
-  createdAt   DateTime @default(now()) // New field for created_at
-  updatedAt   DateTime @updatedAt // New field for updated_at
-
+  id          String           @id @default(cuid())
+  name        String           @unique @db.VarChar(100) // New field for role name
+  description String?          @db.Text // New field for role description
+  createdAt   DateTime         @default(now()) // New field for created_at
+  updatedAt   DateTime         @updatedAt // New field for updated_at
   permissions RolePermission[] // New relation to RolePermission
-  users       UserRole[] // New relation to UserRole
+  staffRoles  StaffRole[]
 }
 
 // New model for Permission
 model Permission {
   id          String   @id @default(cuid())
   name        String   @unique @db.VarChar(100) // New field for permission name
+  group       String   @db.VarChar(100)
+  displayName String   @unique @db.VarChar(100)
   description String?  @db.Text // New field for permission description
   createdAt   DateTime @default(now()) // New field for created_at
   updatedAt   DateTime @updatedAt // New field for updated_at
@@ -106,15 +149,289 @@ model RolePermission {
   permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Relation to Permission
 
   @@id([roleId, permissionId]) // Composite primary key
+  @@index([roleId]) //
+  @@index([permissionId])
 }
 
 // New model for User_Roles
-model UserRole {
-  userId String
-  roleId String
+// model UserRole {
+//   userId String
+//   roleId String
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Relation to User
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Relation to Role
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Relation to User
+//   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Relation to Role
 
-  @@id([userId, roleId]) // Composite primary key
+//   @@id([userId, roleId]) // Composite primary key
+//   @@index([userId]) //
+//   @@index([roleId]) //
+// }
+
+model Provider {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Imports   Import[]
+  Exports   Export[]
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  image     String
+  slug      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Products  Product[]
+}
+
+model Border {
+  id             String          @id @default(uuid())
+  name           String          @unique
+  price          Int
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  ProductBorders ProductBorder[]
+}
+
+model Topping {
+  id              String           @id @default(uuid())
+  name            String           @unique
+  price           Int?
+  materialId      String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  ProductToppings ProductTopping[]
+}
+
+model Size {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  ProductSizes ProductSize[]
+}
+
+model Coupon {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String?
+  description String?
+  discount    Decimal
+  quantity    Int
+  startDate   DateTime
+  endDate     DateTime
+  bannerImage String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Orders      Order[]
+  createdBy   Staff?   @relation("CouponsCreatedBy", fields: [createdById], references: [id])
+
+  @@index([createdById]) // Added index for foreign key
+}
+
+model Material {
+  id              String           @id @default(uuid())
+  name            String           @unique
+  unit            String
+  warningLimits   Decimal
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  ImportMaterials ImportMaterial[]
+  ExportMaterials ExportMaterial[]
+  Recipes         Recipe[]
+}
+
+model Import {
+  id              String           @id @default(uuid())
+  totalAmount     Decimal
+  status          Status
+  providerId      String
+  staffId         String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  provider        Provider         @relation(fields: [providerId], references: [id])
+  staff           Staff            @relation(fields: [staffId], references: [id])
+  ImportMaterials ImportMaterial[]
+
+  @@index([providerId]) // Added index for foreign key
+  @@index([staffId]) // Added index for foreign key
+}
+
+model Export {
+  id              String           @id @default(uuid())
+  totalAmount     Decimal
+  status          Status
+  providerId      String
+  staffId         String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  provider        Provider         @relation(fields: [providerId], references: [id])
+  staff           Staff            @relation(fields: [staffId], references: [id])
+  ExportMaterials ExportMaterial[]
+
+  @@index([providerId]) // Added index for foreign key
+  @@index([staffId]) // Added index for foreign key
+}
+
+model Order {
+  id              String    @id @default(uuid())
+  address         String
+  shipNote        String?
+  totalAmount     Decimal
+  status          Status
+  paymentStatus   String? // Thêm trạng thái thanh toán, nullable
+  paymentUrl      String? // Thêm đường dẫn thanh toán, nullable
+  cancelledReason String?
+  couponId        String?
+  chefId          String?
+  shipperId       String?
+  customerId      String
+  ratingId        String?   @unique
+  deliveryId      String?
+  deliveryStep    Int
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  coupon          Coupon?   @relation(fields: [couponId], references: [id])
+  chef            Staff?    @relation("ChefOrders", fields: [chefId], references: [id])
+  shipper         Staff?    @relation("ShipperOrders", fields: [shipperId], references: [id])
+  customer        Customer  @relation(fields: [customerId], references: [id])
+  rating          Rating?
+  delivery        Delivery? @relation(fields: [deliveryId], references: [id])
+
+  @@index([customerId]) // Added index for foreign key
+  @@index([chefId]) // Added index for foreign key
+  @@index([shipperId]) // Added index for foreign key
+  @@index([couponId]) // Added index for foreign key
+  @@index([deliveryId]) // Added index for foreign key
+}
+
+model Delivery {
+  id        String   @id @default(uuid())
+  status    Status
+  staffId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  staff     Staff    @relation(fields: [staffId], references: [id])
+  Orders    Order[]
+
+  @@index([staffId]) // Added index for foreign key
+}
+
+model Rating {
+  id          String   @id @default(uuid())
+  stars       Int
+  description String?
+  orderId     String   @unique
+  order       Order    @relation(fields: [orderId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model StaffRole {
+  staffId   String
+  roleId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  staff     Staff    @relation(fields: [staffId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
+
+  @@id([staffId, roleId])
+  @@index([staffId]) // Added index for foreign key
+  @@index([roleId]) // Added index for foreign key
+}
+
+model Product {
+  id                String           @id @default(uuid())
+  name              String
+  shortDescription  String
+  detailDescription String?
+  slug              String           @unique
+  categoryId        String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  category          Category         @relation(fields: [categoryId], references: [id])
+  Borders           ProductBorder[]
+  Toppings          ProductTopping[]
+  Sizes             ProductSize[]
+  Recipes           Recipe[]
+}
+
+model ProductBorder {
+  productId String
+  borderId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id])
+  border    Border   @relation(fields: [borderId], references: [id])
+
+  @@id([productId, borderId])
+  @@index([productId]) // Added index for foreign key
+}
+
+model ProductTopping {
+  productId String
+  toppingId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id])
+  topping   Topping  @relation(fields: [toppingId], references: [id])
+
+  @@id([productId, toppingId])
+}
+
+model ProductSize {
+  productId String
+  sizeId    String
+  price     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id])
+  size      Size     @relation(fields: [sizeId], references: [id])
+
+  @@id([productId, sizeId])
+}
+
+model Recipe {
+  productId  String
+  materialId String
+  quantity   Decimal
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  product    Product  @relation(fields: [productId], references: [id])
+  material   Material @relation(fields: [materialId], references: [id])
+
+  @@id([productId, materialId])
+}
+
+model ImportMaterial {
+  importId   String
+  materialId String
+  quantity   Decimal
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  import     Import   @relation(fields: [importId], references: [id])
+  material   Material @relation(fields: [materialId], references: [id])
+
+  @@id([importId, materialId])
+}
+
+model ExportMaterial {
+  exportId   String
+  materialId String
+  quantity   Decimal
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  export     Export   @relation(fields: [exportId], references: [id])
+  material   Material @relation(fields: [materialId], references: [id])
+
+  @@id([exportId, materialId])
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
 }

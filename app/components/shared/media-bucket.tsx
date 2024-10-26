@@ -13,6 +13,7 @@ import { FileIcon } from "@radix-ui/react-icons";
 import { AdminLayoutData } from "~/routes/admin";
 import { ActionResultType } from "~/lib/type";
 import { useModal } from "../providers/modal-provider";
+import { useForm } from "~/hooks/use-form";
 
 export const MediaBucket = ({
   onSelected,
@@ -25,11 +26,11 @@ export const MediaBucket = ({
   onSelected?: (item: Media) => void;
   onCancled?: () => void;
 }) => {
-  const { media, user } = useMatchesData<AdminLayoutData>("routes/admin");
+  const { media, staff } = useMatchesData<AdminLayoutData>("routes/admin");
   const [item, setItem] = useState<Media | undefined>(
-    media.find((m) => m.publicId === selectedMedia),
+    media.find((m) => m.url === selectedMedia),
   );
-  const fetcherDelete = useFetcher<ActionResultType>();
+  const { fetcher: fetcherDelete } = useForm();
   const { setClose } = useModal();
   return (
     <div>
@@ -198,7 +199,7 @@ const UpdateForm = ({
   media: Media;
   onUploaded?: (media: Media) => void;
 }) => {
-  const fetcher = useFetcher<{ success: true; error: string | null }>();
+  const { fetcher } = useForm();
   return (
     <fetcher.Form
       className="mt-4 space-y-4 max-w-[400px]"
@@ -252,7 +253,6 @@ const UpdateForm = ({
         >
           Update Media
         </Button>
-        {fetcher.data && (fetcher.data.success ? "Saved" : fetcher.data.error)}
       </div>
     </fetcher.Form>
   );

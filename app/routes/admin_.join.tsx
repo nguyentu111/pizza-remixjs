@@ -4,26 +4,20 @@ import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 import { z } from "zod";
 import { ActionResultType, RawActionResult } from "~/lib/type";
-import { ca, safeAction } from "~/lib/utils";
-
-import {
-  createUser,
-  getUserByEmail,
-  getUserByUsername,
-  User,
-} from "~/models/user.server";
-import { createUserSession, getUserId } from "~/session.server";
+import { safeAction } from "~/lib/utils";
+import { createStaff, getStaffByUsername } from "~/models/staff.server";
+import { createStaffSession, getStaffId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/lib/utils";
-
+import { Staff } from "@prisma/client";
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const userId = await getUserId(request);
+  const userId = await getStaffId(request);
   if (userId) return redirect("/");
   return json({});
 };
 const JoinSchema = z.object({
-  email: z.string().min(1),
-  fullName: z.string().min(1),
+  fullname: z.string().min(1),
   username: z.string().min(1),
+  phoneNumbers: z.string().length(10),
   password: z.string().min(1),
   redirectTo: z.optional(z.string()),
 });
@@ -32,55 +26,43 @@ export const action = safeAction([
   {
     schema: JoinSchema,
     method: "POST",
-    action: ca(
-      async (
-        { request },
-        { email, fullName, password, username, redirectTo },
-      ): Promise<
-        ActionResultType<
-          z.inferFlattenedErrors<typeof JoinSchema>["fieldErrors"]
-        >
-      > => {
-        const redirect = safeRedirect(redirectTo, "/");
-        if (!validateEmail(email)) {
-          return json(
-            { error: "invalid email", success: false },
-            { status: 400 },
-          );
-        }
-        const existingUser1 = await getUserByEmail(email);
-        if (existingUser1) {
-          return json(
-            {
-              error: "A user already exists with this email",
-              success: false,
-            },
-            { status: 403 },
-          );
-        }
-        const existingUser2 = await getUserByUsername(username);
-        if (existingUser2) {
-          return json(
-            {
-              error: "A user already exists with this username",
-              success: false,
-            },
-            { status: 403 },
-          );
-        }
-        const user: User = await createUser(
-          { email, fullName, username },
-          { password },
+    action: async (
+      { request },
+      data,
+    ): Promise<
+      ActionResultType<z.inferFlattenedErrors<typeof JoinSchema>["fieldErrors"]>
+    > => {
+      const validatedData = data as z.infer<typeof JoinSchema>;
+      const redirect = safeRedirect(validatedData.redirectTo, "/");
+      const existingStaff = await getStaffByUsername(validatedData.username);
+      if (existingStaff) {
+        return json(
+          {
+            error: "A user already exists with this username",
+            success: false,
+          },
+          { status: 403 },
         );
+      }
+      const staff: Staff = await createStaff(
+        {
+          fullname: validatedData.fullname,
+          phoneNumbers: validatedData.phoneNumbers,
+          username: validatedData.username,
+          salary: null,
+          status: "on",
+          image: null,
+        },
+        { password: validatedData.password },
+      );
 
-        return createUserSession({
-          redirectTo: redirect,
-          remember: false,
-          request,
-          userId: user.id,
-        });
-      },
-    ),
+      return createStaffSession({
+        redirectTo: redirect,
+        remember: false,
+        request,
+        staffId: staff.id,
+      });
+    },
   },
 ]);
 
@@ -93,13 +75,13 @@ export default function Join() {
     useActionData<
       RawActionResult<z.inferFlattenedErrors<typeof JoinSchema>["fieldErrors"]>
     >();
-  const emailRef = useRef<HTMLInputElement>(null);
+  const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     console.log({ actionData });
     if (actionData?.fieldErrors?.password) {
-      emailRef.current?.focus();
+      usernameRef.current?.focus();
     } else if (actionData?.fieldErrors?.password) {
       passwordRef.current?.focus();
     }
@@ -111,70 +93,20 @@ export default function Join() {
         <Form method="post" className="space-y-6">
           <div>
             <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email address
-            </label>
-            <div className="mt-1">
-              <input
-                ref={emailRef}
-                id="email"
-                // eslint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus={true}
-                name="email"
-                type="email"
-                autoComplete="email"
-                aria-invalid={actionData?.fieldErrors?.email ? true : undefined}
-                aria-describedby="email-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.fieldErrors?.email ? (
-                <div className="pt-1 text-red-700" id="email-error">
-                  {actionData.fieldErrors.email}
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="fullName"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Full Name
-            </label>
-            <div className="mt-1">
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                aria-invalid={
-                  actionData?.fieldErrors?.fullName ? true : undefined
-                }
-                aria-describedby="fullName-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.fieldErrors?.fullName ? (
-                <div className="pt-1 text-red-700" id="fullName-error">
-                  {actionData.fieldErrors.fullName}
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div>
-            <label
               htmlFor="username"
               className="block text-sm font-medium text-gray-700"
             >
-              Username
+              Username address
             </label>
             <div className="mt-1">
               <input
+                ref={usernameRef}
                 id="username"
+                // eslint-disable-next-line jsx-a11y/no-autofocus
+                autoFocus={true}
                 name="username"
-                type="text"
+                type="username"
+                autoComplete="username"
                 aria-invalid={
                   actionData?.fieldErrors?.username ? true : undefined
                 }
@@ -184,6 +116,62 @@ export default function Join() {
               {actionData?.fieldErrors?.username ? (
                 <div className="pt-1 text-red-700" id="username-error">
                   {actionData.fieldErrors.username}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="fullname"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Full Name
+            </label>
+            <div className="mt-1">
+              <input
+                id="fullname"
+                name="fullname"
+                type="text"
+                aria-invalid={
+                  actionData?.fieldErrors?.fullname ? true : undefined
+                }
+                aria-describedby="fullname-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.fieldErrors?.fullname ? (
+                <div className="pt-1 text-red-700" id="fullname-error">
+                  {actionData.fieldErrors.fullname}
+                </div>
+              ) : null}
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Số điện thoại
+            </label>
+            <div className="mt-1">
+              <input
+                ref={usernameRef}
+                id="phoneNumbers"
+                required
+                // eslint-disable-next-line jsx-a11y/no-autofocus
+                autoFocus={true}
+                name="phoneNumbers"
+                type="phoneNumbers"
+                autoComplete="phoneNumbers"
+                aria-invalid={
+                  actionData?.fieldErrors?.phoneNumbers ? true : undefined
+                }
+                aria-describedby="phoneNumbers-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.fieldErrors?.phoneNumbers ? (
+                <div className="pt-1 text-red-700" id="phoneNumbers-error">
+                  {actionData.fieldErrors.phoneNumbers}
                 </div>
               ) : null}
             </div>
@@ -233,7 +221,7 @@ export default function Join() {
               <Link
                 className="text-blue-500 underline"
                 to={{
-                  pathname: "/login",
+                  pathname: "/admin/login",
                   search: searchParams.toString(),
                 }}
               >
