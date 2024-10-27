@@ -1,19 +1,15 @@
+import { Media } from "@prisma/client";
+import { FileIcon } from "@radix-ui/react-icons";
+import { format } from "date-fns";
+import { CheckIcon } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "~/hooks/use-form";
+import { bytesToMB, cn, getSmallImageUrl, useMatchesData } from "~/lib/utils";
+import { AdminLayoutData } from "~/routes/admin";
+import { useModal } from "../providers/modal-provider";
+import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { UploadFile } from "./upload-file";
-import { useFetcher } from "@remix-run/react";
-import { DeleteApiResponse } from "cloudinary";
-import { CheckIcon, Loader } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
-import { bytesToMB, getSmallImageUrl } from "~/lib/utils";
-import { cn, useMatchesData } from "~/lib/utils";
-import { Button } from "../ui/button";
-import { Media, MediaType } from "@prisma/client";
-import { format } from "date-fns";
-import { FileIcon } from "@radix-ui/react-icons";
-import { AdminLayoutData } from "~/routes/admin";
-import { ActionResultType } from "~/lib/type";
-import { useModal } from "../providers/modal-provider";
-import { useForm } from "~/hooks/use-form";
 
 export const MediaBucket = ({
   onSelected,
@@ -21,7 +17,7 @@ export const MediaBucket = ({
   selectedMedia,
   mediaType,
 }: {
-  mediaType: MediaType;
+  mediaType: string;
   selectedMedia?: string;
   onSelected?: (item: Media) => void;
   onCancled?: () => void;
@@ -75,6 +71,7 @@ export const MediaBucket = ({
                         {item.format === "jpg" ||
                         item.format === "png" ||
                         item.format === "gif" ||
+                        item.format === "webp" ||
                         item.format === "svg" ? (
                           <img
                             src={getSmallImageUrl(item.url)}
@@ -173,6 +170,7 @@ const MediaItem = ({
       {data.format === "jpg" ||
       data.format === "png" ||
       data.format === "gif" ||
+      data.format === "webp" ||
       data.format === "svg" ? (
         <img
           className="w-full h-[100px] object-cover"

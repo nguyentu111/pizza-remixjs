@@ -1,6 +1,11 @@
 import { Media, Staff } from "@prisma/client";
 import { ActionFunction, json, LoaderFunction } from "@remix-run/node";
-import { Form, NavLink, Outlet } from "@remix-run/react";
+import {
+  Form,
+  NavLink,
+  Outlet,
+  ShouldRevalidateFunction,
+} from "@remix-run/react";
 import { LogOut } from "lucide-react";
 import {
   deleteMediaAction,
@@ -39,11 +44,18 @@ export const action: ActionFunction = ca(async ({ request }) => {
   return null;
 });
 export const loader: LoaderFunction = async ({ request }) => {
-  const staff = await requireStaff(prisma, request);
-  const media = await getAllMedia();
+  const [staff, media] = await Promise.all([
+    requireStaff(prisma, request),
+    getAllMedia(),
+  ]);
   return json({ staff, media }, { status: 200 });
 };
 export type AdminLayoutData = { staff: Staff; media: Media[] };
+export const shouldRevalidate: ShouldRevalidateFunction = ({ formAction }) => {
+  return (
+    formAction === "/admin" || (formAction?.startsWith("/admin/staff") ?? false)
+  );
+};
 export default function AdminLayout() {
   const staff = useStaff();
   return (
@@ -61,6 +73,17 @@ export default function AdminLayout() {
                 Staffs
               </NavLink>
             </li>
+
+            <li>
+              <NavLink
+                to="/admin/providers"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Providers
+              </NavLink>
+            </li>
             <li>
               <NavLink
                 to="/admin/permissions"
@@ -68,7 +91,7 @@ export default function AdminLayout() {
                   cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
                 }
               >
-                Permisions
+                Permissions
               </NavLink>
             </li>
             <li>
@@ -79,6 +102,66 @@ export default function AdminLayout() {
                 }
               >
                 Roles
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/products"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Products
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/categories"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Categories
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/borders"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Borders
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/materials"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Materials
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/sizes"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Sizes
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/toppings"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Toppings
               </NavLink>
             </li>
           </ul>

@@ -72,7 +72,7 @@ export const action = safeAction([
         }
         if (!validatedData.status || validatedData.status === "banned") {
           await requirePermissions(db, currentUser.id, [
-            PermissionsEnum.BanUsers,
+            PermissionsEnum.BanStaffs,
           ]);
         }
 
@@ -128,7 +128,7 @@ export const action = safeAction([
     action: async ({ request, params }) => {
       const user = await requireStaff(prisma, request);
       const id = params.userId as string | undefined;
-      await requirePermissions(prisma, user.id, [PermissionsEnum.DeleteUsers]);
+      await requirePermissions(prisma, user.id, [PermissionsEnum.DeleteStaffs]);
       if (user.id === id) {
         return json(
           { error: "Không thể xóa chính bản thân !", success: false },

@@ -1,4 +1,4 @@
-import { Media, MediaType } from "@prisma/client";
+import { Media } from "@prisma/client";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { deleteResource, upload } from "~/lib/cloudinary.server";
 import {
@@ -24,7 +24,7 @@ export const updateMediaAction = async (
 };
 export const uploadMedia = async (formData: FormData) => {
   const files = formData.getAll("files") as File[] | null; // Retrieve the file from the form data
-  const type = formData.get("type") as MediaType;
+  const type = formData.get("type") as string;
   console.log({ type });
   if (!files || files.length === 0 || files[0]?.size === 0) {
     return json(

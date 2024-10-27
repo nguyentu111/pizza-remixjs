@@ -1,4 +1,4 @@
-import { Media, MediaType } from "@prisma/client";
+import { Media } from "@prisma/client";
 import { useModal } from "../providers/modal-provider";
 import { Button, ButtonProps } from "../ui/button";
 import CustomModal from "./custom-modal";
@@ -7,7 +7,7 @@ interface Props extends ButtonProps {
   onSelected?: (media: Media) => void;
   onCancled?: () => void;
   selectedMedia?: string;
-  mediaType: MediaType;
+  mediaType: string;
   fetchData?: () => Promise<any>;
 }
 export const MediaButton = ({

@@ -137,17 +137,30 @@ export const safeAction = (
       ActionResultType<z.inferFlattenedErrors<ZodSchema>["fieldErrors"]>
     > => {
       try {
-        // const staffRoles = await get;
         const formData = await args.request.formData();
         const data: Record<string, any> = {};
 
         for (const [key, value] of formData.entries()) {
           if (key.endsWith("[]")) {
-            data[key] = formData.getAll(key); // Get all values for this key
+            // Handle array inputs
+            const baseKey = key.slice(0, -2);
+            if (!data[baseKey]) {
+              data[baseKey] = [];
+            }
+            data[baseKey].push(value);
+          } else if (key.includes("[") && key.includes("]")) {
+            // Handle object-like inputs (e.g., sizes[sizeId])
+            const [objKey, nestedKey] = key.split(/[\[\]]/);
+            if (!data[objKey]) {
+              data[objKey] = {};
+            }
+            data[objKey][nestedKey] = value;
           } else {
-            data[key] = value; // Regular key-value assignment
+            data[key] = value;
           }
         }
+
+        console.log({ actionData: data });
 
         const method = args.request.method;
         const _action = data._action;
@@ -198,4 +211,16 @@ export const safeAction = (
 export function zodValidate(param: any, schema: z.ZodSchema): boolean {
   const result = schema.safeParse(param);
   return result.success;
+}
+
+export function slugify(text: string) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/[^\w\-]+/g, "") // Remove all non-word chars
+    .replace(/\-\-+/g, "-") // Replace multiple - with single -
+    .replace(/^-+/, "") // Trim - from start of text
+    .replace(/-+$/, ""); // Trim - from end of text
 }

@@ -13,7 +13,7 @@ import {
 import { prisma } from "~/lib/db.server";
 import { FormField } from "~/components/shared/form/form-field";
 import { Label } from "~/components/ui/label";
-import { InputField } from "~/components/shared/form/form-items/input-field";
+import { InputField } from "~/components/shared/form/form-fields/input-field";
 
 export const loader = async () => {
   const permissions = await getAllPermissions(prisma);

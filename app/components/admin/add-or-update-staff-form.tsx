@@ -10,8 +10,8 @@ import { useState } from "react";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
 import { FormField } from "../shared/form/form-field";
-import { InputField } from "../shared/form/form-items/input-field";
-import { SwitchField } from "../shared/form/form-items/switch-field";
+import { InputField } from "../shared/form/form-fields/input-field";
+import { SwitchField } from "../shared/form/form-fields/switch-field";
 import { ErrorMessage } from "../shared/form/error-message";
 export const AddOrUpdateStaffForm = ({
   roles,
@@ -49,7 +49,7 @@ export const AddOrUpdateStaffForm = ({
   });
   return (
     <fetcher.Form
-      action={staff?.id ? "/admin/staffs/" + staff.id : "/admin/staffs"}
+      action={staff?.id ? "/admin/staffs/" + staff.id : "/admin/staffs/add"}
       method={staff?.id ? "PUT" : "POST"}
       ref={formRef}
       encType="multipart/form-data"

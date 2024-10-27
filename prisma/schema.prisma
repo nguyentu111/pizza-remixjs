@@ -34,21 +34,6 @@ model Customer {
   staffPasswordStaffId String?
 }
 
-// model Staff {
-//   id           String         @id @default(cuid())
-//   email        String         @unique
-//   username     String         @unique @db.VarChar(100)
-//   phoneNumbers String         @unique @db.VarChar(10)
-//   fullName     String         @db.VarChar(255) // New field for full name
-//   status       UserStatus     @default(on)
-//   roles        StaffRole[] // New relation to UserRole
-//   avatarId     String?
-//   avatarUrl    String?
-//   Password     StaffPassword?
-//   createdAt    DateTime       @default(now()) // New field for created_at
-//   updatedAt    DateTime       @updatedAt // New field for updated_at
-// }
-
 model Staff {
   id            String         @id @default(uuid())
   username      String         @unique
@@ -93,18 +78,12 @@ enum ResourceType {
   raw
 }
 
-enum MediaType {
-  product
-  user
-  other
-}
-
 model Media {
   id           String       @id @default(cuid())
   publicId     String
   displayName  String
   resourceType ResourceType
-  type         MediaType
+  type         String
   width        Int?
   height       Int?
   bytes        Int
@@ -153,22 +132,11 @@ model RolePermission {
   @@index([permissionId])
 }
 
-// New model for User_Roles
-// model UserRole {
-//   userId String
-//   roleId String
-
-//   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Relation to User
-//   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Relation to Role
-
-//   @@id([userId, roleId]) // Composite primary key
-//   @@index([userId]) //
-//   @@index([roleId]) //
-// }
-
 model Provider {
   id        String   @id @default(uuid())
   name      String
+  address   String?
+  image     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   Imports   Import[]
@@ -179,7 +147,7 @@ model Category {
   id        String    @id @default(uuid())
   name      String    @unique
   image     String
-  slug      String?
+  slug      String?   @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   Products  Product[]
@@ -189,6 +157,7 @@ model Border {
   id             String          @id @default(uuid())
   name           String          @unique
   price          Int
+  image          String? // New field
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   ProductBorders ProductBorder[]
@@ -199,14 +168,17 @@ model Topping {
   name            String           @unique
   price           Int?
   materialId      String?
+  image           String? // New field
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   ProductToppings ProductTopping[]
+  Material        Material?        @relation(fields: [materialId], references: [id])
 }
 
 model Size {
   id           String        @id @default(uuid())
   name         String        @unique
+  image        String? // New field
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   ProductSizes ProductSize[]
@@ -236,11 +208,13 @@ model Material {
   name            String           @unique
   unit            String
   warningLimits   Decimal
+  image           String? // New field
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   ImportMaterials ImportMaterial[]
   ExportMaterials ExportMaterial[]
   Recipes         Recipe[]
+  Topping         Topping[]
 }
 
 model Import {
@@ -344,6 +318,8 @@ model StaffRole {
 model Product {
   id                String           @id @default(uuid())
   name              String
+  image             String?
+  image_mobile      String?
   shortDescription  String
   detailDescription String?
   slug              String           @unique

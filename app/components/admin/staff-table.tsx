@@ -105,11 +105,6 @@ export function StaffTable({ staffs }: { staffs: Staff[] }) {
                       <TrashIcon className="w-4 h-4" />
                     </Button>
                   </fetcherDelete.Form>
-                  <Button asChild>
-                    <Link to={`/admin/staffs/${staff.id}`}>
-                      <EditIcon className="w-4 h-4" />
-                    </Link>
-                  </Button>
                 </div>
               </TableCell>
             </TableRow>

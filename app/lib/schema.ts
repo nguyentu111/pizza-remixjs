@@ -86,3 +86,71 @@ export const roleSchema = z.object({
   description: z.string(),
   "permissions[]": z.array(z.string()).optional(),
 });
+
+// Helper function to validate string as number
+const stringAsPositiveNumber = z.string().refine(
+  (value) => {
+    const num = parseFloat(value);
+    return !isNaN(num) && num > 0;
+  },
+  { message: "Must be a valid number greater than 0" },
+);
+
+// Updated schema for inserting a Border
+export const insertBorderSchema = z.object({
+  name: z.string().min(1, "Tên viền là bắt buộc"),
+  price: stringAsPositiveNumber,
+  image: z.string().optional(),
+});
+
+// Updated schema for inserting a Material
+export const insertMaterialSchema = z.object({
+  name: z.string().min(1, "Tên nguyên liệu là bắt buộc"),
+  unit: z.enum(["kg", "g", "ml", "l"], {
+    errorMap: () => ({ message: "Đơn vị không hợp lệ" }),
+  }),
+  warningLimits: stringAsPositiveNumber,
+  image: z.string().optional(),
+});
+
+// New schema for inserting a Size
+export const insertSizeSchema = z.object({
+  name: z.string().min(1, "Tên kích thước là bắt buộc"),
+  image: z.string().optional(),
+});
+
+// Updated schema for inserting a Topping
+export const insertToppingSchema = z.object({
+  name: z.string().min(1, "Tên topping là bắt buộc"),
+  price: stringAsPositiveNumber,
+  materialId: z.string().min(1, "Nguyên liệu là bắt buộc"),
+  image: z.string().optional(),
+});
+
+// Updated schema for inserting a Product
+export const insertProductSchema = z.object({
+  name: z.string().min(1, "Tên sản phẩm là bắt buộc"),
+  shortDescription: z.string().min(1, "Mô tả ngắn là bắt buộc"),
+  detailDescription: z.string().optional(),
+  slug: z.string().min(1, "Slug là bắt buộc"),
+  categoryId: z.string().min(1, "Danh mục là bắt buộc"),
+  "borderIds[]": z.array(z.string()).optional(),
+  "toppingIds[]": z.array(z.string()).optional(),
+  sizes: z.record(stringAsPositiveNumber).optional(),
+  recipes: z.record(stringAsPositiveNumber).optional(),
+  image: z.string().optional(),
+  image_mobile: z.string().optional(),
+});
+
+// New schema for inserting a Category
+export const insertCategorySchema = z.object({
+  name: z.string().min(1, "Tên danh mục là bắt buộc"),
+  image: z.string().optional(),
+});
+
+// Add this new schema definition
+export const insertProviderSchema = z.object({
+  name: z.string().min(1, "Tên nhà cung cấp không được để trống"),
+  address: z.string().min(1, "Địa chỉ không được để trống"),
+  image: z.string().optional(),
+});

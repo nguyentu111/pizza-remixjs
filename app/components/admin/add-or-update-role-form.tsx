@@ -7,8 +7,8 @@ import { roleSchema } from "~/lib/schema";
 import { groupBy } from "lodash";
 import { FormField } from "../shared/form/form-field";
 import { Label } from "../ui/label";
-import { InputField } from "../shared/form/form-items/input-field";
-import { CheckboxesGroupField } from "../shared/form/form-items/checkboxes-group-field";
+import { InputField } from "../shared/form/form-fields/input-field";
+import { CheckboxesGroupField } from "../shared/form/form-fields/checkboxes-group-field";
 import { ErrorMessage } from "../shared/form/error-message";
 import React from "react";
 export const AddOrUpdateRoleForm = ({

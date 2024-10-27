@@ -28,6 +28,7 @@ export function useForm<T extends ZodSchema>(options?: {
     defaultValues: options?.defaultValues,
   };
   useEffect(() => {
+    console.log(actionData);
     if (!isSubmitting && actionData?.success) {
       if (options?.onSuccess && typeof options.onSuccess === "function") {
         options.onSuccess();

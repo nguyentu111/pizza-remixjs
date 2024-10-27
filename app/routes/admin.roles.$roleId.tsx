@@ -45,9 +45,10 @@ export const action = safeAction([
       await requirePermissions(prisma, userId, [PermissionsEnum.UpdateRoles]);
       const id = params.roleId as string;
       if (!id) return json({ success: false, error: "missing id." }, 400);
+
       await prisma.$transaction(async (db) => {
         const role = await getRoleById(db, id);
-        if (!role)
+        if (!role) {
           return json(
             {
               error: "Không tìm thấy role",
@@ -55,9 +56,12 @@ export const action = safeAction([
             },
             { status: 404 },
           );
-        const validatedData = data as z.infer<typeof roleSchema>;
-        const permissionIds = validatedData["permissions[]"];
+        }
 
+        const validatedData = data as z.infer<typeof roleSchema>;
+        const newPermissionIds = validatedData["permissions[]"] || [];
+
+        // Update role name and description
         await db.role.update({
           where: { id },
           data: {
@@ -65,17 +69,45 @@ export const action = safeAction([
             description: validatedData.description,
           },
         });
-        if (permissionIds) {
-          await db.rolePermission.deleteMany({ where: { roleId: role.id } });
 
-          await db.rolePermission.createMany({
-            data: permissionIds.map((pId) => ({
-              permissionId: pId,
+        // Get existing permissions
+        const existingPermissions = await db.rolePermission.findMany({
+          where: { roleId: role.id },
+          select: { permissionId: true },
+        });
+        const existingPermissionIds = existingPermissions.map(
+          (p) => p.permissionId,
+        );
+
+        // Determine permissions to add and remove
+        const permissionsToAdd = newPermissionIds.filter(
+          (id) => !existingPermissionIds.includes(id),
+        );
+        const permissionsToRemove = existingPermissionIds.filter(
+          (id) => !newPermissionIds.includes(id),
+        );
+
+        // Remove permissions
+        if (permissionsToRemove.length > 0) {
+          await db.rolePermission.deleteMany({
+            where: {
               roleId: role.id,
+              permissionId: { in: permissionsToRemove },
+            },
+          });
+        }
+
+        // Add new permissions
+        if (permissionsToAdd.length > 0) {
+          await db.rolePermission.createMany({
+            data: permissionsToAdd.map((permissionId) => ({
+              roleId: role.id,
+              permissionId,
             })),
           });
         }
       });
+
       return json({ success: true });
     },
   },

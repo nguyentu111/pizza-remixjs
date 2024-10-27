@@ -1,38 +1,40 @@
-import { Staff } from "@prisma/client";
+import { Size } from "@prisma/client";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { StaffTable } from "~/components/admin/staff-table";
+import { SizeTable } from "~/components/admin/size-table";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
 import { PermissionsEnum } from "~/lib/config.server";
 import { prisma } from "~/lib/db.server";
-import { getAllStaff } from "~/models/staff.server";
+import { getAllSizes } from "~/models/size.server";
 import { requireStaffId } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
 
 export { ErrorBoundary };
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await requireStaffId(request);
-  await requirePermissions(prisma, user, [PermissionsEnum.ViewStaffs]);
+  await requirePermissions(prisma, user, [PermissionsEnum.ViewSizes]);
   return {
-    staffs: await getAllStaff(),
+    sizes: await getAllSizes(),
   };
 };
-export default function UserManegeHome() {
-  const { staffs } = useLoaderData<typeof loader>();
+
+export default function SizeManageHome() {
+  const { sizes } = useLoaderData<typeof loader>();
   return (
-    <>
-      <div className="flex justify-between items-center mb-4  sticky top-4 bg-white ">
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white">
         <div>
-          <h1 className="text-2xl font-bold">Quản lí nhân viên</h1>
+          <h1 className="text-2xl font-bold">Quản lý kích thước</h1>
           <nav className="text-sm text-gray-600">
             <a href="/admin" className="hover:underline">
               Trang chủ
             </a>{" "}
-            &gt; Quản lí nhân viên
+            &gt; Quản lý kích thước
           </nav>
         </div>
       </div>
-      <StaffTable staffs={staffs as unknown as Staff[]} />
-    </>
+      <SizeTable sizes={sizes as unknown as Size[]} />
+    </div>
   );
 }
