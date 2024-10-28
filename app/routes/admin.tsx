@@ -164,6 +164,26 @@ export default function AdminLayout() {
                 Toppings
               </NavLink>
             </li>
+            <li>
+              <NavLink
+                to="/admin/coupons"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Coupons
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/admin/imports"
+                className={({ isActive }) =>
+                  cn(isActive ? "rounded bg-blue-500" : "", "px-4 py-2 block ")
+                }
+              >
+                Imports
+              </NavLink>
+            </li>
           </ul>
         </nav>
         <div className="flex justify-between items-center">

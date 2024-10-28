@@ -1,6 +1,5 @@
 import { cssBundleHref } from "@remix-run/css-bundle";
-import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { LinksFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -10,20 +9,14 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-import { getStaff } from "~/session.server";
 import stylesheet from "~/tailwind.css";
 import { ModalProvider } from "./components/providers/modal-provider";
 import { Toaster } from "./components/ui/toaster";
-import { prisma } from "./lib/db.server";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
-
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  return json({ staff: await getStaff(prisma, request) });
-};
 
 export default function App() {
   return (

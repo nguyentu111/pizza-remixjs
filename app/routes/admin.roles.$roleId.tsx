@@ -46,7 +46,7 @@ export const action = safeAction([
       const id = params.roleId as string;
       if (!id) return json({ success: false, error: "missing id." }, 400);
 
-      await prisma.$transaction(async (db) => {
+      return await prisma.$transaction(async (db) => {
         const role = await getRoleById(db, id);
         if (!role) {
           return json(
@@ -86,7 +86,7 @@ export const action = safeAction([
         const permissionsToRemove = existingPermissionIds.filter(
           (id) => !newPermissionIds.includes(id),
         );
-
+        console.log({ permissionsToAdd, permissionsToRemove });
         // Remove permissions
         if (permissionsToRemove.length > 0) {
           await db.rolePermission.deleteMany({
@@ -106,9 +106,8 @@ export const action = safeAction([
             })),
           });
         }
+        return json({ success: true });
       });
-
-      return json({ success: true });
     },
   },
 ]);

@@ -39,3 +39,9 @@ export type ProductWithRelations = Product & {
   Sizes: { sizeId: string; price: number }[];
   Recipes: { materialId: string; quantity: number }[];
 };
+export interface ProductSectionProps {
+  products: (Product & {
+    category: { name: string };
+    Sizes: { size: { name: string }; price: number }[];
+  })[];
+}

@@ -199,3 +199,64 @@ export async function updateProduct(
 export async function deleteProduct(id: Product["id"]) {
   return prisma.product.delete({ where: { id } });
 }
+
+export async function getProductByCategorySlug(categorySlug: string) {
+  return prisma.product.findMany({
+    where: {
+      category: {
+        slug: categorySlug,
+      },
+    },
+    include: {
+      category: true,
+      Borders: {
+        include: { border: true },
+      },
+      Toppings: {
+        include: { topping: true },
+      },
+      Sizes: {
+        include: { size: true },
+      },
+      Recipes: {
+        include: { material: true },
+      },
+    },
+  });
+}
+
+// Add this new function at the end of the file
+export async function getRandomProducts(limit: number = 4) {
+  return prisma.product.findMany({
+    take: limit,
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      category: true,
+      Sizes: {
+        include: { size: true },
+        take: 1,
+      },
+    },
+  });
+}
+
+// Add this new function at the end of the file
+export async function getBestSellerProducts(limit: number = 4) {
+  return prisma.product.findMany({
+    take: limit,
+    orderBy: {
+      OrderDetail: {
+        _count: "desc",
+      },
+    },
+    include: {
+      category: true,
+      Sizes: {
+        include: { size: true },
+        take: 1,
+      },
+    },
+  });
+}

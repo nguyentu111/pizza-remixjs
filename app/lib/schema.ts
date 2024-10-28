@@ -154,3 +154,23 @@ export const insertProviderSchema = z.object({
   address: z.string().min(1, "Địa chỉ không được để trống"),
   image: z.string().optional(),
 });
+
+// Add this new schema definition for inserting a Coupon
+export const insertCouponSchema = z.object({
+  code: z.string().min(1, "Mã giảm giá là bắt buộc"),
+  name: z.string().min(1, "Tên mã giảm giá là bắt buộc"),
+  description: z.string().optional(),
+  discount: stringAsPositiveNumber,
+  quantity: z.string().transform(Number).pipe(z.number().positive()),
+  startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    message: "Ngày bắt đầu không hợp lệ",
+  }),
+  endDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    message: "Ngày kết thúc không hợp lệ",
+  }),
+  image: z.string().optional(), // New field
+  bannerImage: z.string().optional(),
+});
+export const updateCustomerSchema = z.object({
+  fullname: z.string().min(1, "Tên không được để trống"),
+});

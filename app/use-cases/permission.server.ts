@@ -3,6 +3,8 @@ import { getUserPermission } from "~/models/permission.server";
 import * as _ from "lodash";
 import { CustomHttpError, ERROR_NAME } from "~/lib/error";
 import { PermissionsEnum } from "~/lib/config.server";
+import { getStaff } from "~/session.server";
+import { getStaffById } from "~/models/staff.server";
 
 /**
  * return array of permisson names that not exist in required permissons
@@ -25,6 +27,18 @@ export const requirePermissions = async (
   userid: Staff["id"],
   permissionNames: PermissionsEnum[],
 ) => {
+  const user = await getStaffById(db, userid);
+  if (!user)
+    throw new CustomHttpError({
+      message: "Tài khoản không tồn tại",
+      name: ERROR_NAME.not_found,
+      statusCode: 404,
+    });
+  if (
+    user.username === "admin" &&
+    process.env.ALLOW_ADMIN_FULL_ACCESS === "true"
+  )
+    return;
   const missingPermissons = await userMissingPermissions(
     db,
     userid,

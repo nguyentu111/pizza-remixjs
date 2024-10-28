@@ -97,19 +97,6 @@ export const action = safeAction([
             currentRoles.map((c) => c.id),
           ).length > 0
         ) {
-          console.log("updaing roles");
-          if (
-            currentUser.username === "admin" &&
-            currentUser.id === user.id &&
-            currentRoles.some((r) => r.name === "admin")
-          ) {
-            console.log("throwing error");
-            throw new CustomHttpError({
-              message: "You are admin, dont change your role",
-              name: ERROR_NAME.bad_requrest,
-              statusCode: 400,
-            });
-          }
           await requirePermissions(db, currentUser.id, [
             PermissionsEnum.UpdateUserRoles,
           ]);

@@ -19,7 +19,7 @@ enum StaffStatus {
 
 model Customer {
   id           String            @id @default(cuid())
-  phoneNumbers String            @db.VarChar(10) // 
+  phoneNumbers String            @unique @db.VarChar(10) // 
   fullname     String            @db.VarChar(255) // New field for full name
   status       CustomerStatus    @default(on)
   avatarId     String?
@@ -27,32 +27,32 @@ model Customer {
   Password     CustomerPassword?
   Orders       Order[]
 
-  createdAt            DateTime       @default(now()) // New field for created_at
-  updatedAt            DateTime       @updatedAt // New field for updated_at
-  customerPassword     String
-  StaffPassword        StaffPassword? @relation(fields: [staffPasswordStaffId], references: [staffId])
-  staffPasswordStaffId String?
+  createdAt DateTime @default(now()) // New field for created_at
+  updatedAt DateTime @updatedAt // New field for updated_at
 }
 
 model Staff {
-  id            String         @id @default(uuid())
-  username      String         @unique
-  phoneNumbers  String         @unique
+  id            String      @id @default(uuid())
+  username      String      @unique
+  phoneNumbers  String      @unique
   fullname      String
   image         String?
   address       String?
   salary        Int?
-  status        StaffStatus    @default(on)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  status        StaffStatus @default(on)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   Roles         StaffRole[]
-  OrdersChef    Order[]        @relation("ChefOrders")
-  OrdersShipper Order[]        @relation("ShipperOrders")
-  Coupons       Coupon[]       @relation("CouponsCreatedBy")
-  Imports       Import[]
-  Exports       Export[]
-  Deliveries    Delivery[]
-  Password      StaffPassword?
+  OrdersChef    Order[]     @relation("ChefOrders")
+  OrdersShipper Order[]     @relation("ShipperOrders")
+  Coupons       Coupon[]    @relation("CouponsCreatedBy")
+
+  Deliveries        Delivery[]
+  Password          StaffPassword?
+  ImportCreatedBy   Import[]       @relation("ImportCreatedBy")
+  ImportReceivedBy  Import[]       @relation("ImportReceivedBy")
+  ExportCreatedBy   Export[]       @relation("ExportCreatedBy")
+  ExportDeliveredBy Export[]       @relation("ExportDeliveredBy")
 }
 
 model CustomerPassword {
@@ -64,10 +64,9 @@ model CustomerPassword {
 }
 
 model StaffPassword {
-  hash     String
-  staffId  String     @unique
-  staff    Staff      @relation(fields: [staffId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  Customer Customer[] // Relation to Customer
+  hash    String
+  staffId String @unique
+  staff   Staff  @relation(fields: [staffId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([staffId]) // Added index for foreign key
 }
@@ -161,6 +160,7 @@ model Border {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   ProductBorders ProductBorder[]
+  OrderDetail    OrderDetail[]
 }
 
 model Topping {
@@ -173,6 +173,7 @@ model Topping {
   updatedAt       DateTime         @updatedAt
   ProductToppings ProductTopping[]
   Material        Material?        @relation(fields: [materialId], references: [id])
+  OrderDetail     OrderDetail[]
 }
 
 model Size {
@@ -182,6 +183,7 @@ model Size {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   ProductSizes ProductSize[]
+  OrderDetail  OrderDetail[]
 }
 
 model Coupon {
@@ -193,6 +195,7 @@ model Coupon {
   quantity    Int
   startDate   DateTime
   endDate     DateTime
+  image       String? // New field
   bannerImage String?
   createdById String?
   createdAt   DateTime @default(now())
@@ -200,7 +203,7 @@ model Coupon {
   Orders      Order[]
   createdBy   Staff?   @relation("CouponsCreatedBy", fields: [createdById], references: [id])
 
-  @@index([createdById]) // Added index for foreign key
+  @@index([createdById])
 }
 
 model Material {
@@ -215,42 +218,94 @@ model Material {
   ExportMaterials ExportMaterial[]
   Recipes         Recipe[]
   Topping         Topping[]
+  Inventory       Inventory[]
 }
 
 model Import {
-  id              String           @id @default(uuid())
-  totalAmount     Decimal
-  status          Status
-  providerId      String
-  staffId         String
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  provider        Provider         @relation(fields: [providerId], references: [id])
-  staff           Staff            @relation(fields: [staffId], references: [id])
-  ImportMaterials ImportMaterial[]
+  id                   String           @id @default(uuid())
+  totalAmount          Decimal
+  status               Status
+  providerId           String
+  createdById          String? // New field for the ID of the staff who created the import
+  receivedById         String? // New field for the ID of the staff who received the import
+  createdBy            Staff?           @relation("ImportCreatedBy", fields: [createdById], references: [id]) // Relation for createdById
+  receivedBy           Staff?           @relation("ImportReceivedBy", fields: [receivedById], references: [id]) // Relation for receivedById
+  expectedDeliveryDate DateTime? // New field for expected delivery date
+  provider             Provider         @relation(fields: [providerId], references: [id])
+  ImportMaterials      ImportMaterial[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
   @@index([providerId]) // Added index for foreign key
-  @@index([staffId]) // Added index for foreign key
+  @@index([createdById]) // Added index for the new field
+  @@index([receivedById]) // Added index for the new field
 }
 
 model Export {
-  id              String           @id @default(uuid())
-  totalAmount     Decimal
-  status          Status
-  providerId      String
-  staffId         String
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  provider        Provider         @relation(fields: [providerId], references: [id])
-  staff           Staff            @relation(fields: [staffId], references: [id])
-  ExportMaterials ExportMaterial[]
+  id          String  @id @default(uuid())
+  totalAmount Decimal
+  status      Status
+  providerId  String
+
+  createdById   String? // New field for the ID of the staff who created the export
+  deliveredById String? // New field for the ID of the staff who delivered the export
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  provider      Provider @relation(fields: [providerId], references: [id])
+
+  createdBy            Staff?           @relation("ExportCreatedBy", fields: [createdById], references: [id]) // Relation for createdById
+  deliveredBy          Staff?           @relation("ExportDeliveredBy", fields: [deliveredById], references: [id]) // Relation for deliveredById
+  ExportMaterials      ExportMaterial[]
+  expectedDeliveryDate DateTime? // New field for expected delivery date
 
   @@index([providerId]) // Added index for foreign key
-  @@index([staffId]) // Added index for foreign key
+  @@index([createdById]) // Added index for the new field
+  @@index([deliveredById]) // Added index for the new field
+}
+
+model ImportMaterial {
+  id               String    @id @default(uuid())
+  importId         String
+  materialId       String
+  expectedQuantity Decimal // Total expected quantity to be delivered
+  qualityStandard  String? // Expected quality description or standard
+  actualGood       Decimal // Actual quantity that meets the quality standard
+  actualDefective  Decimal // Actual quantity that does not meet the quality standard and is to be returned
+  expiredDate      DateTime? // Expiration date of the material
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  Import           Import    @relation(fields: [importId], references: [id])
+  Material         Material  @relation(fields: [materialId], references: [id])
+
+  @@index([importId])
+  @@index([materialId])
+}
+
+model Inventory {
+  id          String    @id @default(uuid())
+  materialId  String
+  quantity    Decimal
+  expiredDate DateTime?
+  Material    Material  @relation(fields: [materialId], references: [id])
+
+  @@unique([materialId, expiredDate])
+  @@index([materialId])
+}
+
+model ExportMaterial {
+  exportId   String
+  materialId String
+  quantity   Decimal
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  export     Export   @relation(fields: [exportId], references: [id])
+  material   Material @relation(fields: [materialId], references: [id])
+
+  @@id([exportId, materialId])
 }
 
 model Order {
-  id              String    @id @default(uuid())
+  id              String        @id @default(uuid())
   address         String
   shipNote        String?
   totalAmount     Decimal
@@ -262,23 +317,42 @@ model Order {
   chefId          String?
   shipperId       String?
   customerId      String
-  ratingId        String?   @unique
+  ratingId        String?       @unique
   deliveryId      String?
   deliveryStep    Int
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  coupon          Coupon?   @relation(fields: [couponId], references: [id])
-  chef            Staff?    @relation("ChefOrders", fields: [chefId], references: [id])
-  shipper         Staff?    @relation("ShipperOrders", fields: [shipperId], references: [id])
-  customer        Customer  @relation(fields: [customerId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  coupon          Coupon?       @relation(fields: [couponId], references: [id])
+  chef            Staff?        @relation("ChefOrders", fields: [chefId], references: [id])
+  shipper         Staff?        @relation("ShipperOrders", fields: [shipperId], references: [id])
+  customer        Customer      @relation(fields: [customerId], references: [id])
   rating          Rating?
-  delivery        Delivery? @relation(fields: [deliveryId], references: [id])
+  delivery        Delivery?     @relation(fields: [deliveryId], references: [id])
+  OrderDetail     OrderDetail[]
 
   @@index([customerId]) // Added index for foreign key
   @@index([chefId]) // Added index for foreign key
   @@index([shipperId]) // Added index for foreign key
   @@index([couponId]) // Added index for foreign key
   @@index([deliveryId]) // Added index for foreign key
+}
+
+model OrderDetail {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  borderId  String?
+  sizeId    String
+  toppingId String? // Nullable if topping is optional
+  price     Decimal
+  order     Order    @relation(fields: [orderId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  border    Border?  @relation(fields: [borderId], references: [id])
+  size      Size     @relation(fields: [sizeId], references: [id])
+  topping   Topping? @relation(fields: [toppingId], references: [id]) // Optional relation for a single topping
+
+  @@index([orderId])
+  @@index([productId, borderId, sizeId, toppingId]) // Unique constraint removed
 }
 
 model Delivery {
@@ -331,6 +405,7 @@ model Product {
   Toppings          ProductTopping[]
   Sizes             ProductSize[]
   Recipes           Recipe[]
+  OrderDetail       OrderDetail[]
 }
 
 model ProductBorder {
@@ -378,30 +453,6 @@ model Recipe {
   material   Material @relation(fields: [materialId], references: [id])
 
   @@id([productId, materialId])
-}
-
-model ImportMaterial {
-  importId   String
-  materialId String
-  quantity   Decimal
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  import     Import   @relation(fields: [importId], references: [id])
-  material   Material @relation(fields: [materialId], references: [id])
-
-  @@id([importId, materialId])
-}
-
-model ExportMaterial {
-  exportId   String
-  materialId String
-  quantity   Decimal
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  export     Export   @relation(fields: [exportId], references: [id])
-  material   Material @relation(fields: [materialId], references: [id])
-
-  @@id([exportId, materialId])
 }
 
 enum Status {

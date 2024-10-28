@@ -58,4 +58,14 @@ export enum PermissionsEnum {
   CreateProviders = "create-providers",
   UpdateProviders = "update-providers",
   DeleteProviders = "delete-providers",
+
+  ViewCoupons = "view-coupons",
+  CreateCoupons = "create-coupons",
+  UpdateCoupons = "update-coupons",
+  DeleteCoupons = "delete-coupons",
+
+  ViewImports = "view_imports",
+  CreateImports = "create_imports",
+  UpdateImports = "update_imports",
+  DeleteImports = "delete_imports",
 }

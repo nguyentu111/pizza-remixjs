@@ -6,7 +6,11 @@ export async function getAllCategories() {
     orderBy: { name: "asc" },
   });
 }
-
+export async function getFirstCategory() {
+  return prisma.category.findFirst({
+    orderBy: { createdAt: "desc" },
+  });
+}
 export async function getCategoryById(id: Category["id"]) {
   return prisma.category.findUnique({
     where: { id },
@@ -51,3 +55,20 @@ export async function getCategoryByName(name: string) {
 }
 
 // Add other category-related functions here as needed
+
+// Add this new function
+export async function getCategoriesWithProducts() {
+  return prisma.category.findMany({
+    include: {
+      Products: {
+        include: {
+          Sizes: {
+            include: {
+              size: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}

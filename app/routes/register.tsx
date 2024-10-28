@@ -5,175 +5,155 @@ import { useEffect, useRef } from "react";
 import { z } from "zod";
 import { ActionResultType, RawActionResult } from "~/lib/type";
 import { safeAction } from "~/lib/utils";
-import { createStaff, getStaffByUsername } from "~/models/staff.server";
-import { createStaffSession, getStaffId } from "~/session.server";
+import {
+  createCustomer,
+  getCustomerByPhoneNumber,
+} from "~/models/customer.server";
+import { createCustomerSession, getCustomerId } from "~/session.server";
 import { safeRedirect } from "~/lib/utils";
-import { Staff } from "@prisma/client";
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const userId = await getStaffId(request);
-  if (userId) return redirect("/");
+  const customerId = await getCustomerId(request);
+  if (customerId) return redirect("/");
   return json({});
 };
-const JoinSchema = z.object({
-  fullname: z.string().min(1),
-  username: z.string().min(1),
-  phoneNumbers: z.string().length(10),
-  password: z.string().min(1),
+
+const RegisterSchema = z.object({
+  fullname: z.string().min(1, "Họ tên là bắt buộc"),
+  phoneNumbers: z.string().length(10, "Số điện thoại phải có 10 chữ số"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
   redirectTo: z.optional(z.string()),
 });
 
 export const action = safeAction([
   {
-    schema: JoinSchema,
+    schema: RegisterSchema,
     method: "POST",
     action: async (
       { request },
       data,
     ): Promise<
-      ActionResultType<z.inferFlattenedErrors<typeof JoinSchema>["fieldErrors"]>
+      ActionResultType<
+        z.inferFlattenedErrors<typeof RegisterSchema>["fieldErrors"]
+      >
     > => {
-      const validatedData = data as z.infer<typeof JoinSchema>;
+      const validatedData = data as z.infer<typeof RegisterSchema>;
       const redirect = safeRedirect(validatedData.redirectTo, "/");
-      const existingStaff = await getStaffByUsername(validatedData.username);
-      if (existingStaff) {
+      const existingCustomer = await getCustomerByPhoneNumber(
+        validatedData.phoneNumbers,
+      );
+      if (existingCustomer) {
         return json(
           {
-            error: "A user already exists with this username",
+            error: "Số điện thoại này đã được đăng ký",
             success: false,
           },
           { status: 403 },
         );
       }
-      const staff: Staff = await createStaff(
+      const customer = await createCustomer(
         {
           fullname: validatedData.fullname,
           phoneNumbers: validatedData.phoneNumbers,
-          username: validatedData.username,
-          salary: null,
           status: "on",
-          image: null,
+          avatarUrl: null,
         },
-        { password: validatedData.password },
+        validatedData.password,
       );
 
-      return createStaffSession({
+      return createCustomerSession({
         redirectTo: redirect,
         remember: false,
         request,
-        staffId: staff.id,
+        customerId: customer.id,
       });
     },
   },
 ]);
 
-export const meta: MetaFunction = () => [{ title: "Sign Up" }];
+export const meta: MetaFunction = () => [{ title: "Đăng ký" }];
 
-export default function Join() {
+export default function Register() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? undefined;
   const actionData =
     useActionData<
-      RawActionResult<z.inferFlattenedErrors<typeof JoinSchema>["fieldErrors"]>
+      RawActionResult<
+        z.inferFlattenedErrors<typeof RegisterSchema>["fieldErrors"]
+      >
     >();
-  const usernameRef = useRef<HTMLInputElement>(null);
+  const fullnameRef = useRef<HTMLInputElement>(null);
+  const phoneNumbersRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    console.log({ actionData });
-    if (actionData?.fieldErrors?.password) {
-      usernameRef.current?.focus();
+    if (actionData?.fieldErrors?.fullname) {
+      fullnameRef.current?.focus();
+    } else if (actionData?.fieldErrors?.phoneNumbers) {
+      phoneNumbersRef.current?.focus();
     } else if (actionData?.fieldErrors?.password) {
       passwordRef.current?.focus();
     }
   }, [actionData]);
-  console.log({ actionData });
+
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6">
           <div>
             <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Username address
-            </label>
-            <div className="mt-1">
-              <input
-                ref={usernameRef}
-                id="username"
-                // eslint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus={true}
-                name="username"
-                type="username"
-                autoComplete="username"
-                aria-invalid={
-                  actionData?.fieldErrors?.username ? true : undefined
-                }
-                aria-describedby="username-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.fieldErrors?.username ? (
-                <div className="pt-1 text-red-700" id="username-error">
-                  {actionData.fieldErrors.username}
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div>
-            <label
               htmlFor="fullname"
               className="block text-sm font-medium text-gray-700"
             >
-              Full Name
+              Họ tên
             </label>
             <div className="mt-1">
               <input
+                ref={fullnameRef}
                 id="fullname"
+                autoFocus={true}
                 name="fullname"
                 type="text"
+                autoComplete="name"
                 aria-invalid={
                   actionData?.fieldErrors?.fullname ? true : undefined
                 }
                 aria-describedby="fullname-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.fieldErrors?.fullname ? (
+              {actionData?.fieldErrors?.fullname && (
                 <div className="pt-1 text-red-700" id="fullname-error">
                   {actionData.fieldErrors.fullname}
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
+
           <div>
             <label
-              htmlFor="username"
+              htmlFor="phoneNumbers"
               className="block text-sm font-medium text-gray-700"
             >
               Số điện thoại
             </label>
             <div className="mt-1">
               <input
-                ref={usernameRef}
+                ref={phoneNumbersRef}
                 id="phoneNumbers"
-                required
-                // eslint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus={true}
                 name="phoneNumbers"
-                type="phoneNumbers"
-                autoComplete="phoneNumbers"
+                type="tel"
+                autoComplete="tel"
                 aria-invalid={
                   actionData?.fieldErrors?.phoneNumbers ? true : undefined
                 }
                 aria-describedby="phoneNumbers-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.fieldErrors?.phoneNumbers ? (
+              {actionData?.fieldErrors?.phoneNumbers && (
                 <div className="pt-1 text-red-700" id="phoneNumbers-error">
                   {actionData.fieldErrors.phoneNumbers}
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
 
@@ -182,7 +162,7 @@ export default function Join() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
             >
-              Password
+              Mật khẩu
             </label>
             <div className="mt-1">
               <input
@@ -197,11 +177,11 @@ export default function Join() {
                 aria-describedby="password-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.fieldErrors?.password ? (
+              {actionData?.fieldErrors?.password && (
                 <div className="pt-1 text-red-700" id="password-error">
                   {actionData.fieldErrors.password}
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
 
@@ -213,19 +193,19 @@ export default function Join() {
             type="submit"
             className="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400"
           >
-            Create Account
+            Đăng ký
           </button>
           <div className="flex items-center justify-center">
             <div className="text-center text-sm text-gray-500">
-              Already have an account?{" "}
+              Đã có tài khoản?{" "}
               <Link
                 className="text-blue-500 underline"
                 to={{
-                  pathname: "/admin/login",
+                  pathname: "/login",
                   search: searchParams.toString(),
                 }}
               >
-                Log in
+                Đăng nhập
               </Link>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { Staff } from "@prisma/client";
+import { Customer, Staff } from "@prisma/client";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { useMatches } from "@remix-run/react";
 import { clsx, type ClassValue } from "clsx";
@@ -49,22 +49,12 @@ export function safeRedirect(
  */
 export function useMatchesData<T = Record<string, unknown>>(id: string): T {
   const matchingRoutes = useMatches();
-
+  console.log({ matchingRoutes });
   const route = useMemo(
     () => matchingRoutes.find((route) => route.id === id),
     [matchingRoutes, id],
   );
   return route?.data as T;
-}
-
-function isStaff(staff: unknown): staff is Staff {
-  return (
-    staff != null &&
-    typeof staff === "object" &&
-    "email" in staff &&
-    typeof staff.email === "string" &&
-    "staffname" in staff
-  );
 }
 
 export function useOptionalStaff(): Staff | undefined {
@@ -84,10 +74,26 @@ export function useStaff(): Staff {
   }
   return maybeStaff;
 }
-
-export function validateEmail(email: unknown): email is string {
-  return typeof email === "string" && email.length > 3 && email.includes("@");
+export function useOptionalCustomer(): Customer | undefined {
+  const data = useMatchesData<{ customer?: Customer }>("routes/_client");
+  if (!data) {
+    return undefined;
+  }
+  return data.customer;
 }
+
+export function useCustomer(): Customer {
+  const maybeCustomer = useOptionalCustomer();
+  if (!maybeCustomer) {
+    throw new Error(
+      "No customer found in root loader, but customer is required by useCustomer. If customer is optional, try useOptionalCustomer instead.",
+    );
+  }
+  return maybeCustomer;
+}
+// export function validateEmail(email: unknown): email is string {
+//   return typeof email === "string" && email.length > 3 && email.includes("@");
+// }
 export function ca<T extends any[], R>(action: (...args: T) => Promise<R>) {
   return async (...args: T): Promise<R> => {
     try {
@@ -139,15 +145,14 @@ export const safeAction = (
       try {
         const formData = await args.request.formData();
         const data: Record<string, any> = {};
-
+        console.log(formData.entries());
         for (const [key, value] of formData.entries()) {
           if (key.endsWith("[]")) {
             // Handle array inputs
-            const baseKey = key.slice(0, -2);
-            if (!data[baseKey]) {
-              data[baseKey] = [];
+            if (!data[key]) {
+              data[key] = [];
             }
-            data[baseKey].push(value);
+            data[key].push(value);
           } else if (key.includes("[") && key.includes("]")) {
             // Handle object-like inputs (e.g., sizes[sizeId])
             const [objKey, nestedKey] = key.split(/[\[\]]/);
@@ -215,12 +220,37 @@ export function zodValidate(param: any, schema: z.ZodSchema): boolean {
 
 export function slugify(text: string) {
   return text
-    .toString()
     .toLowerCase()
     .trim()
+    .replace(/[^\w\s-]+/g, "") // Remove all non-word chars except spaces and -
     .replace(/\s+/g, "-") // Replace spaces with -
-    .replace(/[^\w\-]+/g, "") // Remove all non-word chars
     .replace(/\-\-+/g, "-") // Replace multiple - with single -
     .replace(/^-+/, "") // Trim - from start of text
-    .replace(/-+$/, ""); // Trim - from end of text
+    .replace(/-+$/, "") // Trim - from end of text
+    .replace(/[^\w-]+/g, "") // Remove all non-word chars
+    .replace(/[áàảãạăắằẳẵặâấầẩẫậ]/g, "a")
+    .replace(/[éèẻẽẹêếềểễệ]/g, "e")
+    .replace(/[íìỉĩị]/g, "i")
+    .replace(/[óòỏõọôốồổỗộơớờởỡợ]/g, "o")
+    .replace(/[úùủũụưứừửữự]/g, "u")
+    .replace(/[ýỳỷỹỵ]/g, "y")
+    .replace(/[đ]/g, "d");
+}
+
+// Add these functions to your existing utils.ts
+export function formatDate(date: Date | string) {
+  return new Date(date).toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export function formatPrice(amount: number) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
 }

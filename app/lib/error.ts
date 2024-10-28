@@ -3,6 +3,7 @@ export enum ERROR_NAME {
   missing_permissions = "MISSING_PERMISSIONS",
   bad_requrest = "BAD_REQUEST",
   not_allowed = "NOT_ALLOWED",
+  not_found = "NOT_FOUND",
 }
 
 export class CustomHttpError extends Error {
