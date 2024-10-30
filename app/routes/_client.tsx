@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { json, Outlet } from "@remix-run/react";
-import { Footer } from "~/components/Footer";
-import { Header } from "~/components/Header";
+import { Footer } from "~/components/footer";
+import { Header } from "~/components/header";
 import { CartProvider } from "~/components/providers/cart-provider";
 import { ModalProvider } from "~/components/providers/modal-provider";
 import { prisma } from "~/lib/db.server";
