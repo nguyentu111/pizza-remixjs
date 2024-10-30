@@ -3,7 +3,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { CouponTable } from "~/components/admin/coupon-table";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { getAllCoupons } from "~/models/coupon.server";
 import { requireStaffId } from "~/session.server";

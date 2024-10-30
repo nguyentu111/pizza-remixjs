@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { z, ZodSchema } from "zod";
 import { ParsedActionResult } from "~/lib/type";
 import { useToast } from "./use-toast";
+import { flattenObject } from "~/lib/utils";
 
 export function useForm<T extends ZodSchema>(options?: {
   onSuccess?: () => void;
@@ -12,16 +13,12 @@ export function useForm<T extends ZodSchema>(options?: {
   const fetcher = useFetcher<ParsedActionResult<T> | undefined>();
   const actionData = fetcher.data as ParsedActionResult<T> | undefined;
   const { toast } = useToast();
-  const fieldErrors = actionData?.fieldErrors as
-    | {
-        [K in keyof z.infer<T>]: string[] | undefined;
-      }
-    | undefined;
+  const fieldErrors = actionData?.fieldErrors;
   const isSubmitting = fetcher.state === "submitting";
   const formRef = useRef<HTMLFormElement | null>(null);
   const control = {
     fieldErrors,
-    defaultValues: options?.defaultValues,
+    defaultValues: flattenObject(options?.defaultValues || {}, "", {}),
   };
   useEffect(() => {
     console.log(actionData);
@@ -56,3 +53,6 @@ export function useForm<T extends ZodSchema>(options?: {
     control,
   };
 }
+export type FormControl<T extends ZodSchema = ZodSchema> = ReturnType<
+  typeof useForm<T>
+>["control"];

@@ -1,6 +1,6 @@
 import { useLoaderData, useMatches } from "@remix-run/react";
 import { MediaButton } from "~/components/shared/media-button";
-import { useMatchesData } from "~/lib/utils";
+import { useMatchesData } from "~/hooks/use-matches-data";
 
 export default function AdminHome() {
   const data = useLoaderData();

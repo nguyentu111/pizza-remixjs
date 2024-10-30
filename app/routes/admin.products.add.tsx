@@ -2,9 +2,9 @@ import { Category, Border, Topping, Size, Material } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
-import { AddOrUpdateProductForm } from "~/components/admin/add-or-update-product";
+import { AddOrUpdateProductForm } from "~/components/admin/add-or-update-product-form";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { insertProductSchema } from "~/lib/schema";
 import { safeAction } from "~/lib/utils";
@@ -62,6 +62,8 @@ export const action = safeAction([
           detailDescription: validatedData.detailDescription ?? null,
           slug: validatedData.slug,
           categoryId: validatedData.categoryId,
+          image: validatedData.image ?? null,
+          image_mobile: validatedData.image_mobile ?? null,
         },
         {
           borderIds: validatedData["borderIds[]"],

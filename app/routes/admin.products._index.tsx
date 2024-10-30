@@ -3,7 +3,7 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { ProductTable } from "~/components/admin/product-table";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { ProductWithCategory } from "~/lib/type";
 import { getAllProducts } from "~/models/product.server";
@@ -14,7 +14,7 @@ export { ErrorBoundary };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await requireStaffId(request);
-  // await requirePermissions(prisma, user, [PermissionsEnum.ViewProducts]);
+  await requirePermissions(prisma, user, [PermissionsEnum.ViewProducts]);
   return {
     products: await getAllProducts(),
   };

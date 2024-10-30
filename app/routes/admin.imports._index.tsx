@@ -3,11 +3,12 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { ImportTable } from "~/components/admin/import-table";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { getAllImports, ImportWithDetails } from "~/models/import.server";
 import { requireStaffId } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
+import { safeAction } from "~/lib/utils";
 
 export { ErrorBoundary };
 
@@ -19,7 +20,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Convert Decimal to string to avoid serialization issues
   const serializedImports = imports.map((imp) => ({
     ...imp,
-    totalAmount: imp.totalAmount.toString(),
   }));
 
   return {

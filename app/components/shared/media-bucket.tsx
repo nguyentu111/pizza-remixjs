@@ -2,14 +2,16 @@ import { Media } from "@prisma/client";
 import { FileIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { CheckIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "~/hooks/use-form";
-import { bytesToMB, cn, getSmallImageUrl, useMatchesData } from "~/lib/utils";
+import { bytesToMB, cn, getSmallImageUrl } from "~/lib/utils";
 import { AdminLayoutData } from "~/routes/admin";
 import { useModal } from "../providers/modal-provider";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { UploadFile } from "./upload-file";
+import { useNavigation } from "@remix-run/react";
+import { useMatchesData } from "~/hooks/use-matches-data";
 
 export const MediaBucket = ({
   onSelected,
@@ -28,6 +30,12 @@ export const MediaBucket = ({
   );
   const { fetcher: fetcherDelete } = useForm();
   const { setClose } = useModal();
+  const navigation = useNavigation();
+  useEffect(() => {
+    if (navigation.state === "idle") {
+      setItem(media.find((m) => m.url === selectedMedia));
+    }
+  }, [navigation.state, media, selectedMedia, navigation.location]);
   return (
     <div>
       <Tabs defaultValue="library" className="">

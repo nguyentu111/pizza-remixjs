@@ -3,7 +3,7 @@ import { json, LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { AddOrUpdateStaffForm } from "~/components/admin/add-or-update-staff-form";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { updateStaffSchema } from "~/lib/schema";
 import { safeAction } from "~/lib/utils";

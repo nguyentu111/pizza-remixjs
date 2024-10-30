@@ -3,8 +3,8 @@ import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { MaterialTable } from "~/components/admin/material-table";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
 import { prisma } from "~/lib/db.server";
+import { PermissionsEnum } from "~/lib/type";
 import { getAllMaterials } from "~/models/material.server";
 import { requireStaffId } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
@@ -13,7 +13,7 @@ export { ErrorBoundary };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await requireStaffId(request);
-  // await requirePermissions(prisma, user, [PermissionsEnum.ViewMaterials]);
+  await requirePermissions(prisma, user, [PermissionsEnum.ViewMaterials]);
   return {
     materials: await getAllMaterials(),
   };

@@ -23,6 +23,9 @@ export async function getStaffById(
 export async function getStaffByUsername(username: Staff["username"]) {
   return prisma.staff.findUnique({ where: { username } });
 }
+export async function getStaffByPhone(phoneNumbers: Staff["phoneNumbers"]) {
+  return prisma.staff.findUnique({ where: { phoneNumbers } });
+}
 // export async function getStaffByStaffname(staffname: Staff[""]) {
 //   return prisma.staff.findUnique({ where: { staffname } });
 // }

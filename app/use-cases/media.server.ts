@@ -95,7 +95,8 @@ export const deleteMediaAction = async (
         { status: 404 },
       );
     const result = await deleteResource(media.publicId, media.resourceType);
-    if (result.result === "ok") await deleteMedia(media.id);
+    if (result.result === "ok" || result.result === "not found")
+      await deleteMedia(media.id);
     else throw new Error(result.result);
     return json({ success: true, error: null }, { status: 200 });
   } catch (error) {

@@ -1,9 +1,11 @@
 import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
+import QueryString from "qs";
 import { z } from "zod";
 import { AddOrUpdateImportForm } from "~/components/admin/add-or-update-import-form";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
+import { insertImportSchema } from "~/lib/schema";
 import { safeAction } from "~/lib/utils";
 import { createImport } from "~/models/import.server";
 import { requireStaffId } from "~/session.server";
@@ -23,39 +25,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json({ providers, materials });
 };
 
-const schema = z.object({
-  providerId: z.string(),
-  expectedDeliveryDate: z.string().optional(),
-  materials: z.array(
-    z.object({
-      materialId: z.string(),
-      expectedQuantity: z.number(),
-      qualityStandard: z.string().optional(),
-      expiredDate: z.string().optional(),
-    }),
-  ),
-});
-
 export const action = safeAction([
   {
     method: "POST",
-    schema,
+    schema: insertImportSchema,
     action: async ({ request }, data) => {
-      const validatedData = data as z.infer<typeof schema>;
+      const validatedData = data as z.infer<typeof insertImportSchema>;
 
       const currentUserId = await requireStaffId(request);
       await requirePermissions(prisma, currentUserId, [
         PermissionsEnum.CreateImports,
       ]);
 
-      const totalAmount = validatedData.materials.reduce(
-        (acc: number, curr: any) => acc + curr.expectedQuantity,
-        0,
-      );
-
       await createImport({
-        totalAmount,
-        status: "PENDING",
+        status: validatedData.quotationLink ? "WAITING_APPROVAL" : "PENDING",
         provider: { connect: { id: validatedData.providerId } },
         createdBy: { connect: { id: currentUserId } },
         expectedDeliveryDate: validatedData.expectedDeliveryDate
@@ -64,7 +47,9 @@ export const action = safeAction([
         materials: validatedData.materials.map((m: any) => ({
           ...m,
           expiredDate: m.expiredDate ? new Date(m.expiredDate) : undefined,
+          pricePerUnit: m.pricePerUnit ? Number(m.pricePerUnit) : undefined,
         })),
+        quotationLink: validatedData.quotationLink || null,
       });
 
       return json({ success: true });

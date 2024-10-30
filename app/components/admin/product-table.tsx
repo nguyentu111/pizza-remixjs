@@ -1,7 +1,11 @@
-import { Product, Category } from "@prisma/client";
+import { Link } from "@remix-run/react";
 import { useState } from "react";
+import { useForm } from "~/hooks/use-form";
+import { ProductWithCategory } from "~/lib/type";
+import { getSmallImageUrl } from "~/lib/utils";
 import { useModal } from "../providers/modal-provider";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import {
   Table,
   TableBody,
@@ -10,12 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { AddOrUpdateProductForm } from "./add-or-update-product";
-import { Link } from "@remix-run/react";
-import { ProductWithCategory } from "~/lib/type";
-import { Input } from "../ui/input";
-import { useForm } from "~/hooks/use-form";
-import { getSmallImageUrl } from "~/lib/utils";
 
 export function ProductTable({
   products,

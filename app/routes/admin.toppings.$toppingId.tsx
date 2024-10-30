@@ -4,7 +4,7 @@ import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { AddOrUpdateToppingForm } from "~/components/admin/add-or-update-topping-form";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { insertToppingSchema } from "~/lib/schema";
 import { safeAction } from "~/lib/utils";

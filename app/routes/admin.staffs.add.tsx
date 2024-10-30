@@ -4,12 +4,16 @@ import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { AddOrUpdateStaffForm } from "~/components/admin/add-or-update-staff-form";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { insertStaffSchema } from "~/lib/schema";
 import { safeAction } from "~/lib/utils";
 import { getAllRoles } from "~/models/role.server";
-import { createStaff, getStaffByUsername } from "~/models/staff.server";
+import {
+  createStaff,
+  getStaffByPhone,
+  getStaffByUsername,
+} from "~/models/staff.server";
 import { requireStaffId } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
 
@@ -35,7 +39,12 @@ export const action = safeAction([
           { error: "Tên tài khoản đã tồn tại .", success: false },
           { status: 403 },
         );
-
+      const exist2 = await getStaffByPhone(validatedData.phoneNumbers);
+      if (exist2)
+        return json(
+          { error: "Số điện thoại đã tồn tại .", success: false },
+          { status: 403 },
+        );
       await createStaff(
         {
           fullname: validatedData.fullname,

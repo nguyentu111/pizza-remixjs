@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { useForm } from "~/hooks/use-form";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { getAllPermissions } from "~/models/permission.server";
 import { getAllRoles } from "~/models/role.server";

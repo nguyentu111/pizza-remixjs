@@ -4,7 +4,7 @@ interface ModalProviderProps {
   children: React.ReactNode;
 }
 
-export type ModalData = object;
+export type ModalData = Record<string, any>;
 type ModalContextType = {
   data: ModalData;
   isOpen: boolean;

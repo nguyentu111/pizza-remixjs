@@ -4,7 +4,7 @@ import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { AddOrUpdateCategoryForm } from "~/components/admin/add-or-update-category-form";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { insertCategorySchema } from "~/lib/schema";
 import { safeAction, slugify } from "~/lib/utils";

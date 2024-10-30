@@ -91,9 +91,9 @@ export const roleSchema = z.object({
 const stringAsPositiveNumber = z.string().refine(
   (value) => {
     const num = parseFloat(value);
-    return !isNaN(num) && num > 0;
+    return !isNaN(num) && num >= 0;
   },
-  { message: "Must be a valid number greater than 0" },
+  { message: "Số không hợp lệ." },
 );
 
 // Updated schema for inserting a Border
@@ -136,8 +136,14 @@ export const insertProductSchema = z.object({
   categoryId: z.string().min(1, "Danh mục là bắt buộc"),
   "borderIds[]": z.array(z.string()).optional(),
   "toppingIds[]": z.array(z.string()).optional(),
-  sizes: z.record(stringAsPositiveNumber).optional(),
-  recipes: z.record(stringAsPositiveNumber).optional(),
+  sizes: z
+    .array(z.object({ sizeId: z.string(), price: stringAsPositiveNumber }))
+    .optional(),
+  recipes: z
+    .array(
+      z.object({ materialId: z.string(), quantity: stringAsPositiveNumber }),
+    )
+    .optional(),
   image: z.string().optional(),
   image_mobile: z.string().optional(),
 });
@@ -173,4 +179,48 @@ export const insertCouponSchema = z.object({
 });
 export const updateCustomerSchema = z.object({
   fullname: z.string().min(1, "Tên không được để trống"),
+});
+export const insertImportSchema = z
+  .object({
+    providerId: z.string().min(1, "Provider is required"),
+    expectedDeliveryDate: z.string().optional(),
+    quotationLink: z.string().optional(),
+    totalAmount: stringAsPositiveNumber.optional(),
+    materials: z.array(
+      z.object({
+        materialId: z.string().min(1, "Material is required"),
+        expectedQuantity: stringAsPositiveNumber.optional(),
+        qualityStandard: z.string().optional(),
+        expiredDate: z.string().optional(),
+        pricePerUnit: stringAsPositiveNumber.optional(),
+      }),
+    ),
+  })
+  .superRefine((data, ctx) => {
+    const hasQuotation = ctx.path.some((p) => p === "quotationLink");
+    if (hasQuotation && !data.materials.some((m) => m.pricePerUnit)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Price is required when quotation is provided",
+      });
+    }
+  });
+
+export const importMaterialSchema = z.object({
+  materialId: z.string().min(1, "Material is required"),
+  expectedQuantity: z.string().min(1, "Quantity is required"),
+  qualityStandard: z.string().optional(),
+  expiredDate: z.string().optional(),
+  pricePerUnit: z.string().optional(),
+});
+export const receiveImportSchema = z.object({
+  materials: z.array(
+    z.object({
+      materialId: z.string().min(1, "Material is required"),
+      actualGood: stringAsPositiveNumber,
+      actualDefective: stringAsPositiveNumber,
+      expiredDate: z.string().min(1, "Ngày hết hạn là bắt buộc"),
+      pricePerUnit: stringAsPositiveNumber,
+    }),
+  ),
 });

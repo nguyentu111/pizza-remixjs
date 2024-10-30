@@ -1,39 +1,29 @@
-import { Import, Material, Provider, Status } from "@prisma/client";
-import { useEffect, useState } from "react";
-import { useForm } from "~/hooks/use-form";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigate,
-} from "@remix-run/react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Label } from "../ui/label";
-import { CalendarIcon, PlusIcon, TrashIcon } from "lucide-react";
-import { cn } from "~/lib/utils";
-import { Button as AriaButton } from "react-aria-components";
-import { format } from "date-fns";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Calendar as ShadcnCalendar } from "../ui/calendar";
+import { Import, Material, Provider } from "@prisma/client";
+import { useActionData, useLoaderData, useNavigate } from "@remix-run/react";
+import { PlusIcon, TrashIcon } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
+import { FormControl, useForm } from "~/hooks/use-form";
+import { ErrorMessage } from "../shared/form/error-message";
+import { FormField } from "../shared/form/form-field";
+import { DateField } from "../shared/form/form-fields/date-field";
+import { InputField } from "../shared/form/form-fields/input-field";
+import { SelectField } from "../shared/form/form-fields/select-field";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { FileSelector } from "./file-selector";
 
 type ImportFormData = {
   providerId: string;
   totalAmount: number;
   expectedDeliveryDate?: Date;
+  quotationLink?: string;
   materials: Array<{
     materialId: string;
     expectedQuantity: number;
-    qualityStandard?: string;
-    expiredDate?: Date;
+    qualityStandard?: string | null;
+    expiredDate?: Date | null;
+    pricePerUnit?: number | null;
   }>;
 };
 
@@ -46,6 +36,7 @@ export function AddOrUpdateImportForm({
       expectedQuantity: number;
       qualityStandard?: string | null;
       expiredDate?: Date | null;
+      pricePerUnit?: number | null;
     }>;
   };
 }) {
@@ -60,23 +51,21 @@ export function AddOrUpdateImportForm({
     providerId: import_?.providerId || "",
     totalAmount: import_ ? Number(import_.totalAmount) : 0,
     expectedDeliveryDate: import_?.expectedDeliveryDate || undefined,
-    //@ts-ignore
+    quotationLink: import_?.quotationLink || undefined,
     materials: import_?.ImportMaterials || [
       {
         materialId: "",
         expectedQuantity: 0,
         qualityStandard: "",
         expiredDate: undefined,
+        pricePerUnit: undefined,
       },
     ],
   });
-
   const { fetcher, isSubmitting, fieldErrors, control, formRef } = useForm<
     z.ZodType<ImportFormData>
   >({
     defaultValues: formData,
-    onSuccess: () => navigate(-1), // Navigate on success
-    onError: (error) => console.error(error), // Handle error
   });
 
   const addMaterial = () => {
@@ -89,6 +78,7 @@ export function AddOrUpdateImportForm({
           expectedQuantity: 0,
           qualityStandard: "",
           expiredDate: undefined,
+          pricePerUnit: undefined,
         },
       ],
     }));
@@ -113,74 +103,52 @@ export function AddOrUpdateImportForm({
       ),
     }));
   };
-
   return (
     <div className="max-w-2xl mx-auto p-4">
       {" "}
       {/* Responsive container */}
-      <fetcher.Form method="post" className="space-y-8" ref={formRef}>
-        {actionData?.error && (
-          <div className="text-red-500">{actionData.error}</div>
-        )}
-
+      <fetcher.Form
+        method={import_ ? "PUT" : "POST"}
+        className="space-y-8"
+        ref={formRef}
+        action={import_ ? `/admin/imports/${import_.id}` : "/admin/imports/add"}
+      >
         <div className="space-y-4">
           <div>
-            <Label>Nhà cung cấp</Label>
-            <Select
-              name="providerId"
-              value={formData.providerId}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, providerId: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn nhà cung cấp" />
-              </SelectTrigger>
-              <SelectContent>
-                {providers.map((provider) => (
-                  <SelectItem key={provider.id} value={provider.id}>
-                    {provider.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <FormField control={control} name="providerId">
+              <Label>Nhà cung cấp</Label>
+              <SelectField
+                required
+                options={providers.map((provider) => ({
+                  label: provider.name,
+                  value: provider.id,
+                }))}
+                placeholder="Chọn nhà cung cấp"
+              />
+            </FormField>
           </div>
 
           <div>
             <Label>Ngày dự kiến nhận hàng</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !formData.expectedDeliveryDate && "text-muted-foreground",
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.expectedDeliveryDate ? (
-                    format(formData.expectedDeliveryDate, "PPP")
-                  ) : (
-                    <span>Chọn ngày</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <ShadcnCalendar
-                  aria-label="Chọn ngày"
-                  onSelect={(date: Date | undefined) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      expectedDeliveryDate: date,
-                    }))
-                  }
-                />
-              </PopoverContent>
-            </Popover>
+            <FormField control={control} name="expectedDeliveryDate">
+              <DateField placeholder="Chọn ngày" />
+            </FormField>
+          </div>
+
+          <div>
+            <Label>Bảng báo giá</Label>
+            <FileSelector
+              initialFile={formData.quotationLink}
+              mediaType="raw"
+              placeholderText="Tải lên bảng báo giá (PDF, Excel, Word...)"
+              onFileSelected={(fileUrl) =>
+                setFormData((prev) => ({ ...prev, quotationLink: fileUrl }))
+              }
+            />
             <input
               type="hidden"
-              name="expectedDeliveryDate"
-              value={formData.expectedDeliveryDate?.toISOString() || ""}
+              name="quotationLink"
+              value={formData.quotationLink || ""}
             />
           </div>
 
@@ -195,14 +163,16 @@ export function AddOrUpdateImportForm({
 
             {formData.materials.map((material, index) => (
               <MaterialForm
+                control={control}
+                key={index}
                 materials={materials as unknown as Material[]}
                 material={material}
-                key={index}
                 index={index}
                 removeMaterial={() => removeMaterial(index)}
                 updateMaterial={(field, value) =>
                   updateMaterial(index, field, value)
                 }
+                showPrice={!!formData.quotationLink}
               />
             ))}
           </div>
@@ -221,13 +191,16 @@ export function AddOrUpdateImportForm({
   );
 }
 
-const MaterialForm = ({
+function MaterialForm<T extends FormControl>({
   material,
   index,
   removeMaterial,
   updateMaterial,
   materials,
+  showPrice,
+  control,
 }: {
+  control: T;
   materials: Material[];
   material: ImportFormData["materials"][0];
   index: number;
@@ -236,9 +209,10 @@ const MaterialForm = ({
     field: keyof ImportFormData["materials"][0],
     value: any,
   ) => void;
-}) => {
+  showPrice: boolean;
+}) {
   return (
-    <div key={index} className="space-y-4 p-4 border rounded-lg">
+    <div className="space-y-4 p-4 border rounded-lg">
       <div className="flex justify-between">
         <Label>Nguyên liệu {index + 1}</Label>
         <Button
@@ -252,81 +226,85 @@ const MaterialForm = ({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>Chọn nguyên liệu</Label>
-          <Select
-            name={`materials[${index}].materialId`}
-            value={material.materialId}
-            onValueChange={(value) => updateMaterial("materialId", value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Chọn nguyên liệu" />
-            </SelectTrigger>
-            <SelectContent>
-              {materials.map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FormField control={control} name={`materials[${index}].materialId`}>
+            <Label>Chọn nguyên liệu</Label>
+            <SelectField
+              required
+              options={materials.map((m) => ({
+                label: m.name,
+                value: m.id,
+              }))}
+              placeholder="Chọn nguyên liệu"
+              onValueChange={(value) => updateMaterial("materialId", value)}
+            />
+            <ErrorMessage />
+          </FormField>
         </div>
 
         <div>
-          <Label>Số lượng dự kiến</Label>
-          <Input
-            type="number"
+          <FormField
+            control={control}
             name={`materials[${index}].expectedQuantity`}
-            value={material.expectedQuantity}
-            onChange={(e) =>
-              updateMaterial("expectedQuantity", Number(e.target.value))
-            }
-          />
+          >
+            <Label>
+              Số lượng dự kiến
+              <span className="ml-2">
+                ({materials.find((m) => m.id === material.materialId)?.unit})
+              </span>
+            </Label>
+            <InputField
+              required
+              type="number"
+              onChange={(e) =>
+                updateMaterial("expectedQuantity", Number(e.target.value))
+              }
+            />
+            <ErrorMessage />
+          </FormField>
         </div>
 
         <div>
-          <Label>Tiêu chuẩn chất lượng</Label>
-          <Input
+          <FormField
+            control={control}
             name={`materials[${index}].qualityStandard`}
-            value={material.qualityStandard || ""}
-            onChange={(e) => updateMaterial("qualityStandard", e.target.value)}
-          />
+          >
+            <Label>Tiêu chuẩn chất lượng</Label>
+            <InputField
+              onChange={(e) =>
+                updateMaterial("qualityStandard", e.target.value)
+              }
+            />
+            <ErrorMessage />
+          </FormField>
         </div>
 
         <div>
-          <Label>Hạn sử dụng</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !material.expiredDate && "text-muted-foreground",
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {material.expiredDate ? (
-                  format(material.expiredDate, "PPP")
-                ) : (
-                  <span>Chọn ngày</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <ShadcnCalendar
-                aria-label="Chọn ngày"
-                onSelect={(date: Date | undefined) =>
-                  updateMaterial("expiredDate", date)
-                }
-              />
-            </PopoverContent>
-          </Popover>
-          <input
-            type="hidden"
-            name={`materials[${index}].expiredDate`}
-            value={material.expiredDate?.toISOString() || ""}
-          />
+          <FormField control={control} name={`materials[${index}].expiredDate`}>
+            <Label>Hạn sử dụng</Label>
+            <DateField placeholder="Chọn ngày" />
+            <ErrorMessage />
+          </FormField>
         </div>
+
+        {showPrice && (
+          <div>
+            <FormField
+              control={control}
+              name={`materials[${index}].pricePerUnit`}
+            >
+              <Label>Đơn giá</Label>
+              <InputField
+                type="number"
+                onChange={(e) =>
+                  updateMaterial("pricePerUnit", Number(e.target.value))
+                }
+                required={showPrice}
+                placeholder="Nhập đơn giá..."
+              />
+            </FormField>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}

@@ -41,56 +41,6 @@ export function safeRedirect(
   return to;
 }
 
-/**
- * This base hook is used in other hooks to quickly search for specific data
- * across all loader data using useMatches.
- * @param {string} id The route id
- * @returns {JSON|undefined} The router data or undefined if not found
- */
-export function useMatchesData<T = Record<string, unknown>>(id: string): T {
-  const matchingRoutes = useMatches();
-  console.log({ matchingRoutes });
-  const route = useMemo(
-    () => matchingRoutes.find((route) => route.id === id),
-    [matchingRoutes, id],
-  );
-  return route?.data as T;
-}
-
-export function useOptionalStaff(): Staff | undefined {
-  const data = useMatchesData<{ staff?: Staff }>("routes/admin");
-  if (!data) {
-    return undefined;
-  }
-  return data.staff;
-}
-
-export function useStaff(): Staff {
-  const maybeStaff = useOptionalStaff();
-  if (!maybeStaff) {
-    throw new Error(
-      "No staff found in root loader, but staff is required by useStaff. If staff is optional, try useOptionalStaff instead.",
-    );
-  }
-  return maybeStaff;
-}
-export function useOptionalCustomer(): Customer | undefined {
-  const data = useMatchesData<{ customer?: Customer }>("routes/_client");
-  if (!data) {
-    return undefined;
-  }
-  return data.customer;
-}
-
-export function useCustomer(): Customer {
-  const maybeCustomer = useOptionalCustomer();
-  if (!maybeCustomer) {
-    throw new Error(
-      "No customer found in root loader, but customer is required by useCustomer. If customer is optional, try useOptionalCustomer instead.",
-    );
-  }
-  return maybeCustomer;
-}
 // export function validateEmail(email: unknown): email is string {
 //   return typeof email === "string" && email.length > 3 && email.includes("@");
 // }
@@ -131,42 +81,46 @@ export const safeAction = (
     action: (
       args: ActionFunctionArgs,
       validatedData: any,
-    ) => Promise<
-      ActionResultType<z.inferFlattenedErrors<ZodSchema>["fieldErrors"]>
-    >;
+    ) => Promise<ActionResultType<z.ZodError["errors"]>>;
   }[],
 ) =>
   ca(
     async (
       args: ActionFunctionArgs,
-    ): Promise<
-      ActionResultType<z.inferFlattenedErrors<ZodSchema>["fieldErrors"]>
-    > => {
+    ): Promise<ActionResultType<z.ZodError["errors"]>> => {
       try {
         const formData = await args.request.formData();
         const data: Record<string, any> = {};
-        console.log(formData.entries());
         for (const [key, value] of formData.entries()) {
           if (key.endsWith("[]")) {
-            // Handle array inputs
             if (!data[key]) {
               data[key] = [];
             }
             data[key].push(value);
           } else if (key.includes("[") && key.includes("]")) {
-            // Handle object-like inputs (e.g., sizes[sizeId])
-            const [objKey, nestedKey] = key.split(/[\[\]]/);
-            if (!data[objKey]) {
-              data[objKey] = {};
+            const match = key.match(/^(\w+)\[(\d+)\]\.(\w+)$/);
+            if (match) {
+              const [, mainKey, index, subKey] = match;
+              if (!data[mainKey]) data[mainKey] = [];
+              if (!data[mainKey][parseInt(index)])
+                data[mainKey][parseInt(index)] = {};
+              data[mainKey][parseInt(index)][subKey] = value;
+            } else {
+              console.log({ key, value });
+              // const match = key.match(/^(\w+)\[([a-f0-9-]+)\]$/);
+              // console.log(key, match);
+              // if (match) {
+              //   const [, mainKey, index] = match;
+              //   if (!data[mainKey]) data[mainKey] = [];
+              //   data[mainKey][parseInt(index)] = value;
+              // }
             }
-            data[objKey][nestedKey] = value;
           } else {
             data[key] = value;
           }
         }
 
-        console.log({ actionData: data });
-
+        console.dir({ actionData: data }, { depth: null });
         const method = args.request.method;
         const _action = data._action;
         const action = actions.find((a) => {
@@ -189,18 +143,26 @@ export const safeAction = (
           return rs;
         }
         const result = action.schema.safeParse(data);
+
         if (!result.success) {
+          console.dir(
+            {
+              errors: result.error.errors,
+              formErrors: result.error.formErrors,
+            },
+            { depth: null },
+          );
           return json(
             {
               success: false,
-              fieldErrors: result.error.flatten().fieldErrors,
+              fieldErrors: result.error.errors,
             },
             { status: 400 },
           );
         }
         const validatedData = result.data;
 
-        console.log({ validatedData });
+        console.dir({ validatedData }, { depth: null });
         return action.action(args, validatedData);
       } catch (error) {
         return json(
@@ -222,19 +184,19 @@ export function slugify(text: string) {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]+/g, "") // Remove all non-word chars except spaces and -
-    .replace(/\s+/g, "-") // Replace spaces with -
-    .replace(/\-\-+/g, "-") // Replace multiple - with single -
-    .replace(/^-+/, "") // Trim - from start of text
-    .replace(/-+$/, "") // Trim - from end of text
-    .replace(/[^\w-]+/g, "") // Remove all non-word chars
     .replace(/[áàảãạăắằẳẵặâấầẩẫậ]/g, "a")
     .replace(/[éèẻẽẹêếềểễệ]/g, "e")
     .replace(/[íìỉĩị]/g, "i")
     .replace(/[óòỏõọôốồổỗộơớờởỡợ]/g, "o")
     .replace(/[úùủũụưứừửữự]/g, "u")
     .replace(/[ýỳỷỹỵ]/g, "y")
-    .replace(/[đ]/g, "d");
+    .replace(/[đ]/g, "d")
+    .replace(/[^\w\s-]+/g, "") // Remove all non-word chars except spaces and -
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/\-\-+/g, "-") // Replace multiple - with single -
+    .replace(/^-+/, "") // Trim - from start of text
+    .replace(/-+$/, "") // Trim - from end of text
+    .replace(/[^\w-]+/g, ""); // Remove all non-word chars
 }
 
 // Add these functions to your existing utils.ts
@@ -253,4 +215,78 @@ export function formatPrice(amount: number) {
     style: "currency",
     currency: "VND",
   }).format(amount);
+}
+export function flattenObject(
+  obj: Record<string, any>,
+  parentKey = "",
+  result: Record<string, any>,
+) {
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const newKey = parentKey ? `${parentKey}.${key}` : key;
+      const value = obj[key];
+
+      if (Array.isArray(value)) {
+        value.forEach((item, index) => {
+          flattenObject(item, `${newKey}[${index}]`, result);
+        });
+      } else if (typeof value === "object" && value !== null) {
+        flattenObject(value, newKey, result);
+      } else {
+        result[newKey] = value;
+      }
+    }
+  }
+  return result;
+}
+export function parseFormName(str: string) {
+  const result = [];
+  const regex = /([a-zA-Z0-9_]+)|\[(\d+)\]/g;
+  let match;
+
+  while ((match = regex.exec(str)) !== null) {
+    if (match[1]) {
+      result.push(match[1]); // Pushes part before bracket or dot
+    } else if (match[2]) {
+      result.push(Number(match[2])); // Pushes the number inside brackets as an integer
+    }
+  }
+
+  return result;
+}
+
+function deepSet(
+  obj: Record<string, any>,
+  path: string | string[],
+  value: any,
+) {
+  if (Object(obj) !== obj) return obj; // When obj is not an object
+  // If not yet an array, get the keys from the string-path
+  if (!Array.isArray(path)) path = path.toString().match(/[^.[\]]+/g) || [];
+  path.slice(0, -1).reduce(
+    (
+      a,
+      c,
+      i, // Iterate all of them except the last one
+    ) =>
+      Object(a[c]) === a[c] // Does the key exist and is its value an object?
+        ? // Yes: then follow that path
+          a[c]
+        : // No: create the key. Is the next key a potential array-index?
+          (a[c] =
+            Math.abs(Number(path[i + 1])) >> 0 === Number(path[i + 1])
+              ? [] // Yes: assign a new array object
+              : {}), // No: assign a new plain object
+    obj,
+  )[path[path.length - 1]] = value; // Finally assign the value to the last key
+  return obj; // Return the top-level object to allow chaining
+}
+
+// Use it for formData:
+export function formDataObject(formData: FormData) {
+  const root = {};
+  for (const [path, value] of formData) {
+    deepSet(root, path, value);
+  }
+  return root;
 }

@@ -3,7 +3,7 @@ import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { AddOrUpdateCouponForm } from "~/components/admin/add-or-update-coupon-form";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { insertCouponSchema } from "~/lib/schema";
 import { safeAction } from "~/lib/utils";

@@ -195,9 +195,11 @@ export const AddOrUpdateProductForm = ({
 
         <div>
           <Label>Kích thước và giá</Label>
-          {sizes.map((size) => (
+          {sizes.map((size, index) => (
             <div key={size.id} className="flex items-center space-x-2 mt-2">
               <Checkbox
+                name={`sizes[${index}].sizeId`}
+                value={size.id}
                 id={`size-${size.id}`}
                 checked={selectedSizes.some((s) => s.id === size.id)}
                 onCheckedChange={(checked) => {
@@ -217,7 +219,7 @@ export const AddOrUpdateProductForm = ({
               {selectedSizes.some((s) => s.id === size.id) && (
                 <InputField
                   type="number"
-                  name={`sizes[${size.id}]`}
+                  name={`sizes[${index}].price`}
                   value={
                     selectedSizes.find((s) => s.id === size.id)?.price || 0
                   }
@@ -238,10 +240,12 @@ export const AddOrUpdateProductForm = ({
 
         <div>
           <Label>Công thức</Label>
-          {materials.map((material) => (
+          {materials.map((material, index) => (
             <div key={material.id} className="flex items-center space-x-2 mt-2">
               <Checkbox
-                id={`material-${material.id}`}
+                id={`recipes[${index}].materialId`}
+                name={`recipes[${index}].materialId`}
+                value={material.id}
                 checked={selectedMaterials.some((m) => m.id === material.id)}
                 onCheckedChange={(checked) => {
                   if (checked) {
@@ -256,11 +260,14 @@ export const AddOrUpdateProductForm = ({
                   }
                 }}
               />
-              <Label htmlFor={`material-${material.id}`}>{material.name}</Label>
+              <Label htmlFor={`recipes[${index}].materialId`}>
+                {material.name}
+              </Label>
               {selectedMaterials.some((m) => m.id === material.id) && (
                 <InputField
+                  id={`recipes[${index}].quantity`}
                   type="number"
-                  name={`recipes[${material.id}]`}
+                  name={`recipes[${index}].quantity`}
                   value={
                     selectedMaterials.find((m) => m.id === material.id)
                       ?.quantity || 0

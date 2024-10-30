@@ -1,4 +1,4 @@
-import type { Import, ImportMaterial, Prisma } from "@prisma/client";
+import type { Import, ImportMaterial, Prisma, Status } from "@prisma/client";
 import { prisma } from "~/lib/db.server";
 
 export type ImportWithDetails = Import & {
@@ -48,27 +48,48 @@ export async function getImportById(id: Import["id"]) {
   });
 }
 
+export async function calculateTotalAmount(
+  materials: Array<{
+    expectedQuantity: number;
+    pricePerUnit?: number | null;
+  }>,
+) {
+  return materials.reduce((total, material) => {
+    return total + (material.pricePerUnit || 0) * material.expectedQuantity;
+  }, 0);
+}
+
 export async function createImport(data: {
-  totalAmount: Prisma.Decimal | number;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PENDING"
+    | "WAITING_APPROVAL"
+    | "APPROVED"
+    | "REJECTED"
+    | "COMPLETED"
+    | "CANCELLED";
   provider: { connect: { id: string } };
   createdBy?: { connect: { id: string } };
   expectedDeliveryDate?: Date;
+  quotationLink: string | null;
   materials: Array<{
     materialId: string;
     expectedQuantity: number;
     qualityStandard?: string;
     expiredDate?: Date;
+    pricePerUnit?: number;
   }>;
 }) {
   return prisma.$transaction(async (tx) => {
+    const totalAmount = await calculateTotalAmount(data.materials);
+
     const import_ = await tx.import.create({
       data: {
-        totalAmount: data.totalAmount,
         status: data.status,
         provider: data.provider,
         createdBy: data.createdBy,
+        quotationLink: data.quotationLink,
         expectedDeliveryDate: data.expectedDeliveryDate,
+        totalAmount,
       },
     });
 
@@ -81,6 +102,7 @@ export async function createImport(data: {
         actualGood: 0,
         actualDefective: 0,
         expiredDate: material.expiredDate,
+        pricePerUnit: material.pricePerUnit,
       })),
     });
 
@@ -91,20 +113,25 @@ export async function createImport(data: {
 export async function updateImport(
   id: Import["id"],
   data: Partial<{
-    totalAmount: Prisma.Decimal | number;
-    status: "PENDING" | "APPROVED" | "REJECTED" | "COMPLETED" | "CANCELLED";
+    status: Status;
     provider: { connect: { id: string } };
     expectedDeliveryDate?: Date;
+    quotationLink: string | null;
     materials: Array<{
       materialId: string;
       expectedQuantity: number;
       qualityStandard?: string;
       expiredDate?: Date;
+      pricePerUnit?: number | null;
     }>;
   }>,
 ) {
   return prisma.$transaction(async (tx) => {
+    let totalAmount: number | undefined;
+
     if (data.materials) {
+      totalAmount = await calculateTotalAmount(data.materials);
+
       await tx.importMaterial.deleteMany({
         where: { importId: id },
       });
@@ -118,6 +145,7 @@ export async function updateImport(
           actualGood: 0,
           actualDefective: 0,
           expiredDate: material.expiredDate,
+          pricePerUnit: material.pricePerUnit,
         })),
       });
     }
@@ -125,10 +153,11 @@ export async function updateImport(
     return tx.import.update({
       where: { id },
       data: {
-        totalAmount: data.totalAmount,
+        ...(totalAmount !== undefined && { totalAmount }),
         status: data.status,
         provider: data.provider,
         expectedDeliveryDate: data.expectedDeliveryDate,
+        quotationLink: data.quotationLink,
       },
     });
   });
@@ -141,6 +170,122 @@ export async function deleteImport(id: Import["id"]) {
     });
     return tx.import.delete({
       where: { id },
+    });
+  });
+}
+
+export async function getImportWithApprovalDetails(id: Import["id"]) {
+  return prisma.import.findUnique({
+    where: { id },
+    include: {
+      provider: true,
+      createdBy: {
+        select: {
+          fullname: true,
+        },
+      },
+      approvedBy: {
+        select: {
+          fullname: true,
+        },
+      },
+      ImportMaterials: {
+        include: {
+          Material: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getMaterialPriceHistory(
+  materialId: string,
+  beforeDate: Date,
+) {
+  return prisma.importMaterial.findMany({
+    where: {
+      materialId,
+      Import: {
+        status: { in: ["COMPLETED", "APPROVED"] },
+        createdAt: {
+          lt: beforeDate,
+        },
+      },
+    },
+    include: {
+      Import: {
+        select: {
+          createdAt: true,
+        },
+      },
+    },
+    orderBy: {
+      Import: {
+        createdAt: "desc",
+      },
+    },
+    take: 3,
+  });
+}
+
+export async function approveImport(
+  importId: string,
+  data: {
+    status: "APPROVED" | "REJECTED";
+    approvedById: string;
+    cancledReason?: string;
+  },
+) {
+  return prisma.import.update({
+    where: { id: importId },
+    data: {
+      status: data.status,
+      approvedBy: { connect: { id: data.approvedById } },
+      cancledReason: data.cancledReason,
+    },
+  });
+}
+export async function updateImportReceived(
+  id: Import["id"],
+  data: {
+    receivedById: string;
+    materials: Array<{
+      materialId: string;
+      actualGood: number;
+      actualDefective: number;
+      expiredDate?: Date;
+      pricePerUnit?: number;
+    }>;
+  },
+) {
+  return prisma.$transaction(async (tx) => {
+    // Update each material
+    await Promise.all(
+      data.materials.map((material) =>
+        tx.importMaterial.update({
+          where: {
+            importId_materialId: {
+              importId: id,
+              materialId: material.materialId,
+            },
+          },
+          data: {
+            actualGood: material.actualGood,
+            actualDefective: material.actualDefective,
+            expiredDate: material.expiredDate,
+            pricePerUnit: material.pricePerUnit,
+          },
+        }),
+      ),
+    );
+
+    // Update import status and receiver
+    return tx.import.update({
+      where: { id },
+      data: {
+        status: "COMPLETED",
+        receivedBy: { connect: { id: data.receivedById } },
+      },
     });
   });
 }

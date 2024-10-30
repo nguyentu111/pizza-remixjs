@@ -1,9 +1,9 @@
 import { json, LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
-import { AddOrUpdateProductForm } from "~/components/admin/add-or-update-product";
+import { AddOrUpdateProductForm } from "~/components/admin/add-or-update-product-form";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { insertProductSchema } from "~/lib/schema";
 import { safeAction } from "~/lib/utils";
@@ -66,18 +66,14 @@ export const action = safeAction([
         {
           borderIds: validatedData["borderIds[]"],
           toppingIds: validatedData["toppingIds[]"],
-          sizes: Object.entries(validatedData.sizes || {}).map(
-            ([sizeId, price]) => ({
-              sizeId,
-              price: Number(price),
-            }),
-          ),
-          recipes: Object.entries(validatedData.recipes || {}).map(
-            ([materialId, quantity]) => ({
-              materialId,
-              quantity: Number(quantity),
-            }),
-          ),
+          sizes: validatedData.sizes?.map((size) => ({
+            sizeId: size.sizeId,
+            price: Number(size.price),
+          })),
+          recipes: validatedData.recipes?.map((recipe) => ({
+            materialId: recipe.materialId,
+            quantity: Number(recipe.quantity),
+          })),
         },
       );
       return json({ success: true });

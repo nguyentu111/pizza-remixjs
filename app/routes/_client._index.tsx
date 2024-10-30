@@ -5,10 +5,10 @@ import type {
   MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import { AddressSearch } from "~/components/home/AddressSearch";
-import { Banner } from "~/components/home/Banner";
-import { ProductSection } from "~/components/home/ProductSection";
-import { ProductSectionProps } from "~/lib/type";
+import { AddressSearch } from "~/components/home/address-bar";
+import { Banner } from "~/components/home/banner";
+import { ProductSection } from "~/components/home/product-section";
+import { ProductWithDetails } from "~/lib/type";
 import { getAllCoupons } from "~/models/coupon.server";
 import {
   getRandomProducts,
@@ -43,9 +43,7 @@ export default function Index() {
     <>
       <Banner couponsWithBanners={couponsWithBanners as unknown as Coupon[]} />
       <AddressSearch />
-      <ProductSection
-        products={products as unknown as ProductSectionProps["products"]}
-      />
+      <ProductSection products={products as unknown as ProductWithDetails[]} />
     </>
   );
 }

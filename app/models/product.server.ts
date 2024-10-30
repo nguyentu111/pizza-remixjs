@@ -64,7 +64,13 @@ export async function getProductBySlug(slug: Product["slug"]) {
 export async function createProduct(
   product: Pick<
     Product,
-    "name" | "shortDescription" | "detailDescription" | "slug" | "categoryId"
+    | "name"
+    | "shortDescription"
+    | "detailDescription"
+    | "slug"
+    | "categoryId"
+    | "image"
+    | "image_mobile"
   >,
   {
     borderIds,
@@ -218,9 +224,6 @@ export async function getProductByCategorySlug(categorySlug: string) {
       Sizes: {
         include: { size: true },
       },
-      Recipes: {
-        include: { material: true },
-      },
     },
   });
 }
@@ -234,9 +237,14 @@ export async function getRandomProducts(limit: number = 4) {
     },
     include: {
       category: true,
+      Borders: {
+        include: { border: true },
+      },
+      Toppings: {
+        include: { topping: true },
+      },
       Sizes: {
         include: { size: true },
-        take: 1,
       },
     },
   });

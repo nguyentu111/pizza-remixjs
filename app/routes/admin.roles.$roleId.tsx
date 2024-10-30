@@ -1,17 +1,17 @@
-import { Permission, RolePermission, Role } from "@prisma/client";
+import { Permission, Role, RolePermission } from "@prisma/client";
 import { json, LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { AddOrUpdateRoleForm } from "~/components/admin/add-or-update-role-form";
-import { PermissionsEnum } from "~/lib/config.server";
+import { ErrorBoundary } from "~/components/shared/error-boudary";
 import { prisma } from "~/lib/db.server";
 import { roleSchema } from "~/lib/schema";
-import { ca, safeAction } from "~/lib/utils";
+import { PermissionsEnum } from "~/lib/type";
+import { safeAction } from "~/lib/utils";
 import { getAllPermissions } from "~/models/permission.server";
 import { deleteRole, getRoleById } from "~/models/role.server";
-import { requireStaff, requireStaffId } from "~/session.server";
+import { requireStaffId } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
-import { ErrorBoundary } from "~/components/shared/error-boudary";
 
 export { ErrorBoundary };
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {

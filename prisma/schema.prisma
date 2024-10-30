@@ -53,6 +53,7 @@ model Staff {
   ImportReceivedBy  Import[]       @relation("ImportReceivedBy")
   ExportCreatedBy   Export[]       @relation("ExportCreatedBy")
   ExportDeliveredBy Export[]       @relation("ExportDeliveredBy")
+  ImportApprovedBy  Import[]       @relation("ImportApprovedBy")
 }
 
 model CustomerPassword {
@@ -172,7 +173,7 @@ model Topping {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   ProductToppings ProductTopping[]
-  Material        Material?        @relation(fields: [materialId], references: [id])
+  Material        Material?        @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   OrderDetail     OrderDetail[]
 }
 
@@ -201,17 +202,18 @@ model Coupon {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   Orders      Order[]
-  createdBy   Staff?   @relation("CouponsCreatedBy", fields: [createdById], references: [id])
+  createdBy   Staff?   @relation("CouponsCreatedBy", fields: [createdById], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([createdById])
 }
 
 model Material {
-  id              String           @id @default(uuid())
-  name            String           @unique
-  unit            String
-  warningLimits   Decimal
-  image           String? // New field
+  id            String  @id @default(uuid())
+  name          String  @unique
+  unit          String
+  warningLimits Decimal
+  image         String? // New field
+
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   ImportMaterials ImportMaterial[]
@@ -223,13 +225,18 @@ model Material {
 
 model Import {
   id                   String           @id @default(uuid())
-  totalAmount          Decimal
-  status               Status
+  totalAmount          Decimal?
+  quotationLink        String?
+  status               ImportStatus
   providerId           String
   createdById          String? // New field for the ID of the staff who created the import
   receivedById         String? // New field for the ID of the staff who received the import
   createdBy            Staff?           @relation("ImportCreatedBy", fields: [createdById], references: [id]) // Relation for createdById
   receivedBy           Staff?           @relation("ImportReceivedBy", fields: [receivedById], references: [id]) // Relation for receivedById
+  approvedById         String? // New field for the ID of the staff who approved the import
+  approvedBy           Staff?           @relation("ImportApprovedBy", fields: [approvedById], references: [id]) // Relation for approvedById
+  approvedAt           DateTime?
+  cancledReason        String?
   expectedDeliveryDate DateTime? // New field for expected delivery date
   provider             Provider         @relation(fields: [providerId], references: [id])
   ImportMaterials      ImportMaterial[]
@@ -242,9 +249,9 @@ model Import {
 }
 
 model Export {
-  id          String  @id @default(uuid())
+  id          String       @id @default(uuid())
   totalAmount Decimal
-  status      Status
+  status      ExportStatus
   providerId  String
 
   createdById   String? // New field for the ID of the staff who created the export
@@ -253,8 +260,8 @@ model Export {
   updatedAt     DateTime @updatedAt
   provider      Provider @relation(fields: [providerId], references: [id])
 
-  createdBy            Staff?           @relation("ExportCreatedBy", fields: [createdById], references: [id]) // Relation for createdById
-  deliveredBy          Staff?           @relation("ExportDeliveredBy", fields: [deliveredById], references: [id]) // Relation for deliveredById
+  createdBy            Staff?           @relation("ExportCreatedBy", fields: [createdById], references: [id], onDelete: Cascade, onUpdate: Cascade) // Relation for createdById
+  deliveredBy          Staff?           @relation("ExportDeliveredBy", fields: [deliveredById], references: [id], onDelete: Cascade, onUpdate: Cascade) // Relation for deliveredById
   ExportMaterials      ExportMaterial[]
   expectedDeliveryDate DateTime? // New field for expected delivery date
 
@@ -264,7 +271,6 @@ model Export {
 }
 
 model ImportMaterial {
-  id               String    @id @default(uuid())
   importId         String
   materialId       String
   expectedQuantity Decimal // Total expected quantity to be delivered
@@ -272,11 +278,13 @@ model ImportMaterial {
   actualGood       Decimal // Actual quantity that meets the quality standard
   actualDefective  Decimal // Actual quantity that does not meet the quality standard and is to be returned
   expiredDate      DateTime? // Expiration date of the material
+  pricePerUnit     Decimal?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
-  Import           Import    @relation(fields: [importId], references: [id])
-  Material         Material  @relation(fields: [materialId], references: [id])
+  Import           Import    @relation(fields: [importId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  Material         Material  @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
+  @@id([importId, materialId])
   @@index([importId])
   @@index([materialId])
 }
@@ -286,7 +294,7 @@ model Inventory {
   materialId  String
   quantity    Decimal
   expiredDate DateTime?
-  Material    Material  @relation(fields: [materialId], references: [id])
+  Material    Material  @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([materialId, expiredDate])
   @@index([materialId])
@@ -298,8 +306,8 @@ model ExportMaterial {
   quantity   Decimal
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  export     Export   @relation(fields: [exportId], references: [id])
-  material   Material @relation(fields: [materialId], references: [id])
+  export     Export   @relation(fields: [exportId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([exportId, materialId])
 }
@@ -309,7 +317,7 @@ model Order {
   address         String
   shipNote        String?
   totalAmount     Decimal
-  status          Status
+  status          OrderStatus
   paymentStatus   String? // Thêm trạng thái thanh toán, nullable
   paymentUrl      String? // Thêm đường dẫn thanh toán, nullable
   cancelledReason String?
@@ -322,12 +330,12 @@ model Order {
   deliveryStep    Int
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-  coupon          Coupon?       @relation(fields: [couponId], references: [id])
-  chef            Staff?        @relation("ChefOrders", fields: [chefId], references: [id])
-  shipper         Staff?        @relation("ShipperOrders", fields: [shipperId], references: [id])
-  customer        Customer      @relation(fields: [customerId], references: [id])
+  coupon          Coupon?       @relation(fields: [couponId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  chef            Staff?        @relation("ChefOrders", fields: [chefId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  shipper         Staff?        @relation("ShipperOrders", fields: [shipperId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   rating          Rating?
-  delivery        Delivery?     @relation(fields: [deliveryId], references: [id])
+  delivery        Delivery?     @relation(fields: [deliveryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   OrderDetail     OrderDetail[]
 
   @@index([customerId]) // Added index for foreign key
@@ -345,23 +353,23 @@ model OrderDetail {
   sizeId    String
   toppingId String? // Nullable if topping is optional
   price     Decimal
-  order     Order    @relation(fields: [orderId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
-  border    Border?  @relation(fields: [borderId], references: [id])
-  size      Size     @relation(fields: [sizeId], references: [id])
-  topping   Topping? @relation(fields: [toppingId], references: [id]) // Optional relation for a single topping
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  border    Border?  @relation(fields: [borderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  size      Size     @relation(fields: [sizeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  topping   Topping? @relation(fields: [toppingId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Optional relation for a single topping
 
   @@index([orderId])
   @@index([productId, borderId, sizeId, toppingId]) // Unique constraint removed
 }
 
 model Delivery {
-  id        String   @id @default(uuid())
-  status    Status
+  id        String         @id @default(uuid())
+  status    DeliveryStatus
   staffId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  staff     Staff    @relation(fields: [staffId], references: [id])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  staff     Staff          @relation(fields: [staffId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   Orders    Order[]
 
   @@index([staffId]) // Added index for foreign key
@@ -372,7 +380,7 @@ model Rating {
   stars       Int
   description String?
   orderId     String   @unique
-  order       Order    @relation(fields: [orderId], references: [id])
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   createdAt   DateTime @default(now())
 }
 
@@ -381,8 +389,8 @@ model StaffRole {
   roleId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  staff     Staff    @relation(fields: [staffId], references: [id])
-  role      Role     @relation(fields: [roleId], references: [id])
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([staffId, roleId])
   @@index([staffId]) // Added index for foreign key
@@ -394,13 +402,13 @@ model Product {
   name              String
   image             String?
   image_mobile      String?
-  shortDescription  String
-  detailDescription String?
+  shortDescription  String           @db.Text
+  detailDescription String?          @db.Text
   slug              String           @unique
   categoryId        String
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  category          Category         @relation(fields: [categoryId], references: [id])
+  category          Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   Borders           ProductBorder[]
   Toppings          ProductTopping[]
   Sizes             ProductSize[]
@@ -413,8 +421,8 @@ model ProductBorder {
   borderId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  product   Product  @relation(fields: [productId], references: [id])
-  border    Border   @relation(fields: [borderId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  border    Border   @relation(fields: [borderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([productId, borderId])
   @@index([productId]) // Added index for foreign key
@@ -425,8 +433,8 @@ model ProductTopping {
   toppingId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  product   Product  @relation(fields: [productId], references: [id])
-  topping   Topping  @relation(fields: [toppingId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  topping   Topping  @relation(fields: [toppingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([productId, toppingId])
 }
@@ -437,8 +445,8 @@ model ProductSize {
   price     Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  product   Product  @relation(fields: [productId], references: [id])
-  size      Size     @relation(fields: [sizeId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  size      Size     @relation(fields: [sizeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([productId, sizeId])
 }
@@ -449,16 +457,41 @@ model Recipe {
   quantity   Decimal
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  product    Product  @relation(fields: [productId], references: [id])
-  material   Material @relation(fields: [materialId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([productId, materialId])
 }
 
-enum Status {
+enum ImportStatus {
   PENDING
+  WAITING_APPROVAL
   APPROVED
   REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum ExportStatus {
+  PENDING
+  WAITING_APPROVAL
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  COOKING
+  SHIPPING
+  COMPLETED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  PENDING
+  SHIPPING
   COMPLETED
   CANCELLED
 }

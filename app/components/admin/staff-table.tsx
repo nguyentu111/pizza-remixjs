@@ -14,7 +14,7 @@ import {
 } from "~/components/ui/table"; // Use Shadcn UI Table components
 import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
-import { useStaff } from "~/lib/utils";
+import { useStaff } from "~/hooks/use-staff";
 
 export function StaffTable({ staffs }: { staffs: Staff[] }) {
   const currentStaff = useStaff();

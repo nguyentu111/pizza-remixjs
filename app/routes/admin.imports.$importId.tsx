@@ -1,64 +1,31 @@
-import { ActionFunctionArgs, LoaderFunctionArgs, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { LoaderFunctionArgs, json } from "@remix-run/node";
+import { Outlet } from "@remix-run/react";
 import { z } from "zod";
-import { AddOrUpdateImportForm } from "~/components/admin/add-or-update-import-form";
-import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
 import { prisma } from "~/lib/db.server";
+import { insertImportSchema } from "~/lib/schema";
+import { PermissionsEnum } from "~/lib/type";
 import { safeAction } from "~/lib/utils";
-import { getImportById, updateImport } from "~/models/import.server";
+import { updateImport } from "~/models/import.server";
 import { requireStaffId } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
 
-export { ErrorBoundary };
-
+import { deleteImport } from "~/models/import.server";
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const user = await requireStaffId(request);
-  await requirePermissions(prisma, user, [PermissionsEnum.UpdateImports]);
+  await requirePermissions(prisma, user, [PermissionsEnum.ViewImports]);
 
   const importId = params.importId;
   if (!importId) {
     throw new Response("Not Found", { status: 404 });
   }
-
-  const import_ = await getImportById(importId);
-  if (!import_) {
-    throw new Response("Not Found", { status: 404 });
-  }
-
-  const [providers, materials] = await Promise.all([
-    prisma.provider.findMany(),
-    prisma.material.findMany(),
-  ]);
-
-  return json({
-    import_: {
-      ...import_,
-      totalAmount: import_.totalAmount.toString(),
-    },
-    providers,
-    materials,
-  });
+  return null;
 };
-
-const schema = z.object({
-  providerId: z.string(),
-  expectedDeliveryDate: z.string().optional(),
-  materials: z.array(
-    z.object({
-      materialId: z.string(),
-      expectedQuantity: z.number(),
-      qualityStandard: z.string().optional(),
-      expiredDate: z.string().optional(),
-    }),
-  ),
-});
-
 export const action = safeAction([
   {
     method: "PUT",
-    schema,
+    schema: insertImportSchema,
     action: async ({ request, params }, data) => {
+      const validatedData = data as z.infer<typeof insertImportSchema>;
       const currentUserId = await requireStaffId(request);
       await requirePermissions(prisma, currentUserId, [
         PermissionsEnum.UpdateImports,
@@ -72,31 +39,43 @@ export const action = safeAction([
         );
       }
 
-      const totalAmount = data.materials.reduce(
-        (acc: number, curr: { expectedQuantity: number }) =>
-          acc + curr.expectedQuantity,
-        0,
-      );
+      // Check import status before update
+      const import_ = await prisma.import.findUnique({
+        where: { id: importId },
+        select: { status: true },
+      });
+
+      if (!import_) {
+        return json(
+          { error: "Import not found", success: false },
+          { status: 404 },
+        );
+      }
+
+      if (import_.status === "APPROVED" || import_.status === "REJECTED") {
+        return json(
+          {
+            error: "Không thể chỉnh sửa phiếu nhập đã được duyệt hoặc từ chối",
+            success: false,
+          },
+          { status: 403 },
+        );
+      }
 
       await updateImport(importId, {
-        totalAmount,
-        provider: { connect: { id: data.providerId } },
-        expectedDeliveryDate: data.expectedDeliveryDate
-          ? new Date(data.expectedDeliveryDate)
+        status: validatedData.quotationLink ? "WAITING_APPROVAL" : "PENDING",
+        provider: { connect: { id: validatedData.providerId } },
+        expectedDeliveryDate: validatedData.expectedDeliveryDate
+          ? new Date(validatedData.expectedDeliveryDate)
           : undefined,
-        materials: data.materials.map(
-          (m: {
-            materialId: string;
-            expectedQuantity: number;
-            qualityStandard?: string;
-            expiredDate?: string;
-          }) => ({
-            materialId: m.materialId,
-            expectedQuantity: m.expectedQuantity,
-            qualityStandard: m.qualityStandard,
-            expiredDate: m.expiredDate ? new Date(m.expiredDate) : undefined,
-          }),
-        ),
+        quotationLink: validatedData.quotationLink,
+        materials: validatedData.materials.map((m) => ({
+          materialId: m.materialId,
+          expectedQuantity: Number(m.expectedQuantity),
+          qualityStandard: m.qualityStandard,
+          expiredDate: m.expiredDate ? new Date(m.expiredDate) : undefined,
+          pricePerUnit: m.pricePerUnit ? Number(m.pricePerUnit) : null,
+        })),
       });
 
       return json({ success: true });
@@ -118,38 +97,39 @@ export const action = safeAction([
         );
       }
 
-      await prisma.import.delete({
+      // Check import status before deletion
+      const import_ = await prisma.import.findUnique({
         where: { id: importId },
+        select: { status: true },
       });
+
+      if (!import_) {
+        return json(
+          { error: "Import not found", success: false },
+          { status: 404 },
+        );
+      }
+
+      if (import_.status === "APPROVED" || import_.status === "REJECTED") {
+        return json(
+          {
+            error: "Không thể xóa phiếu nhập đã được duyệt hoặc từ chối",
+            success: false,
+          },
+          { status: 403 },
+        );
+      }
+
+      await deleteImport(importId);
 
       return json({ success: true });
     },
   },
 ]);
-
-export default function EditImportPage() {
-  const { import_, providers, materials } = useLoaderData<typeof loader>();
-
+export default function ImportIdLayout() {
   return (
     <div className="p-4">
-      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white">
-        <div>
-          <h1 className="text-2xl font-bold">Cập nhật phiếu nhập</h1>
-          <nav className="text-sm text-gray-600">
-            <a href="/admin" className="hover:underline">
-              Trang chủ
-            </a>{" "}
-            &gt;{" "}
-            <a href="/admin/imports" className="hover:underline">
-              Quản lý phiếu nhập
-            </a>{" "}
-            &gt; Cập nhật phiếu nhập
-          </nav>
-        </div>
-      </div>
-      <div className="py-10">
-        <AddOrUpdateImportForm import_={import_ as any} />
-      </div>
+      <Outlet />
     </div>
   );
 }

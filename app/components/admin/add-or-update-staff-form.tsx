@@ -94,6 +94,11 @@ export const AddOrUpdateStaffForm = ({
             <InputField />
             <ErrorMessage />
           </FormField>
+          <FormField control={control} name={"phoneNumbers"}>
+            <Label>Số điện thoại</Label>
+            <InputField />
+            <ErrorMessage />
+          </FormField>
         </div>
         <div className="flex flex-col">
           <FormField control={control} name={"status"}>

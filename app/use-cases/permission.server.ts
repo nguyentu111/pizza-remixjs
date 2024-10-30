@@ -2,7 +2,7 @@ import { Permission, Prisma, Staff } from "@prisma/client";
 import { getUserPermission } from "~/models/permission.server";
 import * as _ from "lodash";
 import { CustomHttpError, ERROR_NAME } from "~/lib/error";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { getStaff } from "~/session.server";
 import { getStaffById } from "~/models/staff.server";
 

@@ -1,6 +1,6 @@
 import { Button } from "~/components/ui/button";
 import { NavLink } from "@remix-run/react";
-import { useCustomer } from "~/lib/utils";
+import { useCustomer } from "~/hooks/use-customer";
 import { useForm } from "~/hooks/use-form";
 import { FormField } from "~/components/shared/form/form-field";
 import { InputField } from "~/components/shared/form/form-fields/input-field";

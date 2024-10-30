@@ -1,13 +1,16 @@
 import React from "react";
+import { ZodIssue } from "zod";
+import * as _ from "lodash";
+import { parseFormName } from "~/lib/utils";
 interface Props<
-  E extends Record<string, string[] | undefined>,
+  E extends ZodIssue[],
   T extends {
     fieldErrors?: E;
     defaultValues?: Partial<Record<keyof E, any>>;
   },
 > {
   control: T;
-  name?: keyof NonNullable<T["fieldErrors"]>;
+  name: string;
   children: React.ReactNode;
 }
 // type FormFieldContextValue<
@@ -22,7 +25,7 @@ const FormFieldContext = React.createContext({
 } as {
   name?: string;
   defaultValue: any;
-  error?: string[];
+  error?: ZodIssue;
 });
 export const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext);
@@ -38,7 +41,7 @@ export const useFormField = () => {
   };
 };
 export const FormField = <
-  E extends Record<string, string[] | undefined>,
+  E extends ZodIssue[],
   T extends {
     fieldErrors?: E;
     defaultValues?: Partial<Record<keyof E, any>>;
@@ -49,9 +52,15 @@ export const FormField = <
   name,
 }: Props<E, T>) => {
   const defaultValue =
-    name && control?.defaultValues ? control?.defaultValues[name] : undefined;
+    name && control?.defaultValues
+      ? control?.defaultValues[name as keyof E]
+      : undefined;
   const error =
-    name && control?.fieldErrors ? control?.fieldErrors[name] : undefined;
+    name && control?.fieldErrors
+      ? control?.fieldErrors.find((err) =>
+          _.isEqual(err.path, parseFormName(name)),
+        )
+      : undefined;
   return (
     <FormFieldContext.Provider
       value={{

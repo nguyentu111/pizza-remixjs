@@ -2,7 +2,7 @@ import { Topping } from "@prisma/client";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
-import { PermissionsEnum } from "~/lib/config.server";
+import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { getAllToppingWithMaterial } from "~/models/topping.server";
 import { requireStaffId } from "~/session.server";
