@@ -19,8 +19,11 @@ export async function getAllProducts() {
   });
 }
 
-export async function getProductById(id: Product["id"]) {
-  return prisma.product.findUnique({
+export async function getProductById(
+  db: Prisma.TransactionClient,
+  id: Product["id"],
+) {
+  return db.product.findUnique({
     where: { id },
     include: {
       category: true,
@@ -198,7 +201,7 @@ export async function updateProduct(
       });
     }
 
-    return getProductById(id);
+    return getProductById(prisma, id);
   });
 }
 
@@ -267,4 +270,41 @@ export async function getBestSellerProducts(limit: number = 4) {
       },
     },
   });
+}
+
+// Thêm function mới để lấy giá của product size
+export async function getProductSizePrice(
+  db: Prisma.TransactionClient,
+  productId: string,
+  sizeId: string,
+) {
+  const productSize = await db.productSize.findFirst({
+    where: {
+      productId,
+      sizeId,
+    },
+  });
+  return productSize?.price || 0;
+}
+
+// Thêm function để lấy giá của border
+export async function getBorderPrice(
+  db: Prisma.TransactionClient,
+  borderId: string,
+) {
+  const border = await db.border.findUnique({
+    where: { id: borderId },
+  });
+  return border?.price || 0;
+}
+
+// Thêm function để lấy giá của topping
+export async function getToppingPrice(
+  db: Prisma.TransactionClient,
+  toppingId: string,
+) {
+  const topping = await db.topping.findUnique({
+    where: { id: toppingId },
+  });
+  return topping?.price || 0;
 }

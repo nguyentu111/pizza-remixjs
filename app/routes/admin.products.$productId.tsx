@@ -27,7 +27,7 @@ export { ErrorBoundary };
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const user = await requireStaffId(request);
   await requirePermissions(prisma, user, [PermissionsEnum.UpdateProducts]);
-  const product = await getProductById(params.productId!);
+  const product = await getProductById(prisma, params.productId!);
   if (!product) {
     throw new Response("Not Found", { status: 404 });
   }

@@ -1,4 +1,4 @@
-import { Import, Status } from "@prisma/client";
+import { Import, ImportStatus } from "@prisma/client";
 import { Link } from "@remix-run/react";
 import {
   EditIcon,
@@ -56,7 +56,7 @@ export function ImportTable({ imports }: ImportTableProps) {
     currentPage * itemsPerPage,
   );
 
-  const getStatusVariant = (status: Status) => {
+  const getStatusVariant = (status: ImportStatus) => {
     switch (status) {
       case "PENDING":
         return "outline";
@@ -84,11 +84,11 @@ export function ImportTable({ imports }: ImportTableProps) {
     (p) => p.name === PermissionsEnum.ReceiveImports,
   );
 
-  const canEditImport = (status: Status) => {
-    return status === "PENDING" && canEdit;
+  const canEditImport = (status: ImportStatus) => {
+    return (status === "PENDING" || status === "WAITING_APPROVAL") && canEdit;
   };
-
-  const canDeleteImport = (status: Status) => {
+  console.log({ canReceive, canApprove });
+  const canDeleteImport = (status: ImportStatus) => {
     return status === "PENDING" && canDelete;
   };
 
@@ -188,7 +188,7 @@ export function ImportTable({ imports }: ImportTableProps) {
                       </Link>
                     </Button>
                   )}
-                  {canApprove && import_.status === "PENDING" && (
+                  {canApprove && import_.status === "WAITING_APPROVAL" && (
                     <Button asChild variant="ghost">
                       <Link to={`/admin/imports/${import_.id}/approve`}>
                         <EditIcon className="w-4 h-4" />

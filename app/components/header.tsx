@@ -8,7 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { ShoppingCart, Edit2Icon, Trash2Icon } from "lucide-react";
+import { ShoppingCart, Edit2Icon, Trash2Icon, UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatPrice } from "~/lib/utils";
 import { useModal } from "./providers/modal-provider";
@@ -50,7 +50,7 @@ export function Header() {
         <nav>
           <ul className="flex space-x-4">
             <li>
-              <Link to="/coupons">KHUYẾN MÃI</Link>
+              <Link to="/promotions">KHUYẾN MÃI</Link>
             </li>
             <li>
               <Link to="/menu">THỰC ĐƠN</Link>
@@ -61,8 +61,9 @@ export function Header() {
           </ul>
         </nav>
         <div className="flex items-center space-x-4">
-          <Link to="/account" className="text-xl">
-            👤 {customer?.phoneNumbers}
+          <Link to="/account" className="text-xl flex items-center gap-2">
+            <UserIcon className="w-6 h-6" />
+            <span>{customer?.phoneNumbers}</span>
           </Link>
           <Sheet>
             <SheetTrigger asChild>

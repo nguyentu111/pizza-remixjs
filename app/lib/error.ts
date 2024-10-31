@@ -1,9 +1,9 @@
 export enum ERROR_NAME {
-  default = "SERVER_ERROR",
-  missing_permissions = "MISSING_PERMISSIONS",
-  bad_requrest = "BAD_REQUEST",
-  not_allowed = "NOT_ALLOWED",
-  not_found = "NOT_FOUND",
+  DEFAULT = "SERVER_ERROR",
+  MISSING_PERMISSIONS = "MISSING_PERMISSIONS",
+  BAD_REQUEST = "BAD_REQUEST",
+  NOT_ALLOWED = "NOT_ALLOWED",
+  NOT_FOUND = "NOT_FOUND",
 }
 
 export class CustomHttpError extends Error {
@@ -12,7 +12,7 @@ export class CustomHttpError extends Error {
   constructor({
     message,
     statusCode,
-    name = ERROR_NAME.default,
+    name = ERROR_NAME.DEFAULT,
   }: {
     name: ERROR_NAME;
     message: string;

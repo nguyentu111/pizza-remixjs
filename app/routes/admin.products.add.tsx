@@ -68,18 +68,14 @@ export const action = safeAction([
         {
           borderIds: validatedData["borderIds[]"],
           toppingIds: validatedData["toppingIds[]"],
-          sizes: Object.entries(validatedData.sizes || {}).map(
-            ([sizeId, price]) => ({
-              sizeId,
-              price: Number(price),
-            }),
-          ),
-          recipes: Object.entries(validatedData.recipes || {}).map(
-            ([materialId, quantity]) => ({
-              materialId,
-              quantity: Number(quantity),
-            }),
-          ),
+          sizes: validatedData.sizes?.map(({ sizeId, price }) => ({
+            sizeId,
+            price: Number(price),
+          })),
+          recipes: validatedData.recipes?.map(({ materialId, quantity }) => ({
+            materialId,
+            quantity: Number(quantity),
+          })),
         },
       );
 

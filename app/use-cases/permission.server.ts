@@ -31,7 +31,7 @@ export const requirePermissions = async (
   if (!user)
     throw new CustomHttpError({
       message: "Tài khoản không tồn tại",
-      name: ERROR_NAME.not_found,
+      name: ERROR_NAME.NOT_FOUND,
       statusCode: 404,
     });
   if (
@@ -57,7 +57,7 @@ export const requirePermissions = async (
             ) +
             "."
           : "Tài khoản của bạn không có quyền thực thi yêu cầu này.",
-      name: ERROR_NAME.missing_permissions,
+      name: ERROR_NAME.MISSING_PERMISSIONS,
       statusCode: 403,
     });
 };

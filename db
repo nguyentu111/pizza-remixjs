@@ -1,0 +1,361 @@
+
+INSERT INTO `Size` (`id`, `name`, `image`, `createdAt`, `updatedAt`) VALUES
+('ebb20e09-11e9-4355-8f8f-40e8a35a2466', 'Nhỏ', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083937/pizza-app/ebxscqpqj5aqk8s995p4.png', '2024-10-31 12:37:13.877', '2024-10-31 12:37:13.877'),
+('fc892e0f-232d-4a10-9f1f-12bbd0b80d47', 'Lớn', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083937/pizza-app/ebxscqpqj5aqk8s995p4.png', '2024-10-31 12:37:16.246', '2024-10-31 12:37:16.246');
+
+
+INSERT INTO `Provider` (`id`, `name`, `address`, `image`, `createdAt`, `updatedAt`) VALUES
+('456ccaf6-8f67-4e61-99bf-5b6482f6ae24', 'Khánh Trang', 'HN', '', '2024-10-31 12:38:10.620', '2024-10-31 12:38:10.620'),
+('ec6a052c-3748-4848-be4d-62532d8a3deb', 'Vân trang', 'HCM', '', '2024-10-31 12:38:04.044', '2024-10-31 12:38:04.044');
+
+
+
+INSERT INTO `Staff` (`id`, `username`, `phoneNumbers`, `fullname`, `image`, `address`, `salary`, `status`, `createdAt`, `updatedAt`) VALUES
+('40599936-fecc-4ae4-a66f-86e32b01b6af', 'admin', '0945499078', 'admin', '', '', NULL, 'on', '2024-10-31 13:40:57.520', '2024-10-31 14:24:50.994');
+
+INSERT INTO `StaffPassword` (`hash`, `staffId`) VALUES
+('$2a$10$lsWiz42Tr4v8Ox1ByLuzcO0sf4uLK5vS10dPiqgZdc8kdfWWRFqBu', '40599936-fecc-4ae4-a66f-86e32b01b6af');
+
+
+
+INSERT INTO `Border` (`id`, `name`, `price`, `image`, `createdAt`, `updatedAt`) VALUES
+('85a7e314-662f-487a-963f-aa535ac1df01', 'Viền xúc xích', 20000, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083974/pizza-app/pic9iim597rtnxvnql0h.png', '2024-10-31 12:36:18.831', '2024-10-31 12:36:18.831'),
+('ea9eb235-c9a2-43cd-9f83-261929636d83', 'Viền phô mai', 25000, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083974/pizza-app/whwrs6q4erddd4joqure.png', '2024-10-31 12:36:03.823', '2024-10-31 12:36:03.823');
+
+INSERT INTO `Category` (`id`, `name`, `image`, `slug`, `createdAt`, `updatedAt`) VALUES
+('92af343d-98be-4961-a458-24304c7a9d87', 'Hải sản', '', 'hai-san', '2024-10-31 12:35:28.214', '2024-10-31 12:35:28.214'),
+('e7545c1e-c071-49d8-971e-dcdcd4ab259f', 'Tiệc cuối tuần', '', 'tiec-cuoi-tuan', '2024-10-31 12:35:39.694', '2024-10-31 12:35:39.694');
+
+INSERT INTO `Coupon` (`id`, `code`, `name`, `description`, `discount`, `quantity`, `startDate`, `endDate`, `image`, `bannerImage`, `createdById`, `createdAt`, `updatedAt`) VALUES
+('1d050531-0bef-41b1-abb4-a0ad376bc805', 'mua1t1', 'Mua 1 tang 1', '', '50.000000000000000000000000000000', 100, '2024-10-27 00:00:00.000', '2024-10-31 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020009/pizza-app/ykxl1plbicovxw1oax4f.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020009/pizza-app/ykxl1plbicovxw1oax4f.jpg', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 09:10:33.699', '2024-10-27 09:37:09.316'),
+('49a83454-2888-48ae-89da-77528b8756e6', '70noen', 'Giảm 70% dịp noen', '', '70.000000000000000000000000000000', 100, '2024-10-27 00:00:00.000', '2024-11-01 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020011/pizza-app/d5yflbmmm62gz1fpp55t.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020011/pizza-app/d5yflbmmm62gz1fpp55t.jpg', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 08:52:09.358', '2024-10-27 09:38:08.372'),
+('515bd8f4-498b-4a2c-951e-5973055f9a15', 'tiecloncuoituan', 'Tiệc lớn cuối tuần', '', '50.000000000000000000000000000000', 100, '2024-10-27 00:00:00.000', '2024-10-31 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020010/pizza-app/h4uprcc047u7nildsqgf.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020010/pizza-app/h4uprcc047u7nildsqgf.jpg', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 09:10:16.929', '2024-10-27 09:37:16.111'),
+('589516e7-230b-4d7e-9937-fdc687c6d670', '30%off', 'Giảm 30%', '', '30.000000000000000000000000000000', 30, '2024-10-27 00:00:00.000', '2024-10-31 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020011/pizza-app/ap5otmlmtpq1m5y7qtze.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020011/pizza-app/ap5otmlmtpq1m5y7qtze.jpg', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 09:08:04.763', '2024-10-27 09:37:55.783'),
+('6acd6c78-7176-458c-9588-868ac5a5d485', 'vuitieccanha', 'Vui tiệc cả nhà', '', '50.000000000000000000000000000000', 100, '2024-10-27 00:00:00.000', '2024-10-31 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020008/pizza-app/tjq7l1lmdsejbsjvjffe.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020008/pizza-app/tjq7l1lmdsejbsjvjffe.jpg', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 09:10:54.305', '2024-10-27 09:37:01.774'),
+('7069193f-0e84-495f-a76d-92c5b342ea37', 'nuagia', 'Giảm nửa giá', '', '50.000000000000000000000000000000', 100, '2024-10-27 00:00:00.000', '2024-10-31 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020010/pizza-app/ehzm0tvn9yi1fyjjhk7e.png', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020010/pizza-app/ehzm0tvn9yi1fyjjhk7e.png', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 09:09:56.429', '2024-10-27 09:37:24.377'),
+('b2058eb4-793f-4427-a557-22951f153280', 'mua1tang3', 'Mua 1 tặng 3', '', '80.010000000000010000000000000000', 23, '2024-10-27 00:00:00.000', '2024-10-31 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020010/pizza-app/s4mqsvgxdevkoxvliirq.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020010/pizza-app/s4mqsvgxdevkoxvliirq.jpg', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 09:09:34.765', '2024-10-27 09:37:39.281'),
+('d053d9fd-2a10-44c8-818e-6eff4b103d59', 'mua1tang1', 'Mua 1 tặng 1 ', '', '50.020000000000000000000000000000', 200, '2024-10-25 00:00:00.000', '2024-10-31 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020009/pizza-app/ykxl1plbicovxw1oax4f.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020009/pizza-app/ykxl1plbicovxw1oax4f.jpg', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 09:08:52.355', '2024-10-27 09:37:48.179'),
+('db328d91-319f-4dab-8ce1-5557638a8b9a', 'donggia99k', 'Đồng giá 99k', '', '50.000000000000000000000000000000', 100, '2024-10-27 00:00:00.000', '2024-10-31 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020008/pizza-app/sweadg5ohaiwpnmwgfjt.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020008/pizza-app/sweadg5ohaiwpnmwgfjt.jpg', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 09:11:10.109', '2024-10-27 09:36:54.728'),
+('f705fafe-f3d9-4718-b91d-0e10e267f4f4', 'bacongiamgia', 'Bacon giảm giá', 'sdfwsdf wsd fwsdf f', '40.000000000000000000000000000000', 98, '2024-10-27 00:00:00.000', '2024-11-09 00:00:00.000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020011/pizza-app/ap5otmlmtpq1m5y7qtze.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730020007/pizza-app/jgshfd02xqpuivtlvdks.jpg', '40599936-fecc-4ae4-a66f-86e32b01b6af', '2024-10-27 09:11:40.767', '2024-10-31 13:54:49.222');
+
+INSERT INTO `Customer` (`id`, `phoneNumbers`, `fullname`, `status`, `avatarId`, `avatarUrl`, `createdAt`, `updatedAt`) VALUES
+('cm2xcuniz0000j2ainw8s6y9j', '0945499078', 'tuna', 'on', NULL, NULL, '2024-10-31 13:42:24.156', '2024-10-31 13:42:24.156');
+
+INSERT INTO `CustomerPassword` (`hash`, `customerId`) VALUES
+('$2a$10$zMuXLwLWJLiV.jQEIf1SVOmofdcPB3jZp.xvDHbQvx3QsLHq5eRoG', 'cm2xcuniz0000j2ainw8s6y9j');
+
+INSERT INTO `Import` (`id`, `totalAmount`, `quotationLink`, `status`, `providerId`, `createdById`, `receivedById`, `approvedById`, `approvedAt`, `cancledReason`, `expectedDeliveryDate`, `createdAt`, `updatedAt`) VALUES
+('4e6e9941-69d9-425b-bfb9-de6377b50fb2', '7000000.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/raw/upload/v1730187199/pizza-app/detttjqahpybxmtgq8h0', 'APPROVED', '456ccaf6-8f67-4e61-99bf-5b6482f6ae24', '40599936-fecc-4ae4-a66f-86e32b01b6af', NULL, '40599936-fecc-4ae4-a66f-86e32b01b6af', NULL, NULL, '2024-10-31 17:00:00.000', '2024-10-31 14:31:54.859', '2024-10-31 14:42:12.881');
+
+
+INSERT INTO `Material` (`id`, `name`, `unit`, `warningLimits`, `image`, `createdAt`, `updatedAt`) VALUES
+('062f5b27-242e-4828-8f1d-c5e0af568f0d', 'Thịt heo', 'kg', '3000.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/iyzsnatptnfay9wfrisd.jpg', '2024-10-26 16:36:32.824', '2024-10-30 10:37:01.450'),
+('0988d10b-e086-4f14-b6c6-55912b981caa', 'hành', 'g', '10000.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/tetyc1runy2sticyy8y6.webp', '2024-10-26 16:36:01.407', '2024-10-30 10:36:41.979'),
+('0a44e317-9973-4d4a-9e26-1026e689804b', 'Phô mai', 'g', '450000.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083953/pizza-app/s4ufcwitwetmqkeafflp.jpg', '2024-10-26 17:31:12.639', '2024-10-30 10:36:50.441'),
+('72e99bd3-9c2e-4319-8b80-e4cc944ab5ee', 'Bột ớt ', 'ml', '4000000.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1729960452/pizza-app/rbtgtbrgzl1yljqutz4t.jpg', '2024-10-26 16:46:50.717', '2024-10-26 16:46:50.717'),
+('76c3d347-f3a2-4a21-8345-3039939f6e73', 'Đường', 'g', '200000.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1729960452/pizza-app/dlch9saqixfmqscrltbj.jpg', '2024-10-26 16:11:19.010', '2024-10-26 16:41:46.895'),
+('77b0ee1d-0fb5-48d7-bca0-99eb76c8672e', 'Nấm', 'g', '500000.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1729960453/pizza-app/lzuere4uvpredqdgtcfm.jpg', '2024-10-26 16:47:31.378', '2024-10-26 16:47:31.378'),
+('9f987eb3-d90b-4d08-93ee-35d611b07602', 'Táo', 'kg', '23452345.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1729960452/pizza-app/kmqs8kshpk3dh3kdv6fp.jpg', '2024-10-26 16:47:52.584', '2024-10-26 16:47:52.584'),
+('a1713afe-72d3-48f7-ad5d-c963c37f0752', 'Bột ngọt', 'g', '200000.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/vgnsqcculvvru1uqt4gw.jpg', '2024-10-26 16:11:23.374', '2024-10-30 10:36:36.640'),
+('f2ad97d8-5ed3-46d4-a2e5-9b62937daf20', 'Tôm', 'kg', '500000.000000000000000000000000000000', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/izwcvlrdb1ip4chdsi6g.jpg', '2024-10-26 16:47:41.127', '2024-10-30 10:37:08.577');
+
+INSERT INTO `ImportMaterial` (`importId`, `materialId`, `expectedQuantity`, `qualityStandard`, `actualGood`, `actualDefective`, `expiredDate`, `pricePerUnit`, `createdAt`, `updatedAt`) VALUES
+('4e6e9941-69d9-425b-bfb9-de6377b50fb2', '062f5b27-242e-4828-8f1d-c5e0af568f0d', '100.000000000000000000000000000000', '', '0.000000000000000000000000000000', '0.000000000000000000000000000000', NULL, '50000.000000000000000000000000000000', '2024-10-31 14:36:12.601', '2024-10-31 14:36:12.601'),
+('4e6e9941-69d9-425b-bfb9-de6377b50fb2', '0988d10b-e086-4f14-b6c6-55912b981caa', '20000.000000000000000000000000000000', '', '0.000000000000000000000000000000', '0.000000000000000000000000000000', NULL, '100.000000000000000000000000000000', '2024-10-31 14:36:12.601', '2024-10-31 14:36:12.601');
+
+
+INSERT INTO `Topping` (`id`, `name`, `price`, `materialId`, `image`, `createdAt`, `updatedAt`) VALUES
+('626c2abe-6c0c-4847-9ca0-d3dd65f04db6', 'Phô mai', 15000, '0a44e317-9973-4d4a-9e26-1026e689804b', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083914/pizza-app/zudmtcqs6ycb73mbetkw.png', '2024-10-31 12:37:30.128', '2024-10-31 12:37:30.128'),
+('7cd55464-084d-4f45-87ab-635ec6445e76', 'Phô mai x3', 25000, '0a44e317-9973-4d4a-9e26-1026e689804b', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083915/pizza-app/r2bzayejpcgutac0s07e.png', '2024-10-31 12:37:43.154', '2024-10-31 12:37:43.154'),
+('ff832f5b-0f6a-45b1-8ccf-195e09b9436a', 'Phô mai x2', 20000, '0a44e317-9973-4d4a-9e26-1026e689804b', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083915/pizza-app/rwvkzuvi5go6f7wr5fzi.png', '2024-10-31 12:37:36.634', '2024-10-31 12:37:48.704');
+
+
+INSERT INTO `Media` (`id`, `publicId`, `displayName`, `resourceType`, `type`, `width`, `height`, `bytes`, `url`, `format`, `caption`, `altText`, `description`, `createdAt`) VALUES
+('cm2sf4rg90000kue2v53pfpe8', 'pizza-app/hx055jfdla3jdaqgf8vs', 'banner+pc+family+combo.jpg', 'image', 'coupon', 2000, 844, 557273, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083644/pizza-app/hx055jfdla3jdaqgf8vs.jpg', 'jpg', NULL, 'banner+pc+family+combo.jpg', NULL, '2024-10-28 02:47:24.153'),
+('cm2sf4rjl0001kue2vyyfl9iv', 'pizza-app/dimbidvb9jqpzkb2ducw', 'BANNER+WEB+CHEESEBURGER.jpg', 'image', 'coupon', 1920, 810, 375396, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083644/pizza-app/dimbidvb9jqpzkb2ducw.jpg', 'jpg', NULL, 'BANNER+WEB+CHEESEBURGER.jpg', NULL, '2024-10-28 02:47:24.219'),
+('cm2sf4rni0002kue2ghgimdpw', 'pizza-app/kpsq2nopim160gskpajb', 'BANNER+BOGO+SFD.jpg', 'image', 'coupon', 1920, 810, 1414767, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083644/pizza-app/kpsq2nopim160gskpajb.jpg', 'jpg', NULL, 'BANNER+BOGO+SFD.jpg', NULL, '2024-10-28 02:47:24.414'),
+('cm2sf4rpn0003kue2s3xa0c62', 'pizza-app/npemlsqhsbjnmsbmi5hg', 'banner+web+sp99.jpg', 'image', 'coupon', 3840, 1620, 521386, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083644/pizza-app/npemlsqhsbjnmsbmi5hg.jpg', 'jpg', NULL, 'banner+web+sp99.jpg', NULL, '2024-10-28 02:47:24.491'),
+('cm2sf4rtj0004kue26jgaoi50', 'pizza-app/wsn3uzpnkpa0uwoxotek', 'banner+b1g3+aeon+hue+(1).jpg', 'image', 'coupon', 1920, 810, 1110054, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083645/pizza-app/wsn3uzpnkpa0uwoxotek.jpg', 'jpg', NULL, 'banner+b1g3+aeon+hue+(1).jpg', NULL, '2024-10-28 02:47:24.631'),
+('cm2sf4ry60005kue2npg6ot8u', 'pizza-app/yhy3k6btxph7by45rkyf', 'BANNER+CARRY+OUT+50%+(1).png', 'image', 'coupon', 1500, 633, 1873920, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083645/pizza-app/yhy3k6btxph7by45rkyf.png', 'png', NULL, 'BANNER+CARRY+OUT+50%+(1).png', NULL, '2024-10-28 02:47:24.798'),
+('cm2sf4s2q0006kue2cwh1ala8', 'pizza-app/ms7hpxaaongxg8aafdf2', 'TEMPLATE+DIGITAL_Banner+Web+SN+1920x810.jpg', 'image', 'coupon', 4000, 1687, 1545349, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083645/pizza-app/ms7hpxaaongxg8aafdf2.jpg', 'jpg', NULL, 'TEMPLATE+DIGITAL_Banner+Web+SN+1920x810.jpg', NULL, '2024-10-28 02:47:24.962'),
+('cm2sf4sdz0007kue2ce3adab9', 'pizza-app/tkt3p9lo1ezs1wydnnnc', 'IMG_7856.jpg', 'image', 'coupon', 3840, 1620, 4378943, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083645/pizza-app/tkt3p9lo1ezs1wydnnnc.jpg', 'jpg', NULL, 'IMG_7856.jpg', NULL, '2024-10-28 02:47:25.367'),
+('cm2sf4svc0008kue24u6pijkf', 'pizza-app/b5dftosmeiztwvhstypw', 'banner+bogo+t10+cuoi+(2).jpg', 'image', 'coupon', 3840, 1620, 3748735, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083646/pizza-app/b5dftosmeiztwvhstypw.jpg', 'jpg', NULL, 'banner+bogo+t10+cuoi+(2).jpg', NULL, '2024-10-28 02:47:25.993'),
+('cm2sf4tyy0009kue2c09k9yi7', 'pizza-app/rqfqo4muxh5jcsubjlhz', '70__BANNER+WEB.jpg', 'image', 'coupon', 4000, 1687, 4359691, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083647/pizza-app/rqfqo4muxh5jcsubjlhz.jpg', 'jpg', NULL, '70__BANNER+WEB.jpg', NULL, '2024-10-28 02:47:27.418'),
+('cm2sfajy6000akue2e4kbduxo', 'pizza-app/zudmtcqs6ycb73mbetkw', '1phomai-v.png', 'image', 'topping', 480, 480, 82768, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083914/pizza-app/zudmtcqs6ycb73mbetkw.png', 'png', NULL, '1phomai-v.png', NULL, '2024-10-28 02:51:54.366'),
+('cm2sfakai000bkue2zw82ytvw', 'pizza-app/rwvkzuvi5go6f7wr5fzi', '2phomai-v.png', 'image', 'topping', 480, 480, 154393, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083915/pizza-app/rwvkzuvi5go6f7wr5fzi.png', 'png', NULL, '2phomai-v.png', NULL, '2024-10-28 02:51:54.811'),
+('cm2sfakcv000ckue2p7p81jy9', 'pizza-app/r2bzayejpcgutac0s07e', '3phomai-v.png', 'image', 'topping', 480, 480, 234581, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083915/pizza-app/r2bzayejpcgutac0s07e.png', 'png', NULL, '3phomai-v.png', NULL, '2024-10-28 02:51:54.895'),
+('cm2sfb10r000dkue2pjq82lnm', 'pizza-app/ebxscqpqj5aqk8s995p4', 'pizza-size-3.png', 'image', 'size', 96, 97, 18757, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083937/pizza-app/ebxscqpqj5aqk8s995p4.png', 'png', NULL, 'pizza-size-3.png', NULL, '2024-10-28 02:52:16.490'),
+('cm2sfb13w000ekue2epqrlqux', 'pizza-app/kjdupvtzmtctx9mueu7p', 'pizza-size-2.png', 'image', 'size', 88, 89, 15588, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083937/pizza-app/kjdupvtzmtctx9mueu7p.png', 'png', NULL, 'pizza-size-2.png', NULL, '2024-10-28 02:52:16.604'),
+('cm2sfbe02000fkue2rqu2sxqd', 'pizza-app/s4ufcwitwetmqkeafflp', 'phomai.jpg', 'image', 'material', 300, 168, 7309, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083953/pizza-app/s4ufcwitwetmqkeafflp.jpg', 'jpg', NULL, 'phomai.jpg', NULL, '2024-10-28 02:52:33.308'),
+('cm2sfbe0n000gkue2byjvy243', 'pizza-app/kdlvonl71fnsebkkb5lc', 'thơm.jpg', 'image', 'material', 267, 189, 5862, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083953/pizza-app/kdlvonl71fnsebkkb5lc.jpg', 'jpg', NULL, 'thơm.jpg', NULL, '2024-10-28 02:52:33.328'),
+('cm2sfbe0w000hkue29nub5fd3', 'pizza-app/ssrhrm1prvudcgsxuc85', 'bọtớt.jpg', 'image', 'material', 225, 225, 3423, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083953/pizza-app/ssrhrm1prvudcgsxuc85.jpg', 'jpg', NULL, 'bọtớt.jpg', NULL, '2024-10-28 02:52:33.344'),
+('cm2sfbe1y000ikue25009yq8p', 'pizza-app/h2tms2x5ntndrf03jhxz', 'thibo.jpg', 'image', 'material', 275, 183, 10934, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083953/pizza-app/h2tms2x5ntndrf03jhxz.jpg', 'jpg', NULL, 'thibo.jpg', NULL, '2024-10-28 02:52:33.382'),
+('cm2sfbe2j000jkue2gmgw369h', 'pizza-app/ot41ttwun4f9cfxb3rae', 'gaxe.jpg', 'image', 'material', 300, 168, 9402, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/ot41ttwun4f9cfxb3rae.jpg', 'jpg', NULL, 'gaxe.jpg', NULL, '2024-10-28 02:52:33.403'),
+('cm2sfbe30000kkue2ktrq9kyn', 'pizza-app/xsenyweoxolssjvny6ow', 'bot.jpg', 'image', 'material', 275, 183, 7947, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/xsenyweoxolssjvny6ow.jpg', 'jpg', NULL, 'bot.jpg', NULL, '2024-10-28 02:52:33.420'),
+('cm2sfbe3g000lkue2yxdihg0n', 'pizza-app/wfa9wyrbujfclvvj3kco', 'duong.jpg', 'image', 'material', 284, 177, 10979, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083953/pizza-app/wfa9wyrbujfclvvj3kco.jpg', 'jpg', NULL, 'duong.jpg', NULL, '2024-10-28 02:52:33.436'),
+('cm2sfbe3h000mkue2pffeskgs', 'pizza-app/vgnsqcculvvru1uqt4gw', 'hatnem.jpg', 'image', 'material', 259, 194, 13712, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/vgnsqcculvvru1uqt4gw.jpg', 'jpg', NULL, 'hatnem.jpg', NULL, '2024-10-28 02:52:33.430'),
+('cm2sfbe40000nkue2hd4jmjgw', 'pizza-app/fwdzeqb13zacpwsdm6bs', 'mực.jpg', 'image', 'material', 225, 225, 8614, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/fwdzeqb13zacpwsdm6bs.jpg', 'jpg', NULL, 'mực.jpg', NULL, '2024-10-28 02:52:33.456'),
+('cm2sfbe4i000okue2ca02ph4c', 'pizza-app/gdplf8wlnouqqjyxmoro', 'nammoi.jpg', 'image', 'material', 294, 171, 8839, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/gdplf8wlnouqqjyxmoro.jpg', 'jpg', NULL, 'nammoi.jpg', NULL, '2024-10-28 02:52:33.474'),
+('cm2sfbe4s000pkue2e81bgmse', 'pizza-app/iyzsnatptnfay9wfrisd', 'thitheo.jpg', 'image', 'material', 299, 168, 8110, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/iyzsnatptnfay9wfrisd.jpg', 'jpg', NULL, 'thitheo.jpg', NULL, '2024-10-28 02:52:33.485'),
+('cm2sfbe5h000qkue2iy2ndjqz', 'pizza-app/izwcvlrdb1ip4chdsi6g', 'tom.jpg', 'image', 'material', 283, 178, 10273, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/izwcvlrdb1ip4chdsi6g.jpg', 'jpg', NULL, 'tom.jpg', NULL, '2024-10-28 02:52:33.509'),
+('cm2sfbe6g000rkue2v5x8g5li', 'pizza-app/tixfu8p0asfgp0oowooy', 'táo.jpg', 'image', 'material', 225, 225, 6122, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/tixfu8p0asfgp0oowooy.jpg', 'jpg', NULL, 'táo.jpg', NULL, '2024-10-28 02:52:33.545'),
+('cm2sfbec1000skue25ayzedh5', 'pizza-app/ne6wylpqpbnspl6h1ev6', 'muoi.jpg', 'image', 'material', 300, 168, 8349, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/ne6wylpqpbnspl6h1ev6.jpg', 'jpg', NULL, 'muoi.jpg', NULL, '2024-10-28 02:52:33.745'),
+('cm2sfbecp000tkue2tpzjlz8r', 'pizza-app/bethzpccws5ue7thpbrf', 'cachua.jpg', 'image', 'material', 300, 168, 12075, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/bethzpccws5ue7thpbrf.jpg', 'jpg', NULL, 'cachua.jpg', NULL, '2024-10-28 02:52:33.769'),
+('cm2sfbefg000ukue2fr0igigt', 'pizza-app/tetyc1runy2sticyy8y6', 'hanh.webp', 'image', 'material', 800, 800, 29654, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083954/pizza-app/tetyc1runy2sticyy8y6.webp', 'webp', NULL, 'hanh.webp', NULL, '2024-10-28 02:52:33.868'),
+('cm2sfbei6000vkue2c352r1ry', 'pizza-app/hyhavl4fv0cihpvsvuoq', 'nảmom.jpg', 'image', 'material', 310, 162, 7623, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083953/pizza-app/hyhavl4fv0cihpvsvuoq.jpg', 'jpg', NULL, 'nảmom.jpg', NULL, '2024-10-28 02:52:33.966'),
+('cm2sfbtxk000wkue2zc2ufq3n', 'pizza-app/pic9iim597rtnxvnql0h', 'xucxic.png', 'image', 'border', 192, 193, 14904, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083974/pizza-app/pic9iim597rtnxvnql0h.png', 'png', NULL, 'xucxic.png', NULL, '2024-10-28 02:52:53.960'),
+('cm2sfbu3e000xkue21ww50q1z', 'pizza-app/whwrs6q4erddd4joqure', 'phomai.png', 'image', 'border', 192, 193, 30164, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083974/pizza-app/whwrs6q4erddd4joqure.png', 'png', NULL, 'phomai.png', NULL, '2024-10-28 02:52:54.170'),
+('cm2sfbu79000ykue2epwx7jt6', 'pizza-app/fljitoavs6hrhcbv98nk', 'phomaixucxich.png', 'image', 'border', 192, 193, 25857, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730083974/pizza-app/fljitoavs6hrhcbv98nk.png', 'png', NULL, 'phomaixucxich.png', NULL, '2024-10-28 02:52:54.309'),
+('cm2u4sb4x0000sgjvh557auw6', 'pizza-app/detttjqahpybxmtgq8h0', 'Material.sql', 'raw', 'raw', NULL, NULL, 4055, 'http://res.cloudinary.com/dfrfwlhzd/raw/upload/v1730187199/pizza-app/detttjqahpybxmtgq8h0', 'sql', NULL, 'Material.sql', NULL, '2024-10-29 07:33:19.329'),
+('cm2u54f9c0007sgjvrly3kiun', 'pizza-app/lqhpxqfuvg8wj93qnngl', '6284363-peacock.jpg', 'image', 'user', 320, 320, 38535, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187764/pizza-app/lqhpxqfuvg8wj93qnngl.jpg', 'jpg', NULL, '6284363-peacock.jpg', NULL, '2024-10-29 07:42:44.544'),
+('cm2u54fon0008sgjvwdjgvft6', 'pizza-app/nrgrysgf79d68ptad0oi', '7976283-brad.jpg', 'image', 'user', 320, 320, 11695, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/nrgrysgf79d68ptad0oi.jpg', 'jpg', NULL, '7976283-brad.jpg', NULL, '2024-10-29 07:42:45.095'),
+('cm2u54fut0009sgjvdzlnra54', 'pizza-app/s4xy5twvmfbe6cxmafho', '5721945-birdperson\'s head.jpg', 'image', 'user', 320, 320, 24479, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/s4xy5twvmfbe6cxmafho.jpg', 'jpg', NULL, '5721945-birdperson\'s head.jpg', NULL, '2024-10-29 07:42:45.317'),
+('cm2u54fv3000asgjvsfgoc6l3', 'pizza-app/jlnafrcbruhzgrjvpity', '5924332-goomonster.jpg', 'image', 'user', 320, 320, 33901, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/jlnafrcbruhzgrjvpity.jpg', 'jpg', NULL, '5924332-goomonster.jpg', NULL, '2024-10-29 07:42:45.324'),
+('cm2u54fvp000bsgjvilif6fxc', 'pizza-app/dqtdeuxwj81pgrd44zey', '4472085-summer_in_ricksy_business.jpg', 'image', 'user', 320, 320, 17316, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/dqtdeuxwj81pgrd44zey.jpg', 'jpg', NULL, '4472085-summer_in_ricksy_business.jpg', NULL, '2024-10-29 07:42:45.349'),
+('cm2u54fw8000csgjvblltehms', 'pizza-app/ldxms4tsyskxe5dhzxpd', '9335556-supernova.jpg', 'image', 'user', 320, 320, 33791, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/ldxms4tsyskxe5dhzxpd.jpg', 'jpg', NULL, '9335556-supernova.jpg', NULL, '2024-10-29 07:42:45.368'),
+('cm2u54fwf000dsgjvqr0h9evr', 'pizza-app/wzrvzqququ1bhf8bbhez', '5942295-jessica.jpg', 'image', 'user', 320, 320, 27710, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/wzrvzqququ1bhf8bbhez.jpg', 'jpg', NULL, '5942295-jessica.jpg', NULL, '2024-10-29 07:42:45.337'),
+('cm2u54fwy000esgjvthjx0ffm', 'pizza-app/v1kihjdddopjryyf6gya', '5856152-scaryterry.jpg', 'image', 'user', 320, 320, 33575, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/v1kihjdddopjryyf6gya.jpg', 'jpg', NULL, '5856152-scaryterry.jpg', NULL, '2024-10-29 07:42:45.371'),
+('cm2u54fx9000fsgjv0zv2qqk4', 'pizza-app/pj2fulgw7ka1ng0tuhkq', '4472083-vlcsnap-2015-01-31-18h46m55s179.jpg', 'image', 'user', 320, 320, 23157, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/pj2fulgw7ka1ng0tuhkq.jpg', 'jpg', NULL, '4472083-vlcsnap-2015-01-31-18h46m55s179.jpg', NULL, '2024-10-29 07:42:45.384'),
+('cm2u54fxv000gsgjvn8bo0jju', 'pizza-app/guwgvrsqewlwi1emmz1w', '7976419-ethan.jpg', 'image', 'user', 320, 320, 18648, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/guwgvrsqewlwi1emmz1w.jpg', 'jpg', NULL, '7976419-ethan.jpg', NULL, '2024-10-29 07:42:45.427'),
+('cm2u54fxx000hsgjv2b71s3t9', 'pizza-app/w5rwq8jbdxzr17ykhmec', '6466099-krombopulos michael.jpg', 'image', 'user', 320, 320, 36914, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/w5rwq8jbdxzr17ykhmec.jpg', 'jpg', NULL, '6466099-krombopulos michael.jpg', NULL, '2024-10-29 07:42:45.429'),
+('cm2u54fy0000isgjvzi0mo4cl', 'pizza-app/xcrbu36tzhjtxk2rth4u', '7976236-doofusrick.jpg', 'image', 'user', 320, 320, 16182, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/xcrbu36tzhjtxk2rth4u.jpg', 'jpg', NULL, '7976236-doofusrick.jpg', NULL, '2024-10-29 07:42:45.432'),
+('cm2u54fy6000jsgjvrgkx9021', 'pizza-app/qmwfjurhebdfzw1zrlfb', '4472081-tumblr_n04lnrmooh1rfbbc6o1_1280.jpg', 'image', 'user', 320, 320, 21670, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/qmwfjurhebdfzw1zrlfb.jpg', 'jpg', NULL, '4472081-tumblr_n04lnrmooh1rfbbc6o1_1280.jpg', NULL, '2024-10-29 07:42:45.438'),
+('cm2u54fyi000ksgjvcwblx9ru', 'pizza-app/u24etmsdsspsu5ymypmd', '4469088-tumblr_inline_n0aleph3fl1r8rr6o.jpg', 'image', 'user', 320, 320, 25366, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/u24etmsdsspsu5ymypmd.jpg', 'jpg', NULL, '4469088-tumblr_inline_n0aleph3fl1r8rr6o.jpg', NULL, '2024-10-29 07:42:45.450'),
+('cm2u54fyk000lsgjvxliqt6fw', 'pizza-app/ac8nrfkz5uzwi0j0jjyp', '6338843-queen.jpg', 'image', 'user', 320, 320, 31268, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/ac8nrfkz5uzwi0j0jjyp.jpg', 'jpg', NULL, '6338843-queen.jpg', NULL, '2024-10-29 07:42:45.452'),
+('cm2u54fz3000msgjvfls786ao', 'pizza-app/wowjh8is9xs5zadluhys', '4469093-screen shot 2015-03-25 at 5.13.24 pm copy.jpg', 'image', 'user', 320, 320, 39353, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/wowjh8is9xs5zadluhys.jpg', 'jpg', NULL, '4469093-screen shot 2015-03-25 at 5.13.24 pm copy.jpg', NULL, '2024-10-29 07:42:45.471'),
+('cm2u54fzb000nsgjvywwc5fsh', 'pizza-app/uy2wfjt97xnsb7f5idll', '7975519-class-2cloner-beast.jpg', 'image', 'user', 320, 320, 24847, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/uy2wfjt97xnsb7f5idll.jpg', 'jpg', NULL, '7975519-class-2cloner-beast.jpg', NULL, '2024-10-29 07:42:45.479'),
+('cm2u54fzg000osgjvxu2l932r', 'pizza-app/aqjpwsyakcsqn4tfad0s', '7975577-squanchy.jpg', 'image', 'user', 320, 320, 22306, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/aqjpwsyakcsqn4tfad0s.jpg', 'jpg', NULL, '7975577-squanchy.jpg', NULL, '2024-10-29 07:42:45.484'),
+('cm2u54g13000psgjvac0crjm6', 'pizza-app/gpd56llk6d3hxyddtxzn', '6338848-kingstephen.jpg', 'image', 'user', 320, 320, 34900, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/gpd56llk6d3hxyddtxzn.jpg', 'jpg', NULL, '6338848-kingstephen.jpg', NULL, '2024-10-29 07:42:45.544'),
+('cm2u54g1m000qsgjvy9m2san1', 'pizza-app/vnnmgwukfthgqftr1qlp', '7976284-genevagina.jpg', 'image', 'user', 320, 320, 21015, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/vnnmgwukfthgqftr1qlp.jpg', 'jpg', NULL, '7976284-genevagina.jpg', NULL, '2024-10-29 07:42:45.562'),
+('cm2u54g5n000rsgjvfjat99e9', 'pizza-app/qft90ndcxippektlcfc8', '6338832-mike3.jpg', 'image', 'user', 320, 320, 40274, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/qft90ndcxippektlcfc8.jpg', 'jpg', NULL, '6338832-mike3.jpg', NULL, '2024-10-29 07:42:45.707'),
+('cm2u54gdq000ssgjv19xfgag4', 'pizza-app/ehiliclq1vcccwh3vkgg', '6336441-miggs.png', 'image', 'user', 320, 320, 149499, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187766/pizza-app/ehiliclq1vcccwh3vkgg.png', 'png', NULL, '6336441-miggs.png', NULL, '2024-10-29 07:42:45.999'),
+('cm2u54gj0000tsgjvfka069ru', 'pizza-app/xmvsl5bviw49m4urvkpc', '6336444-rurtaugh.png', 'image', 'user', 320, 320, 177403, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187766/pizza-app/xmvsl5bviw49m4urvkpc.png', 'png', NULL, '6336444-rurtaugh.png', NULL, '2024-10-29 07:42:46.189'),
+('cm2u54gjw000usgjvlxfbj6a0', 'pizza-app/tokncha0y7ods5t4nrko', '5983879-goldenfold.jpg', 'image', 'user', 320, 320, 32943, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730187765/pizza-app/tokncha0y7ods5t4nrko.jpg', 'jpg', NULL, '5983879-goldenfold.jpg', NULL, '2024-10-29 07:42:46.220'),
+('cm2ug8tjk00001bt54rzwvwg1', 'pizza-app/oxipsvlz7yanogkw1orl', 'Pepperoni-feast-Pizza-Xuc-Xich-Y.jpg', 'image', 'product', 1000, 667, 160484, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/oxipsvlz7yanogkw1orl.jpg', 'jpg', NULL, 'Pepperoni-feast-Pizza-Xuc-Xich-Y.jpg', NULL, '2024-10-29 12:54:05.457'),
+('cm2ug8u0000011bt5qjza72l9', 'pizza-app/cdgutoblyb9gbedjhtv5', 'Pizza-Hai-San-Xot-Mayonnaise-Ocean-Mania.jpg', 'image', 'product', 1000, 667, 136186, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/cdgutoblyb9gbedjhtv5.jpg', 'jpg', NULL, 'Pizza-Hai-San-Xot-Mayonnaise-Ocean-Mania.jpg', NULL, '2024-10-29 12:54:05.523'),
+('cm2ug8u1s00021bt589ef1zvv', 'pizza-app/cqglsls0ufpb6ypu1sis', 'Pizza-Pho-Mai-Hao-Hang-Cheese-Mania.jpg', 'image', 'product', 1000, 667, 133767, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/cqglsls0ufpb6ypu1sis.jpg', 'jpg', NULL, 'Pizza-Pho-Mai-Hao-Hang-Cheese-Mania.jpg', NULL, '2024-10-29 12:54:05.572'),
+('cm2ug8u2k00031bt5kbbnd0sg', 'pizza-app/pszge50pskkpdzdgtz1c', 'Pizza-Hai-San-Xot-Ca-Chua-Seafood-Delight.jpg', 'image', 'product', 1000, 667, 138867, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/pszge50pskkpdzdgtz1c.jpg', 'jpg', NULL, 'Pizza-Hai-San-Xot-Ca-Chua-Seafood-Delight.jpg', NULL, '2024-10-29 12:54:05.593'),
+('cm2ug8u3y00041bt56iyqtr21', 'pizza-app/summ11kunptu09m1pss5', 'Surf-turf-Pizza-Bo-Tom-Nuong-Kieu-My-1.jpg', 'image', 'product', 1000, 667, 168436, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/summ11kunptu09m1pss5.jpg', 'jpg', NULL, 'Surf-turf-Pizza-Bo-Tom-Nuong-Kieu-My-1.jpg', NULL, '2024-10-29 12:54:05.625'),
+('cm2ug8ulb00051bt5fvbm1suz', 'pizza-app/lwejp7ynx3gq0cqsjjga', 'Pizza-Ga-Pho-Mai-Thit-Heo-Xong-Khoi-Cheesy-Chicken-Bacon.jpg', 'image', 'product', 1000, 667, 141524, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/lwejp7ynx3gq0cqsjjga.jpg', 'jpg', NULL, 'Pizza-Ga-Pho-Mai-Thit-Heo-Xong-Khoi-Cheesy-Chicken-Bacon.jpg', NULL, '2024-10-29 12:54:05.712'),
+('cm2ug8uld00061bt5gvx8cqg2', 'pizza-app/gxqok88jffipthslrmsq', 'Meat-lover-Pizza-5-Loai-Thit-Thuong-Hang.jpg', 'image', 'product', 1000, 667, 159394, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/gxqok88jffipthslrmsq.jpg', 'jpg', NULL, 'Meat-lover-Pizza-5-Loai-Thit-Thuong-Hang.jpg', NULL, '2024-10-29 12:54:05.733'),
+('cm2ug8uld00071bt5lzr7ty9f', 'pizza-app/eqbiz3ozdfpoab5xpsyw', 'Pizzaminsea-Hai-San-Nhiet-Doi-Xot-Tieu.jpg', 'image', 'product', 1000, 667, 153710, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/eqbiz3ozdfpoab5xpsyw.jpg', 'jpg', NULL, 'Pizzaminsea-Hai-San-Nhiet-Doi-Xot-Tieu.jpg', NULL, '2024-10-29 12:54:05.800'),
+('cm2ug8ulh00081bt5rctpdlds', 'pizza-app/lkejpphi4tcilighdsvl', 'Menu+BG+1.jpg', 'image', 'product', 1000, 667, 114147, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/lkejpphi4tcilighdsvl.jpg', 'jpg', NULL, 'Menu+BG+1.jpg', NULL, '2024-10-29 12:54:05.809'),
+('cm2ug8ulv00091bt547ogq15d', 'pizza-app/iu5a2puyopat0qum9bgm', 'Veggie-mania-Pizza-Rau-Cu-Thap-Cam.jpg', 'image', 'product', 1000, 667, 161513, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/iu5a2puyopat0qum9bgm.jpg', 'jpg', NULL, 'Veggie-mania-Pizza-Rau-Cu-Thap-Cam.jpg', NULL, '2024-10-29 12:54:05.811'),
+('cm2ug8ulz000a1bt5v71o9zv0', 'pizza-app/xr1xg1lswz4wfoljtbtf', 'Pizza-Thap-Cam-Thuong-Hang-Extravaganza.jpg', 'image', 'product', 1000, 667, 140147, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206445/pizza-app/xr1xg1lswz4wfoljtbtf.jpg', 'jpg', NULL, 'Pizza-Thap-Cam-Thuong-Hang-Extravaganza.jpg', NULL, '2024-10-29 12:54:05.871'),
+('cm2ug8um2000b1bt5xkmpbmlc', 'pizza-app/cv5ilg6ptfm16fiwwwh4', 'Pizza-Dam-Bong-Dua-Kieu-Hawaii-Hawaiian.jpg', 'image', 'product', 1000, 667, 156399, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206446/pizza-app/cv5ilg6ptfm16fiwwwh4.jpg', 'jpg', NULL, 'Pizza-Dam-Bong-Dua-Kieu-Hawaii-Hawaiian.jpg', NULL, '2024-10-29 12:54:05.999'),
+('cm2ug8um5000c1bt5773ubplp', 'pizza-app/hdkeazutb89i57mqa49t', 'cheesy-crab-stick-+(3).png', 'image', 'product', 1000, 667, 429583, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206446/pizza-app/hdkeazutb89i57mqa49t.png', 'png', NULL, 'cheesy-crab-stick-+(3).png', NULL, '2024-10-29 12:54:06.312'),
+('cm2ug8um8000d1bt5xq4o7gf4', 'pizza-app/x7pwic5sh8yumsm6y0qb', 'cheesy-ha,-corn-+(3).png', 'image', 'product', 1000, 667, 435397, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206446/pizza-app/x7pwic5sh8yumsm6y0qb.png', 'png', NULL, 'cheesy-ha,-corn-+(3).png', NULL, '2024-10-29 12:54:06.645'),
+('cm2ug8umg000e1bt5igjg99zq', 'pizza-app/eep3y0lbndwsqi6imekl', 'bbq-mayo+(2).png', 'image', 'product', 1000, 667, 425109, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206446/pizza-app/eep3y0lbndwsqi6imekl.png', 'png', NULL, 'bbq-mayo+(2).png', NULL, '2024-10-29 12:54:06.701'),
+('cm2ug8uq5000f1bt5bgzfgs4i', 'pizza-app/ja865gtml7rmnxdckcqt', 'CHEESY+MADNESS+NO+NEW+PC.jpg', 'image', 'product', 1000, 667, 730919, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206446/pizza-app/ja865gtml7rmnxdckcqt.jpg', 'jpg', NULL, 'CHEESY+MADNESS+NO+NEW+PC.jpg', NULL, '2024-10-29 12:54:06.990'),
+('cm2ug8ut1000g1bt54j70lw0z', 'pizza-app/sld5jzyyzvqkdenusvs9', 'Sausage-Kid-Mania-1.jpg', 'image', 'product', 1000, 667, 454737, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/sld5jzyyzvqkdenusvs9.jpg', 'jpg', NULL, 'Sausage-Kid-Mania-1.jpg', NULL, '2024-10-29 12:54:07.094'),
+('cm2ug8v0s000h1bt5uv25gmq0', 'pizza-app/jauwwkpljourakiji9ov', 'lime.png', 'image', 'product', 1000, 667, 1323402, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/jauwwkpljourakiji9ov.png', 'png', NULL, 'lime.png', NULL, '2024-10-29 12:54:07.373'),
+('cm2ug8v2k000i1bt5yxvysbo4', 'pizza-app/mqn2qkb9lvgmyajqln7a', 'cheeseburger-habanero-sup.jpg', 'image', 'product', 1000, 667, 488138, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/mqn2qkb9lvgmyajqln7a.jpg', 'jpg', NULL, 'cheeseburger-habanero-sup.jpg', NULL, '2024-10-29 12:54:07.437'),
+('cm2ug8v38000j1bt5vywz7g6x', 'pizza-app/vrvamxey8rt7gj499vmm', 'Pizza+Extra+Topping+(1).jpg', 'image', 'product', 1000, 667, 775389, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/vrvamxey8rt7gj499vmm.jpg', 'jpg', NULL, 'Pizza+Extra+Topping+(1).jpg', NULL, '2024-10-29 12:54:07.461'),
+('cm2ug8v4w000k1bt5bi2tvvhw', 'pizza-app/fmdhwcbkgsabmbazmfxu', 'Pizza+Extra+Topping+(4).jpg', 'image', 'product', 1000, 667, 808460, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/fmdhwcbkgsabmbazmfxu.jpg', 'jpg', NULL, 'Pizza+Extra+Topping+(4).jpg', NULL, '2024-10-29 12:54:07.520'),
+('cm2ug8v9h000l1bt5zmo4zdw9', 'pizza-app/t8rx8tf1nx4d80mqfvbt', 'cheeseburger-habanero.jpg', 'image', 'product', 1000, 667, 479922, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/t8rx8tf1nx4d80mqfvbt.jpg', 'jpg', NULL, 'cheeseburger-habanero.jpg', NULL, '2024-10-29 12:54:07.685'),
+('cm2ug8v9z000m1bt5i4gcb7r8', 'pizza-app/itv8oxjgvl7wgbps364m', 'cheeseburger.jpg', 'image', 'product', 1000, 667, 467508, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/itv8oxjgvl7wgbps364m.jpg', 'jpg', NULL, 'cheeseburger.jpg', NULL, '2024-10-29 12:54:07.703'),
+('cm2ug8ve4000n1bt51szfmxxv', 'pizza-app/xeikrcd4yeplojzcafck', 'Pizza+Extra+Topping+(2).jpg', 'image', 'product', 1000, 667, 698586, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/xeikrcd4yeplojzcafck.jpg', 'jpg', NULL, 'Pizza+Extra+Topping+(2).jpg', NULL, '2024-10-29 12:54:07.852'),
+('cm2ug8vli000o1bt5kdjh20bq', 'pizza-app/qgtsyp7t1p6jrqcmj8jx', 'Pizza+Extra+Topping+(3).jpg', 'image', 'product', 1000, 667, 755704, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/qgtsyp7t1p6jrqcmj8jx.jpg', 'jpg', NULL, 'Pizza+Extra+Topping+(3).jpg', NULL, '2024-10-29 12:54:08.118'),
+('cm2ug8vxb000p1bt55m7y08cn', 'pizza-app/olqnprgw8wztdnuulr5h', 'Pizza+Extra+Topping+(5).jpg', 'image', 'product', 1000, 667, 778268, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206448/pizza-app/olqnprgw8wztdnuulr5h.jpg', 'jpg', NULL, 'Pizza+Extra+Topping+(5).jpg', NULL, '2024-10-29 12:54:08.543'),
+('cm2ug8xpi000q1bt5edk11vlu', 'pizza-app/qh9tuv56stql0ldmmldh', 'PC-MB1000X667px+super+topping@2x.png', 'image', 'product', 2000, 1334, 3625286, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206450/pizza-app/qh9tuv56stql0ldmmldh.png', 'png', NULL, 'PC-MB1000X667px+super+topping@2x.png', NULL, '2024-10-29 12:54:10.855'),
+('cm2ug9gfe000r1bt5vhspeoct', 'pizza-app/gdmh5xqklwcjq4kwza4b', 'Surf-turf-chi-tiet-MB.jpg', 'image', 'product_mobile', 375, 200, 41205, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/gdmh5xqklwcjq4kwza4b.jpg', 'jpg', NULL, 'Surf-turf-chi-tiet-MB.jpg', NULL, '2024-10-29 12:54:35.114'),
+('cm2ug9gge000s1bt5didixk57', 'pizza-app/tworbq3j2pftepxghwwb', 'MENU-MB_Pizza-Rau-Củ-Thập-Cẩm.jpg', 'image', 'product_mobile', 375, 200, 36598, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/tworbq3j2pftepxghwwb.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Rau-Củ-Thập-Cẩm.jpg', NULL, '2024-10-29 12:54:35.117'),
+('cm2ug9ggj000t1bt5ae8uy6nm', 'pizza-app/z0a4wb6libgsla0zay37', 'MENU-MB_-Pizza-Hải-Sản-Nhiệt-Đới-Xốt-Tiêu.jpg', 'image', 'product_mobile', 375, 200, 31413, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/z0a4wb6libgsla0zay37.jpg', 'jpg', NULL, 'MENU-MB_-Pizza-Hải-Sản-Nhiệt-Đới-Xốt-Tiêu.jpg', NULL, '2024-10-29 12:54:35.134'),
+('cm2ug9ggj000u1bt5839ltn0q', 'pizza-app/tpyv0kwbwddrvecganm9', 'MENU-MB_Pizza-Thập-Cẩm-Thượng-Hạng.jpg', 'image', 'product_mobile', 375, 200, 41128, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/tpyv0kwbwddrvecganm9.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Thập-Cẩm-Thượng-Hạng.jpg', NULL, '2024-10-29 12:54:35.153'),
+('cm2ug9ghg000v1bt5ie3gxxw1', 'pizza-app/ima2cpkmy0r3x15mrmc3', 'MENU-MB_Pizza-5-Loại-Thịt-Thượng-Hạng.jpg', 'image', 'product_mobile', 375, 200, 37430, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/ima2cpkmy0r3x15mrmc3.jpg', 'jpg', NULL, 'MENU-MB_Pizza-5-Loại-Thịt-Thượng-Hạng.jpg', NULL, '2024-10-29 12:54:35.188'),
+('cm2ug9ghy000w1bt5g491ipxt', 'pizza-app/nfhwfw2t1pazosh92n21', 'MENU-MB_Pizza-Bò-_-Tôm-Nướng-Kiểu-Mỹ.jpg', 'image', 'product_mobile', 375, 200, 41205, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/nfhwfw2t1pazosh92n21.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Bò-_-Tôm-Nướng-Kiểu-Mỹ.jpg', NULL, '2024-10-29 12:54:35.206'),
+('cm2ug9gi1000x1bt57rghef41', 'pizza-app/vqg4ahdudfwfniqpg60e', 'MENU-MB_-Pizza-Phô-Mai-Hảo-Hạng.jpg', 'image', 'product_mobile', 375, 200, 33286, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/vqg4ahdudfwfniqpg60e.jpg', 'jpg', NULL, 'MENU-MB_-Pizza-Phô-Mai-Hảo-Hạng.jpg', NULL, '2024-10-29 12:54:35.210'),
+('cm2ug9gkc000y1bt5qk0pcajz', 'pizza-app/ndfmkgjrvrpp3kywwh5q', 'MENU-MB_Pizza-Dăm-Bông-Dứa-Kiểu-Hawaii-mb.jpg', 'image', 'product_mobile', 375, 200, 33018, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/ndfmkgjrvrpp3kywwh5q.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Dăm-Bông-Dứa-Kiểu-Hawaii-mb.jpg', NULL, '2024-10-29 12:54:35.292'),
+('cm2ug9gki000z1bt52q9fkol3', 'pizza-app/q4efer6s4qoshxtjfio4', 'MENU-MB_Pizza-Gà-Phô-Mai-Thịt-Heo-Xông.jpg', 'image', 'product_mobile', 375, 200, 38819, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/q4efer6s4qoshxtjfio4.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Gà-Phô-Mai-Thịt-Heo-Xông.jpg', NULL, '2024-10-29 12:54:35.298'),
+('cm2ug9glb00101bt5ygkbwzw3', 'pizza-app/stem1lx5zvyptycem2ud', 'MENU-MB_Pizza-Hải-Sản-Xốt-Cà-Chua.jpg', 'image', 'product_mobile', 375, 200, 41945, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/stem1lx5zvyptycem2ud.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Hải-Sản-Xốt-Cà-Chua.jpg', NULL, '2024-10-29 12:54:35.327'),
+('cm2ug9gle00111bt5n8qiwi25', 'pizza-app/gvc1usmx9aiya2iakpgo', 'MENU-MB_CHI-TIET_LTO-NewYork.jpg', 'image', 'product_mobile', 375, 200, 42521, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/gvc1usmx9aiya2iakpgo.jpg', 'jpg', NULL, 'MENU-MB_CHI-TIET_LTO-NewYork.jpg', NULL, '2024-10-29 12:54:35.330'),
+('cm2ug9gow00121bt5rwx9jgeb', 'pizza-app/glp35vemauxsymqj1cvw', 'MENU-MB_Pizza-Hải-Sản-Xốt-Mayonnaise.jpg', 'image', 'product_mobile', 375, 200, 46266, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/glp35vemauxsymqj1cvw.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Hải-Sản-Xốt-Mayonnaise.jpg', NULL, '2024-10-29 12:54:35.456'),
+('cm2ug9gq800131bt54udnwfwl', 'pizza-app/ddjoygzqe6ltdrq8xzga', 'Sausage-Kid-Mania_MB.jpg', 'image', 'product_mobile', 375, 200, 48915, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/ddjoygzqe6ltdrq8xzga.jpg', 'jpg', NULL, 'Sausage-Kid-Mania_MB.jpg', NULL, '2024-10-29 12:54:35.504'),
+('cm2ug9gqm00141bt5dnry94rp', 'pizza-app/i2vxpprijjopwr4lffmc', 'MENU-MB_Pizza-Xúc-Xích-Ý-Truyền-Thống.jpg', 'image', 'product_mobile', 375, 200, 43430, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/i2vxpprijjopwr4lffmc.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Xúc-Xích-Ý-Truyền-Thống.jpg', NULL, '2024-10-29 12:54:35.518'),
+('cm2ug9gri00151bt5bgeyc2p1', 'pizza-app/ydifkdmpcarqfly9nqca', 'MENU-MB_Pizza-Xúc-Xích-Ý-Truyền-Thống-mb.jpg', 'image', 'product_mobile', 375, 200, 43430, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/ydifkdmpcarqfly9nqca.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Xúc-Xích-Ý-Truyền-Thống-mb.jpg', NULL, '2024-10-29 12:54:35.551'),
+('cm2ug9gvf00161bt5b4eyysjm', 'pizza-app/wzmt8v9wgzgr7fr1leep', 'MENU-MB_Pizza-Dăm-Bông-Dứa-Kiểu-Hawaii-.jpg', 'image', 'product_mobile', 375, 200, 33018, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/wzmt8v9wgzgr7fr1leep.jpg', 'jpg', NULL, 'MENU-MB_Pizza-Dăm-Bông-Dứa-Kiểu-Hawaii-.jpg', NULL, '2024-10-29 12:54:35.691'),
+('cm2ug9gvz00171bt5ti87vxv1', 'pizza-app/z02c2bfibtrkolmgzap8', 'hinh+chi+tiet+375x200px_cheese.jpg', 'image', 'product_mobile', 375, 200, 108024, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/z02c2bfibtrkolmgzap8.jpg', 'jpg', NULL, 'hinh+chi+tiet+375x200px_cheese.jpg', NULL, '2024-10-29 12:54:35.711'),
+('cm2ug9gy200181bt5l6ez24ay', 'pizza-app/ivve6mnzjrxkzeoocvx9', 'LIME+PESTO+-+ANH+SP+(1).png', 'image', 'product_mobile', 375, 200, 181778, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/ivve6mnzjrxkzeoocvx9.png', 'png', NULL, 'LIME+PESTO+-+ANH+SP+(1).png', NULL, '2024-10-29 12:54:35.787'),
+('cm2ug9h1z00191bt5krqqya6y', 'pizza-app/kkp5gb8ufzuwcm3wsgx1', 'cheeseburger-habanero-chi-tiet.jpg', 'image', 'product_mobile', 781, 417, 237272, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206476/pizza-app/kkp5gb8ufzuwcm3wsgx1.jpg', 'jpg', NULL, 'cheeseburger-habanero-chi-tiet.jpg', NULL, '2024-10-29 12:54:35.927'),
+('cm2ug9h2k001a1bt5bgzn546d', 'pizza-app/y42qbtzps7hjjvam3xdq', 'cheesy-ha,-corn-+(2).png', 'image', 'product_mobile', 375, 200, 229316, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/y42qbtzps7hjjvam3xdq.png', 'png', NULL, 'cheesy-ha,-corn-+(2).png', NULL, '2024-10-29 12:54:35.948'),
+('cm2ug9h71001b1bt5gvl8hw8u', 'pizza-app/xzty6psyu8ivxddyfq84', 'cheeseburger-chi-tiet.jpg', 'image', 'product_mobile', 781, 417, 222002, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206476/pizza-app/xzty6psyu8ivxddyfq84.jpg', 'jpg', NULL, 'cheeseburger-chi-tiet.jpg', NULL, '2024-10-29 12:54:36.109'),
+('cm2ug9had001c1bt5wee4zzuv', 'pizza-app/pswnjrqhabdcsxyxktiq', 'cheesy-crab-stick-+(2).png', 'image', 'product_mobile', 375, 200, 220149, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206476/pizza-app/pswnjrqhabdcsxyxktiq.png', 'png', NULL, 'cheesy-crab-stick-+(2).png', NULL, '2024-10-29 12:54:36.229'),
+('cm2ug9hfx001d1bt53313cy4d', 'pizza-app/swqxxqdgjsevi9w4thjd', 'bbq-mayo+(1).png', 'image', 'product_mobile', 375, 200, 227313, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206476/pizza-app/swqxxqdgjsevi9w4thjd.png', 'png', NULL, 'bbq-mayo+(1).png', NULL, '2024-10-29 12:54:36.429'),
+('cm2wu8d6e00017mcvqvkortxi', 'pizza-app/pllqhna4gvgiax2rsbkd', 'Screenshot 2024-08-17 165057.png', 'image', 'provider', 486, 508, 307015, 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730350870/pizza-app/pllqhna4gvgiax2rsbkd.png', 'png', NULL, 'Screenshot 2024-08-17 165057.png', NULL, '2024-10-31 05:01:11.222');
+
+
+-- INSERT INTO `Order` (`id`, `address_lat`, `address_lng`, `shipNote`, `shippingFee`, `totalAmount`, `status`, `paymentStatus`, `cancelledReason`, `couponId`, `chefId`, `shipperId`, `customerId`, `ratingId`, `deliveryId`, `deliveryStep`, `currentLat`, `currentLng`, `createdAt`, `updatedAt`, `deliveryStatus`) VALUES
+-- ('5862df0c-42cf-4650-bb46-6741944751c3', '11.064450800000000000000000000000', '107.168447900000000000000000000000', '', '313051.000000000000000000000000000000', '1228051.000000000000000000000000000000', 'COOKED', 'PENDING', NULL, 'f705fafe-f3d9-4718-b91d-0e10e267f4f4', '40599936-fecc-4ae4-a66f-86e32b01b6af', NULL, 'cm2xcuniz0000j2ainw8s6y9j', NULL, NULL, 1, '11.064450800000000000000000000000', '107.168447900000000000000000000000', '2024-10-31 13:54:49.222', '2024-10-31 14:13:56.591', 'PENDING');
+
+-- INSERT INTO `OrderDetail` (`id`, `orderId`, `productId`, `borderId`, `sizeId`, `toppingId`, `quantity`, `totalAmount`) VALUES
+-- ('b49994d9-8721-405e-8d76-a7f81ca3cd9e', '5862df0c-42cf-4650-bb46-6741944751c3', 'dcf9244e-1d14-49de-8e06-c24c61f95735', '85a7e314-662f-487a-963f-aa535ac1df01', 'fc892e0f-232d-4a10-9f1f-12bbd0b80d47', '7cd55464-084d-4f45-87ab-635ec6445e76', 2, '490000.000000000000000000000000000000'),
+-- ('bae63032-ed14-4273-89a9-d7304f0263db', '5862df0c-42cf-4650-bb46-6741944751c3', 'c22f50c7-e1aa-4c46-a9d9-97f8339106df', 'ea9eb235-c9a2-43cd-9f83-261929636d83', 'ebb20e09-11e9-4355-8f8f-40e8a35a2466', 'ff832f5b-0f6a-45b1-8ccf-195e09b9436a', 3, '1035000.000000000000000000000000000000');
+
+
+-- INSERT INTO `OrderLocationHistory` (`id`, `orderId`, `latitude`, `longitude`, `timestamp`) VALUES
+-- ('383c869b-10af-4e4c-8dd2-27da29a2dc0c', '5862df0c-42cf-4650-bb46-6741944751c3', '11.064450800000000000000000000000', '107.168447900000000000000000000000', '2024-10-31 13:54:49.222');
+
+
+INSERT INTO `Permission` (`id`, `name`, `group`, `displayName`, `description`, `createdAt`, `updatedAt`) VALUES
+('cm2kku9980002mmmbf0qsqxvc', 'update-media', 'media', 'Sửa ảnh', '', '2024-10-22 15:05:02.300', '2024-10-22 15:05:02.300'),
+('cm2kkug5u0003mmmbgaazrl5p', 'upload-media', 'media', 'Thêm ảnh', '', '2024-10-22 15:05:11.250', '2024-10-22 15:05:11.250'),
+('cm2kkum7w0004mmmbwh2ks5xx', 'delete-media', 'media', 'Xóa ảnh', '', '2024-10-22 15:05:19.091', '2024-10-22 15:05:19.091'),
+('cm2kkxh140008mmmbqhzk31ok', 'add-roles', 'roles', 'Thêm vai trò', '', '2024-10-22 15:07:32.338', '2024-10-22 15:07:32.338'),
+('cm2kkxupj0009mmmbodqcxa3y', 'update-roles', 'roles', 'Sửa vai trò', '', '2024-10-22 15:07:50.066', '2024-10-22 15:07:50.066'),
+('cm2kky3yf000ammmbz49rs6ph', 'delete-roles', 'roles', 'Xóa vai trò', '', '2024-10-22 15:08:02.056', '2024-10-22 15:08:02.056'),
+('cm2knynf10002xt6o2qdygt2x', 'update-user-roles', 'users', 'Sửa vai trò tài khoản', '', '2024-10-22 16:32:26.126', '2024-10-22 16:32:26.126'),
+('cm2kro4ki00017b99d67r9qje', 'view-roles', 'roles', 'Xem vai trò', '', '2024-10-22 18:16:13.603', '2024-10-22 18:16:13.603'),
+('cm2qbyeqe0000wmy8itdcy4np', 'view-borders', 'borders', 'Xem viền', '', '2024-10-26 15:42:56.534', '2024-10-26 15:42:56.534'),
+('cm2qbys1x0001wmy8ji04p35e', 'create-borders', 'borders', 'Tạo viền', '', '2024-10-26 15:43:13.761', '2024-10-26 15:43:13.761'),
+('cm2qbyyu80002wmy8dktdoge3', 'update-borders', 'borders', 'Sửa viền', '', '2024-10-26 15:43:22.593', '2024-10-26 15:43:22.593'),
+('cm2qbz3kx0003wmy8o1mp2il4', 'delete-borders', 'borders', 'Xóa viền', '', '2024-10-26 15:43:28.737', '2024-10-26 15:43:28.737'),
+('cm2qbzfiw0004wmy8e2irgu4g', 'view-toppings', 'toppings', 'Xem topping', '', '2024-10-26 15:43:44.210', '2024-10-26 15:43:44.210'),
+('cm2qbznga0005wmy8mu9xo61n', 'create-toppings', 'toppings', 'Tạo topping', '', '2024-10-26 15:43:54.490', '2024-10-26 15:43:54.490'),
+('cm2qbzvt40006wmy87iwm94if', 'update-toppings', 'toppings', 'Sửa topping', '', '2024-10-26 15:44:05.306', '2024-10-26 15:44:05.306'),
+('cm2qc02y90007wmy8outefwlh', 'delete-toppings', 'toppings', 'Xóa topping', '', '2024-10-26 15:44:14.577', '2024-10-26 15:44:14.577'),
+('cm2qc179t0008wmy80lt2actp', 'view-sizes', 'sizes', 'Xem kích cỡ', '', '2024-10-26 15:45:06.799', '2024-10-26 15:45:06.799'),
+('cm2qc1e890009wmy89ewbqu6t', 'update-sizes', 'sizes', 'Sửa kích cỡ', '', '2024-10-26 15:45:15.849', '2024-10-26 15:45:15.849'),
+('cm2qc1jt6000awmy89izj3t3w', 'delete-sizes', 'sizes', 'Xóa kích cỡ', '', '2024-10-26 15:45:23.058', '2024-10-26 15:45:23.058'),
+('cm2qc307e000cwmy826st3r22', 'create-sizes', 'sizes', 'Tạo kích cỡ', '', '2024-10-26 15:46:30.927', '2024-10-26 15:46:30.927'),
+('cm2qc3pxr000dwmy808wg331c', 'view-materials', 'materials', 'Xem nguyên liệu', '', '2024-10-26 15:47:04.325', '2024-10-26 15:47:04.325'),
+('cm2qc3vv6000ewmy82gt6jdg6', 'create-materials', 'materials', 'Thêm nguyên liệu', '', '2024-10-26 15:47:12.019', '2024-10-26 15:47:12.019'),
+('cm2qc408h000fwmy885zijdwc', 'update-materials', 'materials', 'Sửa nguyên liệu', '', '2024-10-26 15:47:17.681', '2024-10-26 15:47:17.681'),
+('cm2qc46iw000gwmy8xcfqjszt', 'delete-materials', 'materials', 'Xóa nguyên liệu', '', '2024-10-26 15:47:25.821', '2024-10-26 15:47:25.821'),
+('cm2qgmk2i000014iur0uj93k1', 'view-categories', 'categories', 'Xem danh mục', '', '2024-10-26 17:53:41.658', '2024-10-26 17:53:41.658'),
+('cm2qgmok2000114iuv13vm8kr', 'update-categories', 'categories', 'Sửa danh mục', '', '2024-10-26 17:53:47.474', '2024-10-26 17:53:47.474'),
+('cm2qgmu6u000214iuh2f3lp01', 'create-categories', 'categories', 'Thêm danh mục', '', '2024-10-26 17:53:54.774', '2024-10-26 17:53:54.774'),
+('cm2qgmyxt000314iuzlfy2ejq', 'delete-categories', 'categories', 'Xóa danh mục', '', '2024-10-26 17:54:00.913', '2024-10-26 17:54:00.913'),
+('cm2r5rshi00006ou53gnd1sv0', 'view-staffs', 'staffs', 'Xem nhân viên', '', '2024-10-27 05:37:36.246', '2024-10-27 05:37:36.246'),
+('cm2r5rwue00016ou50iyqtw40', 'create-staffs', 'staffs', 'Thêm nhân viên', '', '2024-10-27 05:37:41.894', '2024-10-27 05:37:41.894'),
+('cm2r5s61d00026ou514ckkm50', 'update-staffs', 'staffs', 'Sửa nhân viên', '', '2024-10-27 05:37:53.792', '2024-10-27 05:37:53.792'),
+('cm2r5sc4600036ou5du0t0pjp', 'delete-staffs', 'staffs', 'Xóa nhân viên', '', '2024-10-27 05:38:01.686', '2024-10-27 05:38:01.686'),
+('cm2r5v8sm0000nohs7pjldpgh', 'ban-customers', 'customers', 'Ban khách hàng', '', '2024-10-27 05:40:17.351', '2024-10-27 05:40:17.351'),
+('cm2r5vkip0001nohssoopl9kb', 'ban-staffs', 'staffs', 'Ban nhân viên', '', '2024-10-27 05:40:32.534', '2024-10-27 05:40:32.534'),
+('cm2r6ev4r0000uqp21t007u9b', 'view-providers', 'providers', 'Xem nhà cung cấp', '', '2024-10-27 05:55:32.763', '2024-10-27 05:55:32.763'),
+('cm2r6f53s0001uqp2y2zh01pu', 'update-providers', 'providers', 'Sửa nhà cung cấp', '', '2024-10-27 05:55:45.689', '2024-10-27 05:55:45.689'),
+('cm2r6fcv10002uqp2p7pgauwf', 'delete-providers', 'providers', 'Xóa nhà cung cấp', '', '2024-10-27 05:55:55.726', '2024-10-27 05:55:55.726'),
+('cm2r6fnbj0003uqp27773pwei', 'create-providers', 'providers', 'Thêm nhà cung cấp', '', '2024-10-27 05:56:09.296', '2024-10-27 05:56:09.296'),
+('cm2r9epr900001b8krl5lo7z8', 'view-products', 'products', 'Xem sản phẩm', '', '2024-10-27 07:19:24.641', '2024-10-27 07:19:24.641'),
+('cm2r9ey7b00011b8kunbdm6od', 'create-products', 'products', 'Thêm sản phẩm', '', '2024-10-27 07:19:35.591', '2024-10-27 07:19:35.591'),
+('cm2r9f3et00021b8knh4g90ur', 'update-products', 'products', 'Sửa sản phẩm', '', '2024-10-27 07:19:42.336', '2024-10-27 07:19:42.336'),
+('cm2r9f98j00031b8kzzptbena', 'delete-products', 'products', 'Xóa sản phẩm', '', '2024-10-27 07:19:49.892', '2024-10-27 07:19:49.892'),
+('cm2rc28yp0000bqesxkrnl8t0', 'view-coupons', 'coupons', 'Xem khuyến mãi', '', '2024-10-27 08:33:41.857', '2024-10-27 08:33:41.857'),
+('cm2rc2e3k0001bqesj16k46bw', 'create-coupons', 'coupons', 'Tạo khuyến mãi', '', '2024-10-27 08:33:48.513', '2024-10-27 08:33:48.513'),
+('cm2rc2i7c0002bqesv4ra7rzu', 'update-coupons', 'coupons', 'Sửa khuyến mãi', '', '2024-10-27 08:33:53.833', '2024-10-27 08:33:53.833'),
+('cm2rc2te60003bqes9pqhcol0', 'delete-coupons', 'coupons', 'Xóa khuyến mãi', '', '2024-10-27 08:34:08.329', '2024-10-27 08:34:08.329'),
+('cm2spk79u0002w95lyjmi6p1s', 'approve-imports', 'imports', 'Duyệt phiếu nhập', '', '2024-10-28 07:39:20.658', '2024-10-28 07:39:20.658'),
+('cm2sqb3f40000wb1jt2x2xgpk', 'view-imports', 'imports', 'Xem phiếu nhập', '', '2024-10-28 08:00:15.377', '2024-10-28 08:00:15.377'),
+('cm2sqb9ag0001wb1jg4co3efj', 'update-imports', 'imports', 'Sửa phiếu nhập', '', '2024-10-28 08:00:22.984', '2024-10-28 08:00:22.984'),
+('cm2sqbenv0002wb1jrxiigsdy', 'delete-imports', 'imports', 'Xóa phiếu nhập', '', '2024-10-28 08:00:29.947', '2024-10-28 08:00:29.947'),
+('cm2sqbk8a0003wb1j59ogd6q5', 'create-imports', 'imports', 'Tạo phiếu nhập', '', '2024-10-28 08:00:37.152', '2024-10-28 08:00:37.152'),
+('cm2u6oc5b00006tlryypxen42', 'receive-imports', 'imports', 'Nhập hàng', '', '2024-10-29 08:26:13.248', '2024-10-29 08:26:13.248'),
+('cm2xdmsi00000zk478n4g1dva', 'view-orders', 'orders', 'Xem đơn đặt hàng', '', '2024-10-31 14:04:16.969', '2024-10-31 14:04:16.969'),
+('cm2xdmzbh0001zk473rhx9tfh', 'update-orders', 'orders', 'Sửa đơn đặt hàng', '', '2024-10-31 14:04:25.805', '2024-10-31 14:04:25.805');
+
+
+INSERT INTO `Product` (`id`, `name`, `image`, `image_mobile`, `shortDescription`, `detailDescription`, `slug`, `categoryId`, `createdAt`, `updatedAt`) VALUES
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', 'pizza bò', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206447/pizza-app/itv8oxjgvl7wgbps364m.jpg', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206476/pizza-app/kkp5gb8ufzuwcm3wsgx1.jpg', 'piza bò', '', 'bo', 'e7545c1e-c071-49d8-971e-dcdcd4ab259f', '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', 'hải sản', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206450/pizza-app/qh9tuv56stql0ldmmldh.png', 'http://res.cloudinary.com/dfrfwlhzd/image/upload/v1730206475/pizza-app/ivve6mnzjrxkzeoocvx9.png', 'hải sản', '', 'hai-san', '92af343d-98be-4961-a458-24304c7a9d87', '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033');
+
+
+INSERT INTO `ProductBorder` (`productId`, `borderId`, `createdAt`, `updatedAt`) VALUES
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', '85a7e314-662f-487a-963f-aa535ac1df01', '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', 'ea9eb235-c9a2-43cd-9f83-261929636d83', '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', '85a7e314-662f-487a-963f-aa535ac1df01', '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', 'ea9eb235-c9a2-43cd-9f83-261929636d83', '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033');
+
+
+INSERT INTO `ProductSize` (`productId`, `sizeId`, `price`, `createdAt`, `updatedAt`) VALUES
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', 'ebb20e09-11e9-4355-8f8f-40e8a35a2466', 300000, '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', 'fc892e0f-232d-4a10-9f1f-12bbd0b80d47', 200000, '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', 'ebb20e09-11e9-4355-8f8f-40e8a35a2466', 300000, '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', 'fc892e0f-232d-4a10-9f1f-12bbd0b80d47', 200000, '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033');
+
+
+INSERT INTO `ProductTopping` (`productId`, `toppingId`, `createdAt`, `updatedAt`) VALUES
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', '626c2abe-6c0c-4847-9ca0-d3dd65f04db6', '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', '7cd55464-084d-4f45-87ab-635ec6445e76', '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', 'ff832f5b-0f6a-45b1-8ccf-195e09b9436a', '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', '626c2abe-6c0c-4847-9ca0-d3dd65f04db6', '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', '7cd55464-084d-4f45-87ab-635ec6445e76', '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', 'ff832f5b-0f6a-45b1-8ccf-195e09b9436a', '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033');
+
+
+
+INSERT INTO `Recipe` (`productId`, `materialId`, `quantity`, `createdAt`, `updatedAt`) VALUES
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', '72e99bd3-9c2e-4319-8b80-e4cc944ab5ee', '140.000000000000000000000000000000', '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', '76c3d347-f3a2-4a21-8345-3039939f6e73', '246.000000000000000000000000000000', '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('c22f50c7-e1aa-4c46-a9d9-97f8339106df', 'a1713afe-72d3-48f7-ad5d-c963c37f0752', '250.000000000000000000000000000000', '2024-10-31 12:45:15.313', '2024-10-31 12:45:15.313'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', '72e99bd3-9c2e-4319-8b80-e4cc944ab5ee', '140.000000000000000000000000000000', '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', '76c3d347-f3a2-4a21-8345-3039939f6e73', '246.000000000000000000000000000000', '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033'),
+('dcf9244e-1d14-49de-8e06-c24c61f95735', 'a1713afe-72d3-48f7-ad5d-c963c37f0752', '250.000000000000000000000000000000', '2024-10-31 12:44:51.033', '2024-10-31 12:44:51.033');
+
+
+INSERT INTO `Role` (`id`, `name`, `description`, `createdAt`, `updatedAt`) VALUES
+('cm2xafef60000ug43e5w3act1', 'admin', '', '2024-10-31 12:34:33.282', '2024-10-31 14:04:31.511'),
+('cm2xed1b90000j0y1br77uifb', 'chef', '', '2024-10-31 14:24:41.445', '2024-10-31 14:24:41.445');
+
+INSERT INTO `RolePermission` (`roleId`, `permissionId`) VALUES
+('cm2xafef60000ug43e5w3act1', 'cm2kku9980002mmmbf0qsqxvc'),
+('cm2xafef60000ug43e5w3act1', 'cm2kkug5u0003mmmbgaazrl5p'),
+('cm2xafef60000ug43e5w3act1', 'cm2kkum7w0004mmmbwh2ks5xx'),
+('cm2xafef60000ug43e5w3act1', 'cm2kkxh140008mmmbqhzk31ok'),
+('cm2xafef60000ug43e5w3act1', 'cm2kkxupj0009mmmbodqcxa3y'),
+('cm2xafef60000ug43e5w3act1', 'cm2kky3yf000ammmbz49rs6ph'),
+('cm2xafef60000ug43e5w3act1', 'cm2knynf10002xt6o2qdygt2x'),
+('cm2xafef60000ug43e5w3act1', 'cm2kro4ki00017b99d67r9qje'),
+('cm2xafef60000ug43e5w3act1', 'cm2qbyeqe0000wmy8itdcy4np'),
+('cm2xafef60000ug43e5w3act1', 'cm2qbys1x0001wmy8ji04p35e'),
+('cm2xafef60000ug43e5w3act1', 'cm2qbyyu80002wmy8dktdoge3'),
+('cm2xafef60000ug43e5w3act1', 'cm2qbz3kx0003wmy8o1mp2il4'),
+('cm2xafef60000ug43e5w3act1', 'cm2qbzfiw0004wmy8e2irgu4g'),
+('cm2xafef60000ug43e5w3act1', 'cm2qbznga0005wmy8mu9xo61n'),
+('cm2xafef60000ug43e5w3act1', 'cm2qbzvt40006wmy87iwm94if'),
+('cm2xafef60000ug43e5w3act1', 'cm2qc02y90007wmy8outefwlh'),
+('cm2xafef60000ug43e5w3act1', 'cm2qc179t0008wmy80lt2actp'),
+('cm2xafef60000ug43e5w3act1', 'cm2qc1e890009wmy89ewbqu6t'),
+('cm2xafef60000ug43e5w3act1', 'cm2qc1jt6000awmy89izj3t3w'),
+('cm2xafef60000ug43e5w3act1', 'cm2qc307e000cwmy826st3r22'),
+('cm2xafef60000ug43e5w3act1', 'cm2qc3pxr000dwmy808wg331c'),
+('cm2xafef60000ug43e5w3act1', 'cm2qc3vv6000ewmy82gt6jdg6'),
+('cm2xafef60000ug43e5w3act1', 'cm2qc408h000fwmy885zijdwc'),
+('cm2xafef60000ug43e5w3act1', 'cm2qc46iw000gwmy8xcfqjszt'),
+('cm2xafef60000ug43e5w3act1', 'cm2qgmk2i000014iur0uj93k1'),
+('cm2xafef60000ug43e5w3act1', 'cm2qgmok2000114iuv13vm8kr'),
+('cm2xafef60000ug43e5w3act1', 'cm2qgmu6u000214iuh2f3lp01'),
+('cm2xafef60000ug43e5w3act1', 'cm2qgmyxt000314iuzlfy2ejq'),
+('cm2xafef60000ug43e5w3act1', 'cm2r5rshi00006ou53gnd1sv0'),
+('cm2xafef60000ug43e5w3act1', 'cm2r5rwue00016ou50iyqtw40'),
+('cm2xafef60000ug43e5w3act1', 'cm2r5s61d00026ou514ckkm50'),
+('cm2xafef60000ug43e5w3act1', 'cm2r5sc4600036ou5du0t0pjp'),
+('cm2xafef60000ug43e5w3act1', 'cm2r5v8sm0000nohs7pjldpgh'),
+('cm2xafef60000ug43e5w3act1', 'cm2r5vkip0001nohssoopl9kb'),
+('cm2xafef60000ug43e5w3act1', 'cm2r6ev4r0000uqp21t007u9b'),
+('cm2xafef60000ug43e5w3act1', 'cm2r6f53s0001uqp2y2zh01pu'),
+('cm2xafef60000ug43e5w3act1', 'cm2r6fcv10002uqp2p7pgauwf'),
+('cm2xafef60000ug43e5w3act1', 'cm2r6fnbj0003uqp27773pwei'),
+('cm2xafef60000ug43e5w3act1', 'cm2r9epr900001b8krl5lo7z8'),
+('cm2xafef60000ug43e5w3act1', 'cm2r9ey7b00011b8kunbdm6od'),
+('cm2xafef60000ug43e5w3act1', 'cm2r9f3et00021b8knh4g90ur'),
+('cm2xafef60000ug43e5w3act1', 'cm2r9f98j00031b8kzzptbena'),
+('cm2xafef60000ug43e5w3act1', 'cm2rc28yp0000bqesxkrnl8t0'),
+('cm2xafef60000ug43e5w3act1', 'cm2rc2e3k0001bqesj16k46bw'),
+('cm2xafef60000ug43e5w3act1', 'cm2rc2i7c0002bqesv4ra7rzu'),
+('cm2xafef60000ug43e5w3act1', 'cm2rc2te60003bqes9pqhcol0'),
+('cm2xafef60000ug43e5w3act1', 'cm2spk79u0002w95lyjmi6p1s'),
+('cm2xafef60000ug43e5w3act1', 'cm2sqb3f40000wb1jt2x2xgpk'),
+('cm2xafef60000ug43e5w3act1', 'cm2sqb9ag0001wb1jg4co3efj'),
+('cm2xafef60000ug43e5w3act1', 'cm2sqbenv0002wb1jrxiigsdy'),
+('cm2xafef60000ug43e5w3act1', 'cm2sqbk8a0003wb1j59ogd6q5'),
+('cm2xafef60000ug43e5w3act1', 'cm2u6oc5b00006tlryypxen42'),
+('cm2xafef60000ug43e5w3act1', 'cm2xdmsi00000zk478n4g1dva'),
+('cm2xafef60000ug43e5w3act1', 'cm2xdmzbh0001zk473rhx9tfh'),
+('cm2xed1b90000j0y1br77uifb', 'cm2xdmsi00000zk478n4g1dva'),
+('cm2xed1b90000j0y1br77uifb', 'cm2xdmzbh0001zk473rhx9tfh');
+
+
+
+INSERT INTO `StaffRole` (`staffId`, `roleId`, `createdAt`, `updatedAt`) VALUES
+('40599936-fecc-4ae4-a66f-86e32b01b6af', 'cm2xafef60000ug43e5w3act1', '2024-10-31 14:24:50.994', '2024-10-31 14:24:50.994'),
+('40599936-fecc-4ae4-a66f-86e32b01b6af', 'cm2xed1b90000j0y1br77uifb', '2024-10-31 14:24:50.994', '2024-10-31 14:24:50.994');
+

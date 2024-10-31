@@ -59,6 +59,7 @@ export default function ProductOrderModal({
 
   const handleAddToCart = () => {
     const cartItem: CartItem = {
+      id: product.id,
       quantity,
       slug: product.slug,
       name: product.name,

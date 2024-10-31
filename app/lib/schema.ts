@@ -224,3 +224,39 @@ export const receiveImportSchema = z.object({
     }),
   ),
 });
+
+export const checkoutSchema = z.object({
+  address: z.string().min(1, "Vui lòng nhập địa chỉ giao hàng"),
+  lat: z.string().min(1, "Vui lòng chọn địa chỉ từ kết quả tìm kiếm"),
+  lng: z.string().min(1, "Vui lòng chọn địa chỉ từ kết quả tìm kiếm"),
+  shipNote: z.string().optional(),
+  paymentMethod: z.enum(["COD", "MOMO", "BANK"]),
+  couponCode: z.string().optional(),
+  cartItems: z.array(
+    z.object({
+      productId: z.string(),
+      sizeId: z.string(),
+      borderId: z.string().optional(),
+      toppingId: z.string().optional(),
+      quantity: stringAsPositiveNumber,
+      totalAmount: stringAsPositiveNumber,
+    }),
+  ),
+});
+
+// Thêm schema cho form đổi mật khẩu
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
+    newPassword: z.string().min(6, "Mật khẩu mới phải có ít nhất 6 ký tự"),
+    confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu mới"),
+  })
+  .superRefine(({ confirmPassword, newPassword }, ctx) => {
+    if (confirmPassword !== newPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Mật khẩu xác nhận không khớp",
+        path: ["confirmPassword"],
+      });
+    }
+  });

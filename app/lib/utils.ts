@@ -290,3 +290,27 @@ export function formDataObject(formData: FormData) {
   }
   return root;
 }
+
+export function formatDuration(milliseconds: number): string {
+  const minutes = Math.round(milliseconds / 1000 / 60);
+
+  if (minutes < 60) {
+    return `${minutes} phút`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (remainingMinutes === 0) {
+    return `${hours} giờ`;
+  }
+
+  return `${hours} giờ ${remainingMinutes} phút`;
+}
+const SHIPPING_RATE_PER_KM = 5000; // 5,000 VND per km
+const MIN_SHIPPING_FEE = 15000; // Minimum shipping fee
+export function calculateShippingFee(distanceInMeters: number) {
+  const distanceInKm = distanceInMeters / 1000;
+  const calculatedFee = Math.ceil(distanceInKm * SHIPPING_RATE_PER_KM);
+  return Math.max(calculatedFee, MIN_SHIPPING_FEE);
+}

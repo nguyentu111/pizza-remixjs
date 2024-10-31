@@ -5,8 +5,8 @@ import { ParsedActionResult } from "~/lib/type";
 import { useToast } from "./use-toast";
 import { flattenObject } from "~/lib/utils";
 
-export function useForm<T extends ZodSchema>(options?: {
-  onSuccess?: () => void;
+export function useForm<T extends ZodSchema, E extends any = any>(options?: {
+  onSuccess?: (data: E) => void;
   onError?: (error: string) => void;
   defaultValues?: Partial<z.infer<T>>;
 }) {
@@ -24,7 +24,7 @@ export function useForm<T extends ZodSchema>(options?: {
     console.log(actionData);
     if (!isSubmitting && actionData?.success) {
       if (options?.onSuccess && typeof options.onSuccess === "function") {
-        options.onSuccess();
+        options.onSuccess(actionData as unknown as E);
       } else {
         toast({
           title: "Lưu thành công",

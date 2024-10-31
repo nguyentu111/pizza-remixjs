@@ -81,12 +81,25 @@ export enum PermissionsEnum {
   UpdateImports = "update-imports",
   DeleteImports = "delete-imports",
   ApproveImports = "approve-imports",
+
+  ViewOrders = "view-orders",
+  UpdateOrders = "update-orders",
+}
+
+export enum OrderStatus {
+  PENDING = "PENDING",
+  COOKING = "COOKING",
+  COOKED = "COOKED", // Thêm trạng thái đã nấu xong
+  SHIPPING = "SHIPPING",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
 }
 
 export type RawActionResult<T extends object = object> = {
   success: boolean;
   error?: string;
   fieldErrors?: T;
+  data?: any;
 };
 export type ActionResultType<T extends object = object> = TypedResponse<
   RawActionResult<T>
@@ -140,14 +153,15 @@ export type ProductWithDetails = Product & {
   })[];
 };
 export type CartItem = {
+  id: string;
   slug: string;
   name: string;
   image: string;
   quantity: number;
   options: {
-    sizeId?: string;
-    sizeName?: string;
-    sizePrice?: number;
+    sizeId: string;
+    sizeName: string;
+    sizePrice: number;
     borderId?: string;
     borderName?: string;
     borderPrice?: number;
@@ -155,4 +169,34 @@ export type CartItem = {
     toppingName?: string;
     toppingPrice?: number;
   };
+};
+export type GraphhopperRouteCalculation = {
+  hints: {
+    "visited_nodes.sum": number;
+    "visited_nodes.average": number;
+  };
+  info: {
+    copyrights: [string, string];
+
+    took: 3;
+    road_data_timestamp: string;
+  };
+  paths: {
+    distance: number;
+    weight: number;
+    time: number;
+    transfers: number;
+    points_encoded: boolean;
+    points_encoded_multiplier: number;
+    snapped_waypoints: string;
+    instructions?: {
+      distance: number;
+      heading: number;
+      sign: number;
+      interval: number[];
+      text: string;
+      time: number;
+      street_name: string;
+    }[];
+  }[];
 };

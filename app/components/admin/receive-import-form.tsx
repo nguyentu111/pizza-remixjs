@@ -110,11 +110,13 @@ export function ReceiveImportForm({
                   control={control}
                   name={`materials[${index}].pricePerUnit`}
                 >
-                  <Label>Đơn giá thực tế</Label>
+                  <Label>Đơn giá</Label>
                   <InputField
+                    readOnly
                     type="number"
                     min={0}
                     placeholder="Nhập đơn giá"
+                    className="bg-gray-100"
                   />
                   <ErrorMessage />
                 </FormField>

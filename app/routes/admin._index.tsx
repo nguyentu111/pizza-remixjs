@@ -3,13 +3,9 @@ import { MediaButton } from "~/components/shared/media-button";
 import { useMatchesData } from "~/hooks/use-matches-data";
 
 export default function AdminHome() {
-  const data = useLoaderData();
-  const matchdata = useMatchesData("routes/admin");
   return (
     <div>
-      <MediaButton mediaType="product" className="" variant={"link"}>
-        {"Choose image"}
-      </MediaButton>
+      <h1 className="text-2xl font-bold mb-6">Admin pages</h1>
     </div>
   );
 }
