@@ -29,14 +29,7 @@ export const action = safeAction([
   {
     schema: RegisterSchema,
     method: "POST",
-    action: async (
-      { request },
-      data,
-    ): Promise<
-      ActionResultType<
-        z.inferFlattenedErrors<typeof RegisterSchema>["fieldErrors"]
-      >
-    > => {
+    action: async ({ request }, data) => {
       const validatedData = data as z.infer<typeof RegisterSchema>;
       const redirect = safeRedirect(validatedData.redirectTo, "/");
       const existingCustomer = await getCustomerByPhoneNumber(

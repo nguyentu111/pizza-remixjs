@@ -144,9 +144,9 @@ export const action = safeAction([
           shippingFee: shippingFee,
           customerId: customer.id,
           couponId,
-          paymentStatus:
-            validatedData.paymentMethod === "COD" ? "PENDING" : "WAITING",
           orderDetails,
+          paymentStatus:
+            validatedData.paymentMethod === "COD" ? "UNPAID" : "PAID",
         });
 
         return redirect("/account/order-history");

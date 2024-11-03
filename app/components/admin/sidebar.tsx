@@ -59,20 +59,22 @@ export default function Sidebar() {
               <span>Nhà cung cấp</span>
             </NavLink>
           </li>
-          <li>
-            <NavLink
-              to="/admin/permissions"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-2 px-4 py-2 transition-colors",
-                  isActive ? "bg-blue-500 text-white" : "hover:bg-gray-200",
-                )
-              }
-            >
-              <Shield className="w-4 h-4" />
-              <span>Quyền hạn</span>
-            </NavLink>
-          </li>
+          {process.env.NODE_ENV === "development" && (
+            <li>
+              <NavLink
+                to="/admin/permissions"
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-2 px-4 py-2 transition-colors",
+                    isActive ? "bg-blue-500 text-white" : "hover:bg-gray-200",
+                  )
+                }
+              >
+                <Shield className="w-4 h-4" />
+                <span>Quyền hạn</span>
+              </NavLink>
+            </li>
+          )}
           <li>
             <NavLink
               to="/admin/roles"
@@ -201,7 +203,7 @@ export default function Sidebar() {
           </li>
           <li>
             <NavLink
-              to={isChef ? "/admin/chef/orders" : "/admin/orders"}
+              to={"/admin/orders"}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-2 px-4 py-2 transition-colors",
@@ -217,7 +219,7 @@ export default function Sidebar() {
             <>
               <li>
                 <NavLink
-                  to="/admin/shipper/orders"
+                  to="/admin/ship/orders"
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-2 px-4 py-2 transition-colors",
@@ -231,7 +233,7 @@ export default function Sidebar() {
               </li>
               <li>
                 <NavLink
-                  to="/admin/shipper/delivery/create"
+                  to="/admin/ship/delivery"
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-2 px-4 py-2 transition-colors",
@@ -240,7 +242,7 @@ export default function Sidebar() {
                   }
                 >
                   <TruckIcon className="w-4 h-4" />
-                  <span>Tạo chuyến giao hàng</span>
+                  <span>Chuyến giao hàng</span>
                 </NavLink>
               </li>
             </>

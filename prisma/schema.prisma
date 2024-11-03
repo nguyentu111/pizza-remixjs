@@ -49,12 +49,11 @@ model Staff {
 
   Deliveries        Delivery[]
   Password          StaffPassword?
-  ImportCreatedBy   Import[]        @relation("ImportCreatedBy")
-  ImportReceivedBy  Import[]        @relation("ImportReceivedBy")
-  ExportCreatedBy   Export[]        @relation("ExportCreatedBy")
-  ExportDeliveredBy Export[]        @relation("ExportDeliveredBy")
-  ImportApprovedBy  Import[]        @relation("ImportApprovedBy")
-  DeliveryRoute     DeliveryRoute[]
+  ImportCreatedBy   Import[]       @relation("ImportCreatedBy")
+  ImportReceivedBy  Import[]       @relation("ImportReceivedBy")
+  ExportCreatedBy   Export[]       @relation("ExportCreatedBy")
+  ExportDeliveredBy Export[]       @relation("ExportDeliveredBy")
+  ImportApprovedBy  Import[]       @relation("ImportApprovedBy")
 }
 
 model CustomerPassword {
@@ -314,45 +313,37 @@ model ExportMaterial {
 }
 
 model Order {
-  id                   String                 @id @default(uuid())
-  address              String
-  address_lat          Decimal
-  address_lng          Decimal
-  shipNote             String?
-  shippingFee          Decimal
-  totalAmount          Decimal
-  status               OrderStatus
-  paymentStatus        String? // Thêm trạng thái thanh toán, nullable
-  cancelledReason      String?
-  couponId             String?
-  chefId               String?
-  shipperId            String?
-  customerId           String
-  ratingId             String?                @unique
-  deliveryId           String?
-  deliveryStep         Int
-  currentLat           Decimal? // Thêm trường để lưu trữ vị trí hiện tại của đơn hàng
-  currentLng           Decimal? // Thêm trường để lưu trữ vị trí hiện tại của đơn hàng
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
-  coupon               Coupon?                @relation(fields: [couponId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  chef                 Staff?                 @relation("ChefOrders", fields: [chefId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  shipper              Staff?                 @relation("ShipperOrders", fields: [shipperId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  customer             Customer               @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  rating               Rating?
-  Delivery             Delivery?              @relation(fields: [deliveryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  deliveryStatus       DeliveryStatus // Thêm trường để theo dõi trạng thái giao hàng
-  OrderLocationHistory OrderLocationHistory[]
-  OrderDetail          OrderDetail[]
-  DeliveryRoute        DeliveryRoute?         @relation(fields: [deliveryRouteId], references: [id])
-  deliveryRouteId      String?
-  DeliveryRouteStep    DeliveryRouteStep[]
+  id              String         @id @default(uuid())
+  address         String
+  address_lat     Decimal
+  address_lng     Decimal
+  shipNote        String?
+  shippingFee     Decimal
+  totalAmount     Decimal
+  status          OrderStatus
+  paymentStatus   PaymentStatus // Thêm trạng thái thanh toán, nullable
+  cancelledReason String?
+  couponId        String?
+  chefId          String?
+  shipperId       String?
+  customerId      String
+  ratingId        String?        @unique
+  deliveryOrderId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  coupon          Coupon?        @relation(fields: [couponId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  chef            Staff?         @relation("ChefOrders", fields: [chefId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  shipper         Staff?         @relation("ShipperOrders", fields: [shipperId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  customer        Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  rating          Rating?
+  OrderDetail     OrderDetail[]
+  DeliveryOrder   DeliveryOrder?
 
   @@index([customerId]) // Added index for foreign key
   @@index([chefId]) // Added index for foreign key
   @@index([shipperId]) // Added index for foreign key
   @@index([couponId]) // Added index for foreign key
-  @@index([deliveryId]) // Added index for foreign key
+  @@index([ratingId]) // Added index for foreign key
 }
 
 model OrderDetail {
@@ -372,18 +363,6 @@ model OrderDetail {
 
   @@index([orderId])
   @@index([productId, borderId, sizeId, toppingId]) // Unique constraint removed
-}
-
-model Delivery {
-  id        String         @id @default(uuid())
-  status    DeliveryStatus
-  staffId   String
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  staff     Staff          @relation(fields: [staffId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  Orders    Order[]
-
-  @@index([staffId]) // Added index for foreign key
 }
 
 model Rating {
@@ -501,61 +480,48 @@ enum OrderStatus {
   CANCELLED
 }
 
-enum DeliveryStatus {
+enum PaymentStatus {
+  PAID
+  UNPAID
+}
+
+enum DeliveryOrderStatus {
   PENDING
   SHIPPING
   COMPLETED
   CANCELLED
 }
 
-model OrderLocationHistory {
-  id        String   @id @default(uuid())
-  orderId   String
-  latitude  Decimal
-  longitude Decimal
-  timestamp DateTime @default(now())
-
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@index([orderId]) // Thêm chỉ mục cho foreign key
+enum DeliveryStatus {
+  SHIPPING
+  COMPLETED
+  CANCELLED
 }
 
-model DeliveryRoute {
-  id         String         @id @default(uuid())
-  shipperId  String
-  status     DeliveryStatus @default(PENDING)
+model Delivery {
+  id            String          @id @default(uuid())
+  status        DeliveryStatus
+  staffId       String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  staff         Staff           @relation(fields: [staffId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  DeliveryOrder DeliveryOrder[]
+
+  @@index([staffId]) // Added index for foreign key
+}
+
+model DeliveryOrder {
+  id         String              @id @default(uuid())
+  deliveryId String
+  orderId    String              @unique
   startTime  DateTime?
   endTime    DateTime?
-  distance   Decimal? // Tổng quãng đường
-  duration   Int? // Thời gian dự kiến (giây)
+  status     DeliveryOrderStatus @default(PENDING)
   cancelNote String? // Ghi chú khi hủy
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  delivery   Delivery            @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  order      Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
 
-  shipper    Staff               @relation(fields: [shipperId], references: [id])
-  orders     Order[]
-  routeSteps DeliveryRouteStep[]
-
-  @@index([shipperId])
-}
-
-model DeliveryRouteStep {
-  id              String         @id @default(uuid())
-  deliveryRouteId String
-  orderId         String
-  stepNumber      Int // Thứ tự điểm giao hàng
-  latitude        Decimal
-  longitude       Decimal
-  distance        Decimal? // Khoảng cách từ điểm trước
-  duration        Int? // Thời gian từ điểm trước (giây)
-  instruction     String? // Chỉ dẫn đường đi
-  status          DeliveryStatus @default(PENDING)
-  completedAt     DateTime?
-  cancelNote      String?
-
-  deliveryRoute DeliveryRoute @relation(fields: [deliveryRouteId], references: [id], onDelete: Cascade)
-  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  @@index([deliveryRouteId])
-  @@index([orderId])
+  @@index([deliveryId, orderId])
 }

@@ -8,6 +8,10 @@ import {
   ProductBorder,
   ProductTopping,
   Size,
+  Order,
+  OrderDetail,
+  Customer,
+  Coupon,
 } from "@prisma/client";
 import { TypedResponse } from "@remix-run/node";
 import { z, ZodSchema } from "zod";
@@ -84,6 +88,11 @@ export enum PermissionsEnum {
 
   ViewOrders = "view-orders",
   UpdateOrders = "update-orders",
+
+  ViewDeliveries = "view-deliveries",
+  CreateDeliveries = "create-deliveries",
+  UpdateDeliveries = "update-deliveries",
+  DeleteDeliveries = "delete-deliveries",
 }
 
 export enum OrderStatus {
@@ -199,4 +208,23 @@ export type GraphhopperRouteCalculation = {
       street_name: string;
     }[];
   }[];
+};
+export type OrderWithDetails = Order & {
+  OrderDetail: (OrderDetail & {
+    product: { name: string; image: string | null };
+    size: { name: string };
+    border?: { name: string } | null;
+    topping?: { name: string } | null;
+  })[];
+};
+
+export type OrderWithDetailsCustomerCoupon = Order & {
+  customer: Customer;
+  coupon: Coupon;
+  OrderDetail: (OrderDetail & {
+    product: { name: string; image: string | null };
+    size: { name: string };
+    border?: { name: string } | null;
+    topping?: { name: string } | null;
+  })[];
 };

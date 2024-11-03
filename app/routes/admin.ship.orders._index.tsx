@@ -6,6 +6,7 @@ import { requirePermissions } from "~/use-cases/permission.server";
 import { PermissionsEnum } from "~/lib/type";
 import { ShipperOrderList } from "~/components/shipper/order-list";
 import { prisma } from "~/lib/db.server";
+import { OrderWithDetailsCustomerCoupon } from "~/lib/type";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const staffId = await requireStaffId(request);
@@ -19,9 +20,21 @@ export default function ShipperOrdersPage() {
   const { orders } = useLoaderData<typeof loader>();
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Đơn hàng cần giao</h1>
-      <ShipperOrderList orders={orders} />
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white">
+        <div>
+          <h1 className="text-2xl font-bold">Đơn hàng cần giao</h1>
+          <nav className="text-sm text-gray-600">
+            <a href="/admin" className="hover:underline">
+              Trang chủ
+            </a>{" "}
+            &gt; Đơn hàng cần giao
+          </nav>
+        </div>
+      </div>
+      <ShipperOrderList
+        orders={orders as unknown as OrderWithDetailsCustomerCoupon[]}
+      />
     </div>
   );
 }

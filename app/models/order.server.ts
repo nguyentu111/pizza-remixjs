@@ -1,14 +1,25 @@
-import { Order, OrderDetail, Prisma } from "@prisma/client";
+import { Order, PaymentStatus, Prisma } from "@prisma/client";
 import { prisma } from "~/lib/db.server";
 
-export type OrderWithDetails = Order & {
-  OrderDetail: (OrderDetail & {
-    product: { name: string; image: string | null };
-    size: { name: string };
-    border?: { name: string } | null;
-    topping?: { name: string } | null;
-  })[];
-};
+export async function getOrders() {
+  return prisma.order.findMany({
+    include: {
+      OrderDetail: {
+        include: {
+          product: true,
+          size: true,
+          border: true,
+          topping: true,
+        },
+      },
+      customer: true,
+      DeliveryOrder: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
 
 export async function createOrder(
   db: Prisma.TransactionClient,
@@ -21,7 +32,7 @@ export async function createOrder(
     totalAmount: number;
     customerId: string;
     couponId?: string;
-    paymentStatus?: string;
+    paymentStatus?: PaymentStatus;
     orderDetails: Array<{
       productId: string;
       sizeId: string;
@@ -41,19 +52,11 @@ export async function createOrder(
       shippingFee: data.shippingFee,
       totalAmount: data.totalAmount,
       status: "PENDING",
-      deliveryStep: 1,
-      deliveryStatus: "PENDING",
-      paymentStatus: data.paymentStatus || "PENDING",
+      paymentStatus: data.paymentStatus || "UNPAID",
       customer: { connect: { id: data.customerId } },
       coupon: data.couponId ? { connect: { id: data.couponId } } : undefined,
       OrderDetail: {
         create: data.orderDetails,
-      },
-      OrderLocationHistory: {
-        create: {
-          latitude: data.address_lat,
-          longitude: data.address_lng,
-        },
       },
     },
     include: {
@@ -82,28 +85,6 @@ export async function createOrder(
           },
         },
       },
-    },
-  });
-}
-
-export async function updateOrderLocation(
-  db: Prisma.TransactionClient,
-  orderId: string,
-  latitude: number,
-  longitude: number,
-) {
-  await db.order.update({
-    where: { id: orderId },
-    data: {
-      currentLat: latitude,
-      currentLng: longitude,
-    },
-  });
-  await db.orderLocationHistory.create({
-    data: {
-      orderId,
-      latitude,
-      longitude,
     },
   });
 }
@@ -142,11 +123,6 @@ export async function getOrderById(
       },
       coupon: true,
       customer: true,
-      OrderLocationHistory: {
-        orderBy: {
-          timestamp: "desc",
-        },
-      },
     },
   });
 }
@@ -203,7 +179,7 @@ export async function getCustomerOrders(
 export async function updateOrderPaymentStatus(
   db: Prisma.TransactionClient,
   id: Order["id"],
-  paymentStatus: string,
+  paymentStatus: PaymentStatus,
 ) {
   return db.order.update({
     where: { id },

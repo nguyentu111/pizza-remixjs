@@ -121,7 +121,7 @@ export async function calculateOptimalRoute(
     // Prepare services (delivery points)
     const services: GraphHopperService[] = orders.map((order) => ({
       id: order.id,
-      name: `Delivery to ${order.address}`,
+      name: `Vận chuyển đến ${order.address}`,
       address: {
         location_id: order.id,
         lon: Number(order.address_lng),
@@ -164,7 +164,6 @@ export async function calculateOptimalRoute(
         body: JSON.stringify(requestBody),
       },
     );
-    console.dir(JSON.stringify(requestBody), { depth: null });
     if (!response.ok) {
       throw new Error(`GraphHopper API error: ${response.statusText}`);
     }

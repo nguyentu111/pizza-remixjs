@@ -5,32 +5,13 @@ import { requireStaffId } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
 import { PermissionsEnum } from "~/lib/type";
 import { OrderTable } from "~/components/chef/order-table";
+import { getOrders } from "~/models/order.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const staffId = await requireStaffId(request);
   await requirePermissions(prisma, staffId, [PermissionsEnum.ViewOrders]);
 
-  const orders = await prisma.order.findMany({
-    where: {
-      status: {
-        in: ["PENDING", "COOKING", "COOKED"],
-      },
-    },
-    include: {
-      OrderDetail: {
-        include: {
-          product: true,
-          size: true,
-          border: true,
-          topping: true,
-        },
-      },
-      customer: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const orders = await getOrders();
 
   return json({ orders });
 };
@@ -39,9 +20,19 @@ export default function ChefOrdersPage() {
   const { orders } = useLoaderData<typeof loader>();
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Quản lý đơn hàng</h1>
-      <OrderTable orders={orders} />
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white">
+        <div>
+          <h1 className="text-2xl font-bold">Quản lý đơn hàng</h1>
+          <nav className="text-sm text-gray-600">
+            <a href="/admin" className="hover:underline">
+              Trang chủ
+            </a>{" "}
+            &gt; Quản lý đơn hàng
+          </nav>
+        </div>
+      </div>
+      <OrderTable orders={orders as any} />
     </div>
   );
 }

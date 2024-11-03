@@ -5,7 +5,7 @@ export async function getAvailableOrders() {
   return prisma.order.findMany({
     where: {
       status: "COOKED",
-      deliveryStatus: "PENDING",
+      DeliveryOrder: null,
     },
     include: {
       customer: true,
@@ -28,168 +28,143 @@ export async function createDeliveryRoute(data: {
   shipperId: string;
   orderIds: string[];
 }) {
-  return await prisma.$transaction(async (tx) => {
-    // Get orders with locations
-    const orders = await tx.order.findMany({
-      where: {
-        id: { in: data.orderIds },
-      },
-      select: {
-        id: true,
-        address: true,
-        address_lat: true,
-        address_lng: true,
-      },
-    });
+  return await prisma.$transaction(
+    async (tx) => {
+      // Get orders with locations
+      const orders = await tx.order.findMany({
+        where: {
+          id: { in: data.orderIds },
+          status: "COOKED",
+          DeliveryOrder: null,
+        },
+        select: {
+          id: true,
+          address: true,
+          address_lat: true,
+          address_lng: true,
+          // Ensure to include any new fields if necessary
+        },
+      });
 
-    // Calculate optimal route using GraphHopper
-    const route = await calculateOptimalRoute(orders);
+      if (orders.length === 0) {
+        throw new Error("No valid orders found");
+      }
 
-    // Create delivery route
-    const deliveryRoute = await tx.deliveryRoute.create({
+      // Calculate optimal route using GraphHopper
+      const route = await calculateOptimalRoute(orders);
+      console.dir(route, { depth: null });
+      // Create delivery route
+      const deliveryRoute = await tx.delivery.create({
+        data: {
+          staffId: data.shipperId,
+          status: "SHIPPING",
+          // Ensure to include any new fields if necessary
+          DeliveryOrder: {
+            create: route.steps.map((step, index) => ({
+              orderId: step.orderId,
+              cancelNote: null,
+              endTime: null,
+              startTime: index === 0 ? new Date() : null,
+              status: index === 0 ? "SHIPPING" : "PENDING",
+            })),
+          },
+        },
+        include: {
+          DeliveryOrder: true,
+        },
+      });
+
+      return deliveryRoute;
+    },
+    { timeout: 10000 },
+  );
+}
+export async function startDeliveryRoute(routeId: string) {
+  return prisma.$transaction(async (tx) => {
+    const route = await tx.delivery.update({
+      where: { id: routeId },
       data: {
-        shipperId: data.shipperId,
-        distance: route.distance,
-        duration: route.duration,
-        routeSteps: {
-          create: route.steps.map((step, index) => ({
-            orderId: step.orderId,
-            stepNumber: index + 1,
-            latitude: step.latitude,
-            longitude: step.longitude,
-            distance: step.distance,
-            duration: step.duration,
-            instruction: step.instruction,
-          })),
-        },
-        orders: {
-          connect: data.orderIds.map((id) => ({ id })),
-        },
+        status: "SHIPPING",
+      },
+      include: {
+        DeliveryOrder: true,
       },
     });
 
     // Update orders status
     await tx.order.updateMany({
       where: {
-        id: { in: data.orderIds },
+        id: { in: route.DeliveryOrder.map((o) => o.orderId) },
       },
-      data: {
-        deliveryStatus: "SHIPPING",
-        shipperId: data.shipperId,
-      },
-    });
-
-    return deliveryRoute;
-  });
-}
-
-export async function startDeliveryRoute(routeId: string) {
-  return prisma.$transaction(async (tx) => {
-    const route = await tx.deliveryRoute.update({
-      where: { id: routeId },
       data: {
         status: "SHIPPING",
-        startTime: new Date(),
-      },
-      include: {
-        orders: true,
       },
     });
-
-    // Create initial location history for each order
-    await Promise.all(
-      route.orders.map((order) =>
-        tx.orderLocationHistory.create({
-          data: {
-            orderId: order.id,
-            latitude: order.address_lat,
-            longitude: order.address_lng,
-          },
-        }),
-      ),
-    );
 
     return route;
   });
 }
 
-export async function completeDeliveryStep(
-  routeId: string,
-  orderId: string,
-  currentLocation: {
-    latitude: number;
-    longitude: number;
-  },
-) {
+export async function completeDeliveryOrder(deliveryOrderId: string) {
   return prisma.$transaction(async (tx) => {
     // Update step status
-    await tx.deliveryRouteStep.update({
+    const deliveryOrder = await tx.deliveryOrder.findUnique({
+      where: { id: deliveryOrderId },
+    });
+    if (!deliveryOrder) {
+      throw new Error("Delivery order not found");
+    }
+    await tx.deliveryOrder.update({
       where: {
-        deliveryRouteId_orderId: {
-          deliveryRouteId: routeId,
-          orderId: orderId,
-        },
+        id: deliveryOrderId,
       },
       data: {
         status: "COMPLETED",
-        completedAt: new Date(),
+        endTime: new Date(),
       },
     });
 
     // Update order status
     await tx.order.update({
-      where: { id: orderId },
+      where: { id: deliveryOrder.orderId },
       data: {
         status: "COMPLETED",
-        deliveryStatus: "COMPLETED",
+        paymentStatus: "PAID",
       },
     });
 
-    // Record location history
-    await tx.orderLocationHistory.create({
-      data: {
-        orderId,
-        latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude,
-      },
-    });
-
-    // Check if all steps are completed
-    const remainingSteps = await tx.deliveryRouteStep.count({
+    const remainingSteps = await tx.deliveryOrder.count({
       where: {
-        deliveryRouteId: routeId,
+        deliveryId: deliveryOrder.deliveryId,
         status: "PENDING",
       },
     });
 
     if (remainingSteps === 0) {
-      await tx.deliveryRoute.update({
-        where: { id: routeId },
+      await tx.delivery.update({
+        where: { id: deliveryOrder.deliveryId },
         data: {
           status: "COMPLETED",
-          endTime: new Date(),
         },
       });
     }
   });
 }
 
-export async function cancelDeliveryStep(
-  routeId: string,
-  orderId: string,
-  cancelNote: string,
-  currentLocation: {
-    latitude: number;
-    longitude: number;
-  },
+export async function cancelDeliveryOrder(
+  deliveryOrderId: string,
+  cancelNote?: string,
 ) {
   return prisma.$transaction(async (tx) => {
-    await tx.deliveryRouteStep.update({
+    const deliveryOrder = await tx.deliveryOrder.findUnique({
+      where: { id: deliveryOrderId },
+    });
+    if (!deliveryOrder) {
+      throw new Error("Delivery order not found");
+    }
+    await tx.deliveryOrder.update({
       where: {
-        deliveryRouteId_orderId: {
-          deliveryRouteId: routeId,
-          orderId: orderId,
-        },
+        id: deliveryOrderId,
       },
       data: {
         status: "CANCELLED",
@@ -198,21 +173,26 @@ export async function cancelDeliveryStep(
     });
 
     await tx.order.update({
-      where: { id: orderId },
+      where: { id: deliveryOrder.orderId },
       data: {
         status: "CANCELLED",
-        deliveryStatus: "CANCELLED",
-      },
-    });
-
-    await tx.orderLocationHistory.create({
-      data: {
-        orderId,
-        latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude,
       },
     });
   });
 }
-
-export { calculateOptimalRoute };
+export async function startDeliveryOrder(deliveryOrderId: string) {
+  const deliveryOrder = await prisma.deliveryOrder.findUnique({
+    where: { id: deliveryOrderId },
+  });
+  if (!deliveryOrder) {
+    throw new Error("Delivery order not found");
+  }
+  await prisma.deliveryOrder.update({
+    where: { id: deliveryOrderId },
+    data: { status: "SHIPPING" },
+  });
+  await prisma.order.update({
+    where: { id: deliveryOrder.orderId },
+    data: { status: "SHIPPING" },
+  });
+}

@@ -1,11 +1,11 @@
 import { Order } from "@prisma/client";
-import { Link } from "@remix-run/react";
+import { Form, Link, useNavigation } from "@remix-run/react";
 import { formatDate, formatPrice } from "~/lib/utils";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -13,10 +13,15 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion";
 import { Separator } from "../ui/separator";
+import { OrderWithDetailsCustomerCoupon } from "~/lib/type";
 
-export function ShipperOrderList({ orders }: { orders: any[] }) {
+export function ShipperOrderList({
+  orders,
+}: {
+  orders: OrderWithDetailsCustomerCoupon[];
+}) {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-
+  const navigation = useNavigation();
   const handleOrderSelect = (orderId: string) => {
     setSelectedOrders((prev) =>
       prev.includes(orderId)
@@ -24,20 +29,26 @@ export function ShipperOrderList({ orders }: { orders: any[] }) {
         : [...prev, orderId],
     );
   };
-
+  const isSubmitting = navigation.state === "submitting";
   return (
     <div className="space-y-6">
       {selectedOrders.length > 0 && (
         <div className="sticky top-0 bg-white p-4 shadow rounded-lg z-10">
           <div className="flex justify-between items-center">
             <span>Đã chọn {selectedOrders.length} đơn hàng</span>
-            <Button asChild>
-              <Link
-                to={`/admin/shipper/delivery/create?orders=${selectedOrders.join(",")}`}
-              >
-                Tạo chuyến giao hàng
-              </Link>
-            </Button>
+            <Form method="POST" action="/admin/ship/delivery/create">
+              {selectedOrders.map((orderId) => (
+                <input
+                  type="hidden"
+                  name="orderIds[]"
+                  value={orderId}
+                  key={orderId}
+                />
+              ))}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Đang tạo..." : "Tạo chuyến giao hàng"}
+              </Button>
+            </Form>
           </div>
         </div>
       )}
@@ -84,6 +95,14 @@ export function ShipperOrderList({ orders }: { orders: any[] }) {
                     <span className="text-gray-600">Địa chỉ:</span>
                     <span className="font-medium text-right max-w-[60%]">
                       {order.address}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Thanh toán:</span>
+                    <span className="font-medium text-right max-w-[60%]">
+                      {order.paymentStatus === "PAID"
+                        ? "Đã thanh toán"
+                        : "Chưa thanh toán"}
                     </span>
                   </div>
                   {order.shipNote && (

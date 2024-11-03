@@ -19,6 +19,8 @@ import {
   Coupon,
   Order,
   OrderDetail,
+  OrderStatus,
+  PaymentStatus,
   Product,
   Rating,
   Size,
@@ -31,45 +33,44 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json({ orders });
 };
 
-const ORDER_STATUS = {
-  PENDING: {
-    label: "Chờ xử lý",
-    color: "bg-yellow-500",
-  },
-  COOKING: {
-    label: "Đang chế biến",
-    color: "bg-blue-500",
-  },
-  COOKED: {
-    label: "Chờ giao hàng",
-    color: "bg-green-500",
-  },
-  SHIPPING: {
-    label: "Đang giao",
-    color: "bg-purple-500",
-  },
-  COMPLETED: {
-    label: "Đã giao",
-    color: "bg-green-500",
-  },
-  CANCELLED: {
-    label: "Đã hủy",
-    color: "bg-red-500",
-  },
-} as const;
+const ORDER_STATUS: { [key in OrderStatus]: { label: string; color: string } } =
+  {
+    PENDING: {
+      label: "Chờ xử lý",
+      color: "bg-yellow-500",
+    },
+    COOKING: {
+      label: "Đang chế biến",
+      color: "bg-blue-500",
+    },
+    COOKED: {
+      label: "Chờ giao hàng",
+      color: "bg-green-500",
+    },
+    SHIPPING: {
+      label: "Đang giao",
+      color: "bg-purple-500",
+    },
+    COMPLETED: {
+      label: "Đã giao",
+      color: "bg-green-500",
+    },
+    CANCELLED: {
+      label: "Đã hủy",
+      color: "bg-red-500",
+    },
+  } as const;
 
-const PAYMENT_STATUS = {
-  PENDING: {
+const PAYMENT_STATUS: {
+  [key in PaymentStatus]: { label: string; color: string };
+} = {
+  UNPAID: {
     label: "Chưa thanh toán",
     color: "bg-yellow-500",
   },
   PAID: {
     label: "Đã thanh toán",
     color: "bg-green-500",
-  },
-  WAITING: {
-    label: "Đang chờ thanh toán",
-    color: "bg-blue-500",
   },
 } as const;
 type OrderWithDetail = Order & {

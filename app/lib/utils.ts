@@ -314,3 +314,13 @@ export function calculateShippingFee(distanceInMeters: number) {
   const calculatedFee = Math.ceil(distanceInKm * SHIPPING_RATE_PER_KM);
   return Math.max(calculatedFee, MIN_SHIPPING_FEE);
 }
+
+export function formatDateTime(date: Date) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date));
+}
