@@ -4,7 +4,6 @@ import { useStaff } from "~/hooks/use-staff";
 import {
   LogOut,
   Users,
-  Truck,
   Shield,
   UserCog,
   Pizza,
@@ -17,31 +16,31 @@ import {
   PackageSearch,
   ClipboardList,
   Store,
+  Package,
+  TruckIcon,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useStaffRoles } from "~/hooks/use-staff-roles";
-import { Package, TruckIcon } from "lucide-react";
 
 export default function Sidebar() {
   const staff = useStaff();
   const roles = useStaffRoles();
-  const isChef = roles?.some((role) => role.name === "chef");
 
   return (
-    <div className="bg-gray-100 h-full min-w-[250px] flex flex-col justify-between ">
-      <nav className=" max-h-full pb-[120px] overflow-y-auto pt-4">
+    <div className="bg-gray-100 h-full w-[250px] flex flex-col justify-between overflow-hidden">
+      <nav className="max-h-full pb-[120px] overflow-y-auto pt-4">
         <ul className="space-y-1">
           <li>
             <NavLink
               to="/admin/staffs"
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-2 px-4 py-2 transition-colors",
+                  "flex items-center gap-2 px-4 py-2 transition-colors whitespace-nowrap",
                   isActive ? "bg-blue-500 text-white" : "hover:bg-gray-200",
                 )
               }
             >
-              <Users className="w-4 h-4" />
+              <Users className="w-4 h-4 flex-shrink-0" />
               <span>Nhân viên</span>
             </NavLink>
           </li>
@@ -249,16 +248,19 @@ export default function Sidebar() {
           )}
         </ul>
       </nav>
-      <div className="px-4 flex justify-between items-center sticky bottom-0 bg-white z-10 py-2">
-        <div className="flex items-center gap-2">
+
+      <div className="px-4 flex justify-between items-center sticky bottom-0 bg-white z-10 py-2 border-t">
+        <div className="flex items-center gap-2 min-w-0">
           <img
-            className="rounded-full w-10 h-10"
+            className="rounded-full w-10 h-10 flex-shrink-0"
             src={staff.image ?? ""}
             alt={staff.fullname}
           />
-          <div className="flex flex-col">
-            <div className="font-bold capitalize">{staff.fullname}</div>
-            <div className="text-sm text-gray-500">
+          <div className="flex flex-col min-w-0">
+            <div className="font-bold capitalize truncate">
+              {staff.fullname}
+            </div>
+            <div className="text-sm text-gray-500 truncate">
               Vai trò: {roles?.[0]?.name}
             </div>
           </div>

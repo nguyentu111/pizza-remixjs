@@ -1,4 +1,4 @@
-import { Form, useFetcher, useNavigate } from "@remix-run/react";
+import { Form, Link, useFetcher, useNavigate } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { useForm } from "~/hooks/use-form";
 import { Button } from "../ui/button";
@@ -53,6 +53,12 @@ export function DeliveryRouteDetail({
             <p className="text-sm text-gray-500 mt-1">
               {route.DeliveryOrder.length} điểm giao hàng
             </p>
+            <Link
+              to={`/admin/ship/delivery/${route.id}/route`}
+              className="mb-2 text-sm underline text-blue-500"
+            >
+              Xem lộ trình
+            </Link>
           </div>
           <Badge>
             {route.status === "SHIPPING"

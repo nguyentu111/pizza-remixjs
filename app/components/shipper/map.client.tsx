@@ -47,7 +47,7 @@ export const Map: React.FC<Props> = ({ start, end }) => {
         console.log({ encodedPolyline, response: response.data });
         const instructions = response.data.paths[0].instructions;
         setRoute(polylinePoints);
-        const turnsWithArrows = instructions.map((instruction: any) => {
+        const turns = instructions.map((instruction: any) => {
           const startIdx = instruction.interval[0];
           const [latitude, longitude] = decodedPoints[startIdx];
           const azimuth = instruction.sign; // `sign` có thể dùng để xác định góc hướng rẽ

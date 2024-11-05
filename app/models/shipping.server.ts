@@ -178,6 +178,22 @@ export async function cancelDeliveryOrder(
         status: "CANCELLED",
       },
     });
+    
+    const remainingSteps = await tx.deliveryOrder.count({
+      where: {
+        deliveryId: deliveryOrder.deliveryId,
+        status: "PENDING",
+      },
+    });
+
+    if (remainingSteps === 0) {
+      await tx.delivery.update({
+        where: { id: deliveryOrder.deliveryId },
+        data: {
+          status: "COMPLETED",
+        },
+      });
+    }
   });
 }
 export async function startDeliveryOrder(deliveryOrderId: string) {
