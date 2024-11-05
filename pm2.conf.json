@@ -1,0 +1,9 @@
+{
+    "apps": [
+        {
+            "name": "pizza",
+            "script": "npm",
+            "args" : "start"
+        }
+    ]
+}
