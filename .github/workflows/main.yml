@@ -11,15 +11,7 @@ jobs:
 
     steps:
  
-      - name: Setup SSH for deployment
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 103.142.24.58 >> ~/.ssh/known_hosts
 
-      - name: Deploy to server
-        run: |
-          ssh -i ~/.ssh/id_rsa root@103.142.24.58 "cd /var/www/pizza-remixjs/ && git pull && npm install && npx prisma generate && npx prisma db push && npm run build && pm2 restart pizza"
+      - name: Redeploy
+        run: 
+         cd /var/www/pizza-remixjs/ && git pull && npm install && npx prisma generate && npx prisma db push && npm run build && pm2 restart pizza
