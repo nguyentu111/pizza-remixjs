@@ -15,6 +15,7 @@ jobs:
 
       - name: Redeploy
         run: |
+          git config --global --add safe.directory /var/www/pizza-remixjs
           cd /var/www/pizza-remixjs/
           git pull
           npm install
