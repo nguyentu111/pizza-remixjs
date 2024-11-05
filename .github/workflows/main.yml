@@ -7,11 +7,18 @@ on:
 
 jobs:
   deploy:
-  runs-on: self-hosted
+    runs-on: self-hosted
 
     steps:
- 
+      - name: Check out repository
+        uses: actions/checkout@v3
 
       - name: Redeploy
-        run: 
-         cd /var/www/pizza-remixjs/ && git pull && npm install && npx prisma generate && npx prisma db push && npm run build && pm2 restart pizza
+        run: |
+          cd /var/www/pizza-remixjs/
+          git pull
+          npm install
+          npx prisma generate
+          npx prisma db push
+          npm run build
+          pm2 restart pizza
