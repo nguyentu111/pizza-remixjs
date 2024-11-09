@@ -1,10 +1,10 @@
 import { Form, Link, useFetcher, useNavigate } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { useForm } from "~/hooks/use-form";
+import { useToast } from "~/hooks/use-toast";
+import { getDeliveryInfo } from "~/models/delivery.server";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { formatPrice } from "~/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -14,9 +14,6 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
-import { getDeliveryInfo } from "~/models/delivery.server";
-import axios from "axios";
-import { useToast } from "~/hooks/use-toast";
 
 export function DeliveryRouteDetail({
   route,

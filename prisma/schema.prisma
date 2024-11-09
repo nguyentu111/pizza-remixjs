@@ -168,12 +168,12 @@ model Topping {
   id              String           @id @default(uuid())
   name            String           @unique
   price           Int?
-  materialId      String?
+  materialId      String
   image           String? // New field
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   ProductToppings ProductTopping[]
-  Material        Material?        @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  Material        Material         @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   OrderDetail     OrderDetail[]
 }
 
@@ -290,11 +290,11 @@ model ImportMaterial {
 }
 
 model Inventory {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   materialId  String
   quantity    Decimal
-  expiredDate DateTime?
-  Material    Material  @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  expiredDate DateTime
+  Material    Material @relation(fields: [materialId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([materialId, expiredDate])
   @@index([materialId])
@@ -338,6 +338,7 @@ model Order {
   rating          Rating?
   OrderDetail     OrderDetail[]
   DeliveryOrder   DeliveryOrder?
+  Payment         Payment[]
 
   @@index([customerId]) // Added index for foreign key
   @@index([chefId]) // Added index for foreign key
@@ -524,4 +525,18 @@ model DeliveryOrder {
   updatedAt  DateTime            @updatedAt
 
   @@index([deliveryId, orderId])
+}
+
+model Payment {
+  id               String        @id @default(uuid())
+  code             String
+  order_id         String
+  status           PaymentStatus
+  transaction_id   String?
+  amount           Decimal?
+  content          String?
+  date             DateTime?
+  gateway          String?
+  account_receiver String?
+  order            Order         @relation(fields: [order_id], references: [id], onDelete: Cascade)
 }

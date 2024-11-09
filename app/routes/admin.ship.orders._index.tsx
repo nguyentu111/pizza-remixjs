@@ -4,9 +4,9 @@ import { getAvailableOrders } from "~/models/shipping.server";
 import { requireStaffId } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
 import { PermissionsEnum } from "~/lib/type";
-import { ShipperOrderList } from "~/components/shipper/order-list";
 import { prisma } from "~/lib/db.server";
 import { OrderWithDetailsCustomerCoupon } from "~/lib/type";
+import { ShipmentOrderTable } from "~/components/shipper/shipment-order-table";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const staffId = await requireStaffId(request);
@@ -32,7 +32,7 @@ export default function ShipperOrdersPage() {
           </nav>
         </div>
       </div>
-      <ShipperOrderList
+      <ShipmentOrderTable
         orders={orders as unknown as OrderWithDetailsCustomerCoupon[]}
       />
     </div>

@@ -15,15 +15,7 @@ import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { formatDateTime } from "~/lib/utils";
 import { getDeliveries } from "~/models/delivery.server";
-
-type DeliveryWithDetails = Delivery & {
-  shipper: {
-    fullname: string;
-  };
-  orders: {
-    id: string;
-  }[];
-};
+import { Pagination } from "../shared/pagination";
 
 const STATUS_BADGES: Record<
   DeliveryStatus,
@@ -41,45 +33,36 @@ export function DeliveryTable({
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [pageSize, setPageSize] = useState(5);
 
-  const filteredDeliveries = deliveries.filter((delivery) =>
-    delivery.staff.fullname.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredDeliveries = deliveries.filter(
+    (delivery) =>
+      delivery.staff.fullname
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      delivery.DeliveryOrder.find((order) =>
+        order.orderId.toLowerCase().includes(searchTerm.toLowerCase()),
+      ),
   );
 
-  const totalPages = Math.ceil(filteredDeliveries.length / itemsPerPage);
+  const totalItems = filteredDeliveries.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
   const paginatedDeliveries = filteredDeliveries.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
   );
 
   return (
-    <div>
-      <div className="flex items-center mb-6 justify-between">
-        <div className="mt-6 flex flex-wrap gap-2 justify-end">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentPage(index + 1)}
-              className={`p-2 !min-w-[40px] ${
-                currentPage === index + 1
-                  ? "bg-blue-500 text-white rounded"
-                  : ""
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
-        <div className="flex">
-          <Input
-            type="text"
-            placeholder="Tìm chuyến giao hàng..."
-            className="max-w-[200px]"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Input
+          type="text"
+          placeholder="Tìm chuyến giao hàng..."
+          className="max-w-[300px]"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
 
       <Table>
@@ -90,8 +73,6 @@ export function DeliveryTable({
             <TableHead>Trạng thái</TableHead>
             <TableHead>Số đơn hàng</TableHead>
             <TableHead>Thời gian tạo</TableHead>
-            {/* <TableHead>Khoảng cách (km)</TableHead> */}
-            {/* <TableHead>Thời gian dự kiến</TableHead> */}
             <TableHead>Thao tác</TableHead>
           </TableRow>
         </TableHeader>
@@ -109,16 +90,6 @@ export function DeliveryTable({
                 </TableCell>
                 <TableCell>{delivery.DeliveryOrder.length} đơn</TableCell>
                 <TableCell>{formatDateTime(delivery.createdAt)}</TableCell>
-                {/* <TableCell>
-                  {delivery.DeliveryOrder.reduce((acc, curr) => {
-                    return acc + Number(curr.order.);
-                  }, 0)}
-                </TableCell>
-                <TableCell>
-                  {delivery.DeliveryOrder
-                    ? `${Math.round(delivery.estimatedTime / 60)} phút`
-                    : "N/A"}
-                </TableCell> */}
                 <TableCell>
                   <div className="flex gap-2">
                     <Button asChild variant="outline">
@@ -133,6 +104,20 @@ export function DeliveryTable({
           })}
         </TableBody>
       </Table>
+
+      <div className="flex justify-end mt-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1); // Reset to first page when changing page size
+          }}
+          totalItems={totalItems}
+        />
+      </div>
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { ProductWithDetails } from "~/lib/type";
 
 export function ProductCard({ product }: { product: ProductWithDetails }) {
   const { setOpen } = useModal();
-
   return (
     <div className="border rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
       <img
@@ -33,9 +32,8 @@ export function ProductCard({ product }: { product: ProductWithDetails }) {
                   subheading={product.shortDescription}
                   contentClass="w-[95vw] max-w-6xl"
                 >
-                  <ProductOrderModal />
+                  <ProductOrderModal product={product} />
                 </CustomModal>,
-                async () => ({ product }),
               )
             }
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"

@@ -1,4 +1,4 @@
-import { Customer, Staff } from "@prisma/client";
+import { Staff, StaffRole } from "@prisma/client";
 import { Link } from "@remix-run/react";
 import { format } from "date-fns";
 import { EditIcon, TrashIcon } from "lucide-react";
@@ -11,90 +11,88 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/table"; // Use Shadcn UI Table components
+} from "~/components/ui/table";
 import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
-import { useStaff } from "~/hooks/use-staff";
+import { getSmallImageUrl } from "~/lib/utils";
+import { Pagination } from "../shared/pagination";
 
-export function StaffTable({ staffs }: { staffs: Staff[] }) {
-  const currentStaff = useStaff();
+export function StaffTable({
+  staffs,
+}: {
+  staffs: (Staff & { Roles: StaffRole[] })[];
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const { fetcher: fetcherDelete } = useForm({});
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-  const filteredStaffs = staffs.filter((staff) =>
-    staff.fullname.toLowerCase().includes(searchTerm.toLowerCase()),
+  const [pageSize, setPageSize] = useState(5);
+
+  const filteredStaffs = staffs.filter(
+    (staff) =>
+      staff.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staff.phoneNumbers.includes(searchTerm),
   );
-  const totalPages = Math.ceil(filteredStaffs.length / itemsPerPage);
+
+  const totalItems = filteredStaffs.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
   const paginatedStaffs = filteredStaffs.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
   );
+
   return (
-    <div>
-      <div className="flex items-center mb-6 justify-between">
-        <div className="mt-6 flex flex-wrap gap-2 justify-end">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentPage(index + 1)}
-              className={`p-2 !min-w-[40px] ${currentPage === index + 1 ? "bg-blue-500 text-white rounded" : ""}`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
-        <div className="flex">
-          <Button asChild>
-            <Link to="/admin/staffs/add" className="mr-4">
-              Thêm tài khoản nhân viên
-            </Link>
-          </Button>
-          <Input
-            type="text"
-            placeholder="Tìm tài khoản..."
-            className="max-w-[200px]"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Button asChild>
+          <Link to="/admin/staffs/add">Thêm nhân viên</Link>
+        </Button>
+        <Input
+          type="text"
+          placeholder="Tìm nhân viên..."
+          className="max-w-[300px]"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
+
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Avatar</TableHead>
-            <TableHead>Fullname</TableHead>
-            <TableHead>Username</TableHead>
-            <TableHead>PhoneNumbers</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead>Ảnh</TableHead>
+            <TableHead>Họ tên</TableHead>
+            <TableHead>Tài khoản</TableHead>
+            <TableHead>Số điện thoại</TableHead>
+            <TableHead>Trạng thái</TableHead>
+            <TableHead>Thao tác</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {paginatedStaffs.map((staff) => (
             <TableRow key={staff.id}>
               <TableCell>
-                <img
-                  src={staff.image as string}
-                  alt={`${staff.fullname}'s avatar`}
-                  className="w-20 h-20 rounded-full"
-                />
+                {staff.image && (
+                  <img
+                    src={getSmallImageUrl(staff.image)}
+                    alt={staff.fullname}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                )}
               </TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  {staff.fullname}{" "}
-                  {currentStaff.id === staff.id && (
-                    <div className="text-green-700 border-2 border-green-700 rounded-xl w-fit px-1 py-0.5 text-xs">
-                      You
-                    </div>
-                  )}
-                </div>
-              </TableCell>
+              <TableCell>{staff.fullname}</TableCell>
               <TableCell>{staff.username}</TableCell>
               <TableCell>{staff.phoneNumbers}</TableCell>
-              <TableCell>{staff.status}</TableCell>
-              <TableCell>{format(staff.createdAt, "dd/MM/yyyy")}</TableCell>
+              <TableCell>
+                <span
+                  className={`px-2 py-1 rounded-full text-sm ${
+                    staff.status === "banned"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
+                >
+                  {staff.status === "banned" ? "Đã khóa" : "Hoạt động"}
+                </span>
+              </TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <fetcherDelete.Form
@@ -116,6 +114,20 @@ export function StaffTable({ staffs }: { staffs: Staff[] }) {
           ))}
         </TableBody>
       </Table>
+
+      <div className="flex justify-end mt-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+          totalItems={totalItems}
+        />
+      </div>
     </div>
   );
 }

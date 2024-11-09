@@ -20,17 +20,31 @@ import {
   Order,
   OrderDetail,
   OrderStatus,
+  Payment,
   PaymentStatus,
   Product,
+  ProductSize,
   Rating,
   Size,
   Topping,
 } from "@prisma/client";
+import { Button } from "~/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+import { RatingForm } from "~/components/client/rating-form";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const customer = await requireCustomer(prisma, request);
   const orders = await getCustomerOrders(prisma, customer.id);
-  return json({ orders });
+
+  return json({
+    orders,
+    env: {
+      VIETQR_BANK_ID: process.env.VIETQR_BANK_ID,
+      VIETQR_BANK_ACCOUNT: process.env.VIETQR_BANK_ACCOUNT,
+      VIETQR_TEMPLATE_QR: process.env.VIETQR_TEMPLATE_QR,
+      VIETQR_BANK_NAME: process.env.VIETQR_BANK_NAME,
+    },
+  });
 };
 
 const ORDER_STATUS: { [key in OrderStatus]: { label: string; color: string } } =
@@ -75,97 +89,155 @@ const PAYMENT_STATUS: {
 } as const;
 type OrderWithDetail = Order & {
   OrderDetail: (OrderDetail & {
-    product: Product;
+    product: Product & { Sizes: ProductSize[] };
     border: Border;
     topping: Topping;
     size: Size;
   })[];
   coupon: Coupon;
   rating: Rating;
+  Payment: Payment[];
 };
 export default function OrderHistoryPage() {
-  const { orders } = useLoaderData<typeof loader>();
+  const { orders, env } = useLoaderData<typeof loader>();
 
   if (orders.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-4">Lịch sử đơn hàng</h1>
-        <p className="text-gray-500">Bạn chưa có đơn hàng nào.</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="container mx-auto px-4 py-8"
+      >
+        <motion.h1
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="text-2xl font-bold mb-4"
+        >
+          Lịch sử đơn hàng
+        </motion.h1>
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-gray-500"
+        >
+          Bạn chưa có đơn hàng nào.
+        </motion.p>
+      </motion.div>
     );
   }
+
   return (
     <>
-      <h1 className="text-2xl font-bold mb-6">Lịch sử đơn hàng</h1>
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-2xl font-bold mb-6"
+      >
+        Lịch sử đơn hàng
+      </motion.h1>
       <Accordion type="single" collapsible className="space-y-4">
-        {orders.map((order) => (
-          <AccordionItem
-            key={order.id}
-            value={order.id}
-            className="border rounded-lg p-4"
-          >
-            <AccordionTrigger className="hover:no-underline [&[data-state=open]>div]:mb-4">
-              <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
-                <div className="space-y-1">
-                  <p className="font-medium">
-                    Đơn hàng #{order.id.slice(-8).toUpperCase()}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {format(new Date(order.createdAt), "PPp", { locale: vi })}
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge
-                    variant="secondary"
-                    className={cn(
-                      "text-white",
-                      ORDER_STATUS[order.status].color,
-                    )}
-                  >
-                    {ORDER_STATUS[order.status].label}
-                  </Badge>
-                  {order.paymentStatus && (
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        "text-white",
-                        PAYMENT_STATUS[
-                          order.paymentStatus as keyof typeof PAYMENT_STATUS
-                        ].color,
+        <AnimatePresence>
+          {orders.map((order, index) => (
+            <motion.div
+              key={order.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <AccordionItem value={order.id} className="border rounded-lg p-4">
+                <AccordionTrigger className="hover:no-underline [&[data-state=open]>div]:mb-4">
+                  <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
+                    <div className="space-y-1">
+                      <p className="font-medium">
+                        Đơn hàng #{order.id.slice(0, 8).toUpperCase()}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {format(new Date(order.createdAt), "PPp", {
+                          locale: vi,
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          "text-white",
+                          ORDER_STATUS[order.status].color,
+                        )}
+                      >
+                        {ORDER_STATUS[order.status].label}
+                      </Badge>
+                      {order.paymentStatus && (
+                        <Badge
+                          variant="secondary"
+                          className={cn(
+                            "text-white",
+                            PAYMENT_STATUS[
+                              order.paymentStatus as keyof typeof PAYMENT_STATUS
+                            ].color,
+                          )}
+                        >
+                          {
+                            PAYMENT_STATUS[
+                              order.paymentStatus as keyof typeof PAYMENT_STATUS
+                            ].label
+                          }
+                        </Badge>
                       )}
-                    >
-                      {
-                        PAYMENT_STATUS[
-                          order.paymentStatus as keyof typeof PAYMENT_STATUS
-                        ].label
-                      }
-                    </Badge>
-                  )}
-                  <p className="font-semibold">
-                    {formatPrice(Number(order.totalAmount))}
-                  </p>
-                </div>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent>
-              <OrderDetailComponent order={order as any} />
-            </AccordionContent>
-          </AccordionItem>
-        ))}
+                      <p className="font-semibold">
+                        {formatPrice(Number(order.totalAmount))}
+                      </p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <OrderDetailComponent
+                    order={order as unknown as OrderWithDetail}
+                    paymentUrl={
+                      order.Payment?.[0]
+                        ? `https://api.vietqr.io/image/${env.VIETQR_BANK_ID}-${env.VIETQR_BANK_ACCOUNT}-${env.VIETQR_TEMPLATE_QR}.jpg?addInfo=${order.Payment[0].code}&accountName=${env.VIETQR_BANK_NAME}&amount=${order.totalAmount}`
+                        : undefined
+                    }
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </Accordion>
     </>
   );
 }
-function OrderDetailComponent({ order }: { order: OrderWithDetail }) {
+function OrderDetailComponent({
+  order,
+  paymentUrl,
+}: {
+  order: OrderWithDetail;
+  paymentUrl?: string;
+}) {
   const tempPrice = order.OrderDetail.reduce((acc, detail) => {
     return acc + Number(detail.totalAmount);
   }, 0);
+
+  const showRatingForm = order.status === "COMPLETED" && !order.rating;
+
   return (
-    <div className="space-y-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-4"
+    >
       {/* Order Details */}
-      <div className="space-y-2">
+      <motion.div layout className="space-y-2">
         {order.OrderDetail.map((detail, index) => (
-          <div key={detail.id} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
+          <motion.div
+            key={detail.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="flex gap-4 p-4 bg-gray-50 rounded-lg"
+          >
             <img
               src={detail.product.image || ""}
               alt={detail.product.name}
@@ -174,7 +246,9 @@ function OrderDetailComponent({ order }: { order: OrderWithDetail }) {
             <div className="flex-1">
               <h3 className="font-semibold">{detail.product.name}</h3>
               <div className="text-sm text-gray-500 space-y-1">
-                <p>Size: {detail.size.name}</p>
+                {detail.product.Sizes.length > 1 && (
+                  <p>Size: {detail.size.name}</p>
+                )}
                 {detail.border && <p>Viền: {detail.border.name}</p>}
                 {detail.topping && <p>Topping: {detail.topping.name}</p>}
               </div>
@@ -185,9 +259,30 @@ function OrderDetailComponent({ order }: { order: OrderWithDetail }) {
                 </span>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
+
+      {/* Rating Section */}
+      {showRatingForm ? (
+        <RatingForm orderId={order.id} />
+      ) : order.rating ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-4 rounded-lg shadow-md"
+        >
+          <h3 className="font-semibold mb-2">Đánh giá của bạn</h3>
+          <div className="flex items-center gap-1">
+            {Array.from({ length: order.rating.stars }).map((_, i) => (
+              <StarIcon key={i} className="w-4 h-4 fill-yellow-400" />
+            ))}
+          </div>
+          {order.rating.description && (
+            <p className="text-sm mt-2">{order.rating.description}</p>
+          )}
+        </motion.div>
+      ) : null}
 
       {/* Order Info */}
       <div className="border-t pt-4 space-y-2">
@@ -197,48 +292,50 @@ function OrderDetailComponent({ order }: { order: OrderWithDetail }) {
             <p>{order.shipNote || "Không có ghi chú"}</p>
           </div>
 
-          {order.rating && (
-            <div>
-              <p className="text-sm text-gray-500">Đánh giá:</p>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: order.rating.stars }).map((_, i) => (
-                  <StarIcon key={i} className="w-4 h-4 fill-yellow-400" />
-                ))}
-              </div>
-              {order.rating.description && (
-                <p className="text-sm mt-1">{order.rating.description}</p>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="flex justify-between text-sm">
-          <span>Tạm tính:</span>
-          <span>{formatPrice(tempPrice)}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span>Phí giao hàng:</span>
-          <span>{formatPrice(Number(order.shippingFee))}</span>
-        </div>
-        <div className="space-y-2">
-          {order.coupon && (
-            <>
-              <div className="flex justify-between text-sm text-green-600">
-                <span>Giảm giá ({order.coupon.code}):</span>
-                <span>
-                  -
-                  {formatPrice(
-                    tempPrice * (Number(order.coupon.discount) / 100),
-                  )}
-                </span>
-              </div>
-            </>
-          )}
-          <div className="flex justify-between pt-2 font-semibold">
-            <span>Tổng cộng:</span>
-            <span>{formatPrice(Number(order.totalAmount))}</span>
+          <div className="flex justify-between text-sm">
+            <span>Tạm tính:</span>
+            <span>{formatPrice(tempPrice)}</span>
           </div>
+          <div className="flex justify-between text-sm">
+            <span>Phí giao hàng:</span>
+            <span>{formatPrice(Number(order.shippingFee))}</span>
+          </div>
+          <div className="space-y-2">
+            {order.coupon && (
+              <>
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Giảm giá ({order.coupon.code}):</span>
+                  <span>
+                    -
+                    {formatPrice(
+                      tempPrice * (Number(order.coupon.discount) / 100),
+                    )}
+                  </span>
+                </div>
+              </>
+            )}
+            <div className="flex justify-between pt-2 font-semibold">
+              <span>Tổng cộng:</span>
+              <span>{formatPrice(Number(order.totalAmount))}</span>
+            </div>
+          </div>
+
+          {/* Payment Status and Action */}
+          {order.paymentStatus === "UNPAID" &&
+            order.Payment?.[0] &&
+            paymentUrl && (
+              <div className="mt-4">
+                <Button asChild className="w-full" variant="default">
+                  <a
+                    href={`/payment/bank?orderId=${order.id}&qr=${encodeURIComponent(paymentUrl)}`}
+                  >
+                    Tiếp tục thanh toán
+                  </a>
+                </Button>
+              </div>
+            )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

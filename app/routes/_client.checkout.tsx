@@ -1,39 +1,39 @@
+import { Coupon, Prisma } from "@prisma/client";
 import { LoaderFunctionArgs, json, redirect } from "@remix-run/node";
-import { Form, useFetcher, useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useCart } from "~/components/providers/cart-provider";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import { Textarea } from "~/components/ui/textarea";
-import { prisma } from "~/lib/db.server";
-import {
-  cn,
-  formatPrice,
-  safeAction,
-  formatDuration,
-  calculateShippingFee,
-} from "~/lib/utils";
-import { createOrder, updateOrderPaymentStatus } from "~/models/order.server";
-import { requireCustomer } from "~/session.server";
-import { useForm } from "~/hooks/use-form";
 import { FormField } from "~/components/shared/form/form-field";
-import { TextareaField } from "~/components/shared/form/form-fields/text-area-field";
 import { InputField } from "~/components/shared/form/form-fields/input-field";
 import { RadioField } from "~/components/shared/form/form-fields/radio-field";
-import { checkoutSchema } from "~/lib/schema";
-import { getProductById } from "~/models/product.server";
+import { TextareaField } from "~/components/shared/form/form-fields/text-area-field";
+import { Button } from "~/components/ui/button";
+import { Label } from "~/components/ui/label";
+import { useForm } from "~/hooks/use-form";
+import { prisma } from "~/lib/db.server";
 import { CustomHttpError, ERROR_NAME } from "~/lib/error";
+import { checkoutSchema } from "~/lib/schema";
+import { GraphhopperRouteCalculation } from "~/lib/type";
 import {
-  getProductSizePrice,
+  calculateShippingFee,
+  cn,
+  formatDuration,
+  formatPrice,
+  generateRandomString,
+  safeAction,
+} from "~/lib/utils";
+import { createOrder } from "~/models/order.server";
+import {
   getBorderPrice,
+  getProductById,
+  getProductSizePrice,
   getToppingPrice,
 } from "~/models/product.server";
+import { requireCustomer } from "~/session.server";
 import { calculateRoute } from "~/use-cases/shipping.server";
-import { GraphhopperRouteCalculation } from "~/lib/type";
-import { Coupon, Prisma } from "@prisma/client";
+import { OrderDetailItem } from "~/components/client/order-details";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const customer = await requireCustomer(prisma, request);
@@ -134,7 +134,12 @@ export const action = safeAction([
         const shippingFee = calculateShippingFee(route.paths[0].distance);
         // Add shipping fee to final total
         const finalTotal = discountedSubtotal + shippingFee;
-        // Tạo order
+
+        // Generate payment code for bank transfer
+        const paymentCode = generateRandomString(10).toUpperCase();
+        console.log("create paymentCode", paymentCode);
+
+        // Create order with payment info
         const order = await createOrder(tx, {
           address: validatedData.address,
           address_lat: Number(validatedData.lat),
@@ -146,8 +151,25 @@ export const action = safeAction([
           couponId,
           orderDetails,
           paymentStatus:
-            validatedData.paymentMethod === "COD" ? "UNPAID" : "PAID",
+            validatedData.paymentMethod === "COD" ? "UNPAID" : "UNPAID",
         });
+
+        // If bank payment, create payment record and redirect to QR page
+        if (validatedData.paymentMethod === "BANK") {
+          await tx.payment.create({
+            data: {
+              code: paymentCode,
+              order_id: order.id,
+              status: "UNPAID",
+            },
+          });
+          const vietQRUrl = `https://api.vietqr.io/image/${process.env.VIETQR_BANK_ID}-${process.env.VIETQR_BANK_ACCOUNT}-${process.env.VIETQR_TEMPLATE_QR}.jpg?addInfo=${paymentCode}&accountName=${process.env.VIETQR_BANK_NAME}&amount=${finalTotal}`;
+          console.log("create vietQRUrl", vietQRUrl);
+
+          return redirect(
+            `/payment/bank?qr=${encodeURIComponent(vietQRUrl)}&orderId=${order.id}`,
+          );
+        }
 
         return redirect("/account/order-history");
       });
@@ -189,7 +211,6 @@ export default function CheckoutPage() {
       clearCart();
     },
   });
-  const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
   const routeFetcher = useFetcher<RouteResult>();
   const [couponCode, setCouponCode] = useState("");
   const couponFetcher = useFetcher<{
@@ -207,7 +228,6 @@ export default function CheckoutPage() {
     ? originalTotal * (1 - Number(appliedCoupon.discount) / 100)
     : originalTotal;
   const finalTotal = discountedTotal + shippingFee;
-  console.log({ discountedTotal });
   // Function to fetch estimated time
   const fetchEstimatedTime = async (lat: number, lng: number) => {
     routeFetcher.load(`/api/ship/route?lat=${lat}&lng=${lng}`);
@@ -250,6 +270,7 @@ export default function CheckoutPage() {
       }
 
       debounceTimerRef.current = setTimeout(() => {
+        console.log("fetching address");
         addressFetcher.load(
           `/api/ship/search?q=${encodeURIComponent(address)}`,
         );
@@ -294,53 +315,99 @@ export default function CheckoutPage() {
   }, [routeFetcher.data]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Thanh toán</h1>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="container mx-auto px-4 py-8"
+    >
+      <motion.h1
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="text-2xl font-bold mb-6"
+      >
+        Thanh toán
+      </motion.h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Order Summary */}
-        <div className="space-y-4">
+        <motion.div
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-4"
+        >
           <h2 className="text-xl font-semibold mb-4">Đơn hàng của bạn</h2>
-          <div className="space-y-4">
-            {items.map((item, index) => (
-              <div key={index} className="flex gap-4 p-4 border rounded-lg">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-20 h-20 object-cover rounded"
-                />
-                <div className="flex-1">
-                  <h3 className="font-semibold">{item.name}</h3>
-                  <div className="text-sm text-gray-500 space-y-1">
-                    <p>Size: {item.options.sizeName}</p>
-                    {item.options.borderName && (
-                      <p>Viền: {item.options.borderName}</p>
-                    )}
-                    {item.options.toppingName && (
-                      <p>Topping: {item.options.toppingName}</p>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-center mt-2">
-                    <span>Số lượng: {item.quantity}</span>
-                    <span className="font-semibold">
-                      {formatPrice(calculateItemPrice(item))}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <AnimatePresence>
+            <motion.div layout className="space-y-4">
+              {items.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <OrderDetailItem
+                    detail={{
+                      product: {
+                        name: item.product.name,
+                        image: item.product.image,
+                      },
+                      size: {
+                        name:
+                          item.product.Sizes.find(
+                            (s) => s.size.id === item.options.sizeId,
+                          )?.size.name ?? "",
+                      },
+                      border: item.options.borderId
+                        ? {
+                            name:
+                              item.product.Borders?.find(
+                                (b) => b.border.id === item.options.borderId,
+                              )?.border.name ?? "",
+                          }
+                        : null,
+                      topping: item.options.toppingId
+                        ? {
+                            name:
+                              item.product.Toppings?.find(
+                                (t) => t.topping.id === item.options.toppingId,
+                              )?.topping.name ?? "",
+                          }
+                        : null,
+                      quantity: item.quantity,
+                      totalAmount: calculateItemPrice(item),
+                    }}
+                    showAllDetails={
+                      item.product.Sizes.length > 1 &&
+                      item.options.sizeId !== ""
+                    }
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
 
-          <div className="border-t pt-4">
+          <motion.div
+            layout
+            className="border-t pt-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             <div className="flex justify-between text-lg font-semibold">
               <span>Tổng cộng:</span>
               <span>{formatPrice(calculateTotal())}</span>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Delivery Information */}
-        <div>
+        <motion.div
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
           <h2 className="text-xl font-semibold mb-4">Thông tin giao hàng</h2>
           <form.fetcher.Form method="POST" className="space-y-4">
             {/* Hidden inputs for cart items */}
@@ -349,7 +416,7 @@ export default function CheckoutPage() {
                 <input
                   type="hidden"
                   name={`cartItems[${index}].productId`}
-                  value={item.id}
+                  value={item.product.id}
                 />
                 <input
                   type="hidden"
@@ -476,23 +543,24 @@ export default function CheckoutPage() {
               <RadioField
                 radios={[
                   {
-                    label: "Thanh toán khi nhận hàng (COD)",
-                    value: "COD",
+                    label: "Thanh toán qua ngân hàng",
+                    value: "BANK",
                     defaultChecked: true,
                   },
                   {
-                    label: "Thanh toán qua MoMo",
-                    value: "MOMO",
-                  },
-                  {
-                    label: "Thanh toán qua ngân hàng",
-                    value: "BANK",
+                    label: "Thanh toán khi nhận hàng (COD)",
+                    value: "COD",
                   },
                 ]}
               />
             </FormField>
 
-            <div className="space-y-4">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="space-y-4"
+            >
               <div className="flex gap-2">
                 <FormField control={form.control} name="couponCode">
                   <InputField
@@ -545,7 +613,7 @@ export default function CheckoutPage() {
                 <span>Tổng cộng:</span>
                 <span>{formatPrice(finalTotal)}</span>
               </div>
-            </div>
+            </motion.div>
 
             <input
               type="hidden"
@@ -555,17 +623,19 @@ export default function CheckoutPage() {
 
             <input type="hidden" name="shippingFee" value={shippingFee} />
 
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              disabled={form.isSubmitting}
-            >
-              {form.isSubmitting ? "Đang xử lý..." : "Thanh toán"}
-            </Button>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={form.isSubmitting}
+              >
+                {form.isSubmitting ? "Đang xử lý..." : "Thanh toán"}
+              </Button>
+            </motion.div>
           </form.fetcher.Form>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

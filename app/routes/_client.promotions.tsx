@@ -14,9 +14,10 @@ import { useToast } from "~/hooks/use-toast";
 import { Badge } from "~/components/ui/badge";
 import { CopyIcon, CheckIcon } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { useIntersectionObserver } from "usehooks-ts";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  // Get active coupons (not expired)
   const coupons = await prisma.coupon.findMany({
     where: {
       endDate: {
@@ -39,18 +40,40 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export default function PromotionsPage() {
   const { coupons } = useLoaderData<typeof loader>();
-  const { toast } = useToast();
+  const { ref, isIntersecting } = useIntersectionObserver({
+    threshold: 0.1,
+  });
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Khuyến Mãi Đang Diễn Ra</h1>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="container mx-auto py-8"
+    >
+      <motion.h1
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="text-3xl font-bold mb-6"
+      >
+        Khuyến Mãi Đang Diễn Ra
+      </motion.h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {coupons.map((coupon) => (
-          <CouponCard key={coupon.id} coupon={coupon} />
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        ref={ref}
+      >
+        {coupons.map((coupon, index) => (
+          <motion.div
+            key={coupon.id}
+            initial={{ y: 50, opacity: 0 }}
+            animate={isIntersecting ? { y: 0, opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <CouponCard coupon={coupon} />
+          </motion.div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -69,19 +92,24 @@ function CouponCard({ coupon }: { coupon: any }) {
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden h-full">
       {coupon.bannerImage && (
-        <img
-          src={coupon.bannerImage}
-          alt={coupon.name}
-          className="w-full h-48 object-cover"
-        />
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          <img
+            src={coupon.bannerImage}
+            alt={coupon.name}
+            className="w-full h-48 object-cover"
+          />
+        </motion.div>
       )}
 
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>{coupon.name}</span>
-          <Badge variant="secondary">
+          <Badge variant="secondary" className="animate-pulse">
             Giảm {Number(coupon.discount).toFixed(0)}%
           </Badge>
         </CardTitle>
@@ -89,7 +117,10 @@ function CouponCard({ coupon }: { coupon: any }) {
       </CardHeader>
 
       <CardContent>
-        <div className="flex items-center gap-2 bg-muted p-2 rounded-lg">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="flex items-center gap-2 bg-muted p-2 rounded-lg"
+        >
           <code className="flex-1 font-mono text-lg">{coupon.code}</code>
           <Button
             variant="ghost"
@@ -97,13 +128,18 @@ function CouponCard({ coupon }: { coupon: any }) {
             onClick={handleCopy}
             className="shrink-0"
           >
-            {copied ? (
-              <CheckIcon className="h-4 w-4" />
-            ) : (
-              <CopyIcon className="h-4 w-4" />
-            )}
+            <motion.div
+              animate={copied ? { scale: [1, 1.2, 1] } : {}}
+              transition={{ duration: 0.2 }}
+            >
+              {copied ? (
+                <CheckIcon className="h-4 w-4 text-green-500" />
+              ) : (
+                <CopyIcon className="h-4 w-4" />
+              )}
+            </motion.div>
           </Button>
-        </div>
+        </motion.div>
       </CardContent>
 
       <CardFooter className="text-sm text-muted-foreground">

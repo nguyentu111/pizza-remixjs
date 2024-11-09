@@ -93,6 +93,9 @@ export enum PermissionsEnum {
   CreateDeliveries = "create-deliveries",
   UpdateDeliveries = "update-deliveries",
   DeleteDeliveries = "delete-deliveries",
+
+  ViewInventory = "view-inventory",
+  ManageInventory = "manage-inventory",
 }
 
 export enum OrderStatus {
@@ -149,11 +152,11 @@ export interface ProductSectionProps {
   })[];
 }
 export type ProductWithDetails = Product & {
-  Borders: ProductBorder &
+  Borders?: ProductBorder &
     {
       border: Border;
     }[];
-  Toppings: ProductTopping &
+  Toppings?: ProductTopping &
     {
       topping: Topping;
     }[];
@@ -162,21 +165,12 @@ export type ProductWithDetails = Product & {
   })[];
 };
 export type CartItem = {
-  id: string;
-  slug: string;
-  name: string;
-  image: string;
+  product: ProductWithDetails;
   quantity: number;
   options: {
     sizeId: string;
-    sizeName: string;
-    sizePrice: number;
     borderId?: string;
-    borderName?: string;
-    borderPrice?: number;
     toppingId?: string;
-    toppingName?: string;
-    toppingPrice?: number;
   };
 };
 export type GraphhopperRouteCalculation = {
@@ -222,7 +216,7 @@ export type OrderWithDetailsCustomerCoupon = Order & {
   customer: Customer;
   coupon: Coupon;
   OrderDetail: (OrderDetail & {
-    product: { name: string; image: string | null };
+    product: Product & { Sizes: ProductSize[] };
     size: { name: string };
     border?: { name: string } | null;
     topping?: { name: string } | null;

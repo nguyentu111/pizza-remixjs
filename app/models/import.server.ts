@@ -1,5 +1,11 @@
-import type { Import, ImportMaterial, Prisma, Status } from "@prisma/client";
+import type {
+  Import,
+  ImportMaterial,
+  ImportStatus,
+  Prisma,
+} from "@prisma/client";
 import { prisma } from "~/lib/db.server";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export type ImportWithDetails = Import & {
   provider: { name: string };
@@ -113,7 +119,7 @@ export async function createImport(data: {
 export async function updateImport(
   id: Import["id"],
   data: Partial<{
-    status: Status;
+    status: ImportStatus;
     provider: { connect: { id: string } };
     expectedDeliveryDate?: Date;
     quotationLink: string | null;
@@ -259,10 +265,11 @@ export async function updateImportReceived(
   },
 ) {
   return prisma.$transaction(async (tx) => {
-    // Update each material
+    // Update each material and inventory
     await Promise.all(
-      data.materials.map((material) =>
-        tx.importMaterial.update({
+      data.materials.map(async (material) => {
+        // Update import material
+        await tx.importMaterial.update({
           where: {
             importId_materialId: {
               importId: id,
@@ -275,8 +282,30 @@ export async function updateImportReceived(
             expiredDate: material.expiredDate,
             pricePerUnit: material.pricePerUnit,
           },
-        }),
-      ),
+        });
+
+        if (material.actualGood > 0 && material.expiredDate) {
+          // Update or create inventory record
+          await tx.inventory.upsert({
+            where: {
+              materialId_expiredDate: {
+                materialId: material.materialId,
+                expiredDate: material.expiredDate,
+              },
+            },
+            create: {
+              materialId: material.materialId,
+              quantity: new Decimal(material.actualGood),
+              expiredDate: material.expiredDate,
+            },
+            update: {
+              quantity: {
+                increment: material.actualGood,
+              },
+            },
+          });
+        }
+      }),
     );
 
     // Update import status and receiver

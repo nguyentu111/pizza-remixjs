@@ -39,6 +39,10 @@ export async function createDelivery(data: {
   staffId: string;
   deliveryOrderIds: string[];
 }) {
+  await prisma.order.updateMany({
+    where: { id: { in: data.deliveryOrderIds } },
+    data: { status: "SHIPPING", shipperId: data.staffId },
+  });
   return await prisma.delivery.create({
     data: {
       staffId: data.staffId,

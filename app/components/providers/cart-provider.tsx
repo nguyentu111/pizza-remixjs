@@ -9,6 +9,8 @@ type CartContextType = {
   clearCart: () => void;
   calculateItemPrice: (item: CartItem) => number;
   calculateTotal: () => number;
+  calculateSubtotal: () => number;
+  calculateDiscount: (discountPercent: number) => number;
   itemCount: number;
 };
 
@@ -29,14 +31,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = (item: CartItem) => {
     const existingItemIndex = items.findIndex(
       (existingItem) =>
-        existingItem.slug === item.slug &&
+        existingItem.product.id === item.product.id &&
         existingItem.options.sizeId === item.options.sizeId &&
         existingItem.options.borderId === item.options.borderId &&
         existingItem.options.toppingId === item.options.toppingId,
     );
 
     if (existingItemIndex !== -1) {
-      // Item exists with same options, update quantity
       const newItems = [...items];
       newItems[existingItemIndex] = {
         ...newItems[existingItemIndex],
@@ -45,7 +46,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setItems(newItems);
       localStorage.setItem("cart", JSON.stringify(newItems));
     } else {
-      // New item or different options, add to cart
       const newItems = [...items, item];
       setItems(newItems);
       localStorage.setItem("cart", JSON.stringify(newItems));
@@ -72,14 +72,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const calculateItemPrice = (item: CartItem) => {
     const total =
-      (item.options.sizePrice || 0) +
-      (item.options.borderPrice || 0) +
-      (item.options.toppingPrice || 0);
+      (item.product.Sizes.find((s) => s.size.id === item.options.sizeId)
+        ?.price || 0) +
+      (item.product.Borders?.find((b) => b.border.id === item.options.borderId)
+        ?.border.price || 0) +
+      (item.product.Toppings?.find(
+        (t) => t.topping.id === item.options.toppingId,
+      )?.topping.price || 0);
     return total * item.quantity;
   };
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     return items.reduce((sum, item) => sum + calculateItemPrice(item), 0);
+  };
+
+  const calculateDiscount = (discountPercent: number) => {
+    const subtotal = calculateSubtotal();
+    return subtotal * (discountPercent / 100);
+  };
+
+  const calculateTotal = () => {
+    return calculateSubtotal();
   };
 
   const value = {
@@ -90,6 +103,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     clearCart,
     calculateItemPrice,
     calculateTotal,
+    calculateSubtotal,
+    calculateDiscount,
     itemCount: items.length,
   };
 

@@ -11,7 +11,7 @@ export async function getAvailableOrders() {
       customer: true,
       OrderDetail: {
         include: {
-          product: true,
+          product: { include: { Sizes: true } },
           border: true,
           size: true,
           topping: true,
@@ -19,7 +19,7 @@ export async function getAvailableOrders() {
       },
     },
     orderBy: {
-      createdAt: "asc",
+      createdAt: "desc",
     },
   });
 }
@@ -178,7 +178,7 @@ export async function cancelDeliveryOrder(
         status: "CANCELLED",
       },
     });
-    
+
     const remainingSteps = await tx.deliveryOrder.count({
       where: {
         deliveryId: deliveryOrder.deliveryId,

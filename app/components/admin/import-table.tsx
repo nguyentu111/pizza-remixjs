@@ -24,7 +24,7 @@ import type { ImportWithDetails } from "~/models/import.server";
 import { Badge } from "~/components/ui/badge";
 import { useStaffPermissions } from "~/hooks/use-staff-permissions";
 import { PermissionsEnum } from "~/lib/type";
-import { useFetcher } from "@remix-run/react";
+import { Pagination } from "../shared/pagination";
 
 type ImportTableProps = {
   imports: (Omit<ImportWithDetails, "totalAmount"> & {
@@ -34,12 +34,11 @@ type ImportTableProps = {
 };
 
 export function ImportTable({ imports }: ImportTableProps) {
-  const fetcher = useFetcher();
   const permissions = useStaffPermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const { fetcher: fetcherDelete } = useForm({});
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [pageSize, setPageSize] = useState(5);
 
   const filteredImports = imports.filter(
     (import_) =>
@@ -50,10 +49,12 @@ export function ImportTable({ imports }: ImportTableProps) {
       import_.status.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const totalPages = Math.ceil(filteredImports.length / itemsPerPage);
+  const totalItems = filteredImports.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
   const paginatedImports = filteredImports.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
   );
 
   const getStatusVariant = (status: ImportStatus) => {
@@ -71,6 +72,7 @@ export function ImportTable({ imports }: ImportTableProps) {
         return "outline";
     }
   };
+
   const canApprove = !!permissions?.find(
     (p) => p.name === PermissionsEnum.ApproveImports,
   );
@@ -87,44 +89,26 @@ export function ImportTable({ imports }: ImportTableProps) {
   const canEditImport = (status: ImportStatus) => {
     return (status === "PENDING" || status === "WAITING_APPROVAL") && canEdit;
   };
-  console.log({ canReceive, canApprove });
+
   const canDeleteImport = (status: ImportStatus) => {
     return status === "PENDING" && canDelete;
   };
 
   return (
-    <div>
-      <div className="flex items-center mb-6 justify-between">
-        <div className="mt-6 flex flex-wrap gap-2 justify-end">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentPage(index + 1)}
-              className={`p-2 !min-w-[40px] ${
-                currentPage === index + 1
-                  ? "bg-blue-500 text-white rounded"
-                  : ""
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
-        <div className="flex">
-          <Button asChild>
-            <Link to="/admin/imports/add" className="mr-4">
-              Thêm phiếu nhập
-            </Link>
-          </Button>
-          <Input
-            type="text"
-            placeholder="Tìm phiếu nhập..."
-            className="max-w-[200px]"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Button asChild>
+          <Link to="/admin/imports/add">Thêm phiếu nhập</Link>
+        </Button>
+        <Input
+          type="text"
+          placeholder="Tìm phiếu nhập..."
+          className="max-w-[300px]"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -208,6 +192,20 @@ export function ImportTable({ imports }: ImportTableProps) {
           ))}
         </TableBody>
       </Table>
+
+      <div className="flex justify-end mt-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+          totalItems={totalItems}
+        />
+      </div>
     </div>
   );
 }

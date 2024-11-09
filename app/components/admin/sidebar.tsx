@@ -18,6 +18,8 @@ import {
   Store,
   Package,
   TruckIcon,
+  Boxes,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useStaffRoles } from "~/hooks/use-staff-roles";
@@ -30,6 +32,35 @@ export default function Sidebar() {
     <div className="bg-gray-100 h-full w-[250px] flex flex-col justify-between overflow-hidden">
       <nav className="max-h-full pb-[120px] overflow-y-auto pt-4">
         <ul className="space-y-1">
+          <li>
+            <NavLink
+              to="/admin"
+              end
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 px-4 py-2 transition-colors whitespace-nowrap",
+                  isActive ? "bg-blue-500 text-white" : "hover:bg-gray-200",
+                )
+              }
+            >
+              <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
+              <span>Tổng quan</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/admin/customers"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 px-4 py-2 transition-colors whitespace-nowrap",
+                  isActive ? "bg-blue-500 text-white" : "hover:bg-gray-200",
+                )
+              }
+            >
+              <Users className="w-4 h-4 flex-shrink-0" />
+              <span>Khách hàng</span>
+            </NavLink>
+          </li>
           <li>
             <NavLink
               to="/admin/staffs"
@@ -202,6 +233,20 @@ export default function Sidebar() {
           </li>
           <li>
             <NavLink
+              to="/admin/inventory"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 px-4 py-2 transition-colors",
+                  isActive ? "bg-blue-500 text-white" : "hover:bg-gray-200",
+                )
+              }
+            >
+              <Boxes className="w-4 h-4" />
+              <span>Quản lý kho</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
               to={"/admin/orders"}
               className={({ isActive }) =>
                 cn(
@@ -214,7 +259,7 @@ export default function Sidebar() {
               <span>Đơn hàng</span>
             </NavLink>
           </li>
-          {roles?.some((role) => role.name === "shipper") && (
+          {roles?.some((role) => role.name === "Shipper") && (
             <>
               <li>
                 <NavLink

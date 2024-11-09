@@ -1,9 +1,20 @@
-import type { Prisma, Customer, CustomerPassword } from "@prisma/client";
+import type { Customer, CustomerPassword, Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { prisma } from "~/lib/db.server";
 
+export async function getCustomerByPhoneNumber(
+  phoneNumber: Customer["phoneNumbers"],
+) {
+  return prisma.customer.findUnique({ where: { phoneNumbers: phoneNumber } });
+}
+
 export async function getAllCustomers() {
-  return prisma.customer.findMany({ orderBy: { createdAt: "desc" } });
+  return prisma.customer.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      Orders: true,
+    },
+  });
 }
 
 export async function getCustomerById(
@@ -12,19 +23,22 @@ export async function getCustomerById(
 ) {
   return db.customer.findUnique({
     where: { id },
+    include: {
+      Orders: true,
+    },
   });
 }
 
-export async function getCustomerByPhoneNumber(
-  phoneNumber: Customer["phoneNumbers"],
+export async function getCustomerByPhone(
+  phoneNumbers: Customer["phoneNumbers"],
 ) {
-  return prisma.customer.findUnique({ where: { phoneNumbers: phoneNumber } });
+  return prisma.customer.findUnique({ where: { phoneNumbers } });
 }
 
 export async function createCustomer(
   customer: Pick<
     Customer,
-    "fullname" | "phoneNumbers" | "status" | "avatarUrl"
+    "phoneNumbers" | "fullname" | "status" | "avatarUrl"
   >,
   password: string,
 ) {
@@ -41,14 +55,21 @@ export async function createCustomer(
   });
 }
 
-export async function deleteCustomerByPhoneNumber(
-  phoneNumber: Customer["phoneNumbers"],
-) {
-  return prisma.customer.delete({ where: { phoneNumbers: phoneNumber } });
-}
-
 export async function deleteCustomer(id: Customer["id"]) {
   return prisma.customer.delete({ where: { id } });
+}
+
+export async function updatePassword(
+  db: Prisma.TransactionClient,
+  customerId: Customer["id"],
+  password: string,
+) {
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  return db.customerPassword.update({
+    where: { customerId },
+    data: { hash: hashedPassword },
+  });
 }
 
 export async function verifyCustomerLogin(
@@ -89,18 +110,5 @@ export async function updateCustomer(
   return prisma.customer.update({
     where: { id },
     data,
-  });
-}
-
-export async function updateCustomerPassword(
-  db: Prisma.TransactionClient,
-  customerId: Customer["id"],
-  password: string,
-) {
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  return db.customerPassword.update({
-    where: { customerId },
-    data: { hash: hashedPassword },
   });
 }

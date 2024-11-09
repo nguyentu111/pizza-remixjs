@@ -14,56 +14,41 @@ import {
 import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
 import { getSmallImageUrl } from "~/lib/utils";
+import { Pagination } from "../shared/pagination";
 
 export function CouponTable({ coupons }: { coupons: Coupon[] }) {
   const [searchTerm, setSearchTerm] = useState("");
   const { fetcher: fetcherDelete } = useForm({});
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [pageSize, setPageSize] = useState(5);
 
   const filteredCoupons = coupons.filter((coupon) =>
     coupon.code.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const totalPages = Math.ceil(filteredCoupons.length / itemsPerPage);
+  const totalItems = filteredCoupons.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
   const paginatedCoupons = filteredCoupons.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
   );
 
   return (
-    <div>
-      <div className="flex items-center mb-6 justify-between">
-        <div className="mt-6 flex flex-wrap gap-2 justify-end">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentPage(index + 1)}
-              className={`p-2 !min-w-[40px] ${
-                currentPage === index + 1
-                  ? "bg-blue-500 text-white rounded"
-                  : ""
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
-        <div className="flex">
-          <Button asChild>
-            <Link to="/admin/coupons/add" className="mr-4">
-              Thêm mã giảm giá
-            </Link>
-          </Button>
-          <Input
-            type="text"
-            placeholder="Tìm mã giảm giá..."
-            className="max-w-[200px]"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Button asChild>
+          <Link to="/admin/coupons/add">Thêm mã giảm giá</Link>
+        </Button>
+        <Input
+          type="text"
+          placeholder="Tìm mã giảm giá..."
+          className="max-w-[300px]"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -120,6 +105,20 @@ export function CouponTable({ coupons }: { coupons: Coupon[] }) {
           ))}
         </TableBody>
       </Table>
+
+      <div className="flex justify-end mt-4">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+          totalItems={totalItems}
+        />
+      </div>
     </div>
   );
 }

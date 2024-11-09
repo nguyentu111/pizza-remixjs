@@ -5,6 +5,7 @@ import type {
   MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { motion } from "framer-motion";
 import { AddressSearch } from "~/components/home/address-bar";
 import { Banner } from "~/components/home/banner";
 import { ProductSection } from "~/components/home/product-section";
@@ -36,14 +37,31 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function Index() {
-  const { couponsWithBanners, products, tab } = useLoaderData<typeof loader>();
-  const [searchParams] = useSearchParams();
+  const { couponsWithBanners, products } = useLoaderData<typeof loader>();
 
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <Banner couponsWithBanners={couponsWithBanners as unknown as Coupon[]} />
-      <AddressSearch />
-      <ProductSection products={products as unknown as ProductWithDetails[]} />
-    </>
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
+        <AddressSearch />
+      </motion.div>
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+      >
+        <ProductSection
+          products={products as unknown as ProductWithDetails[]}
+        />
+      </motion.div>
+    </motion.div>
   );
 }

@@ -89,37 +89,42 @@ export const safeAction = (
       args: ActionFunctionArgs,
     ): Promise<ActionResultType<z.ZodError["errors"]>> => {
       try {
-        const formData = await args.request.formData();
-        const data: Record<string, any> = {};
-        for (const [key, value] of formData.entries()) {
-          if (key.endsWith("[]")) {
-            if (!data[key]) {
-              data[key] = [];
-            }
-            data[key].push(value);
-          } else if (key.includes("[") && key.includes("]")) {
-            const match = key.match(/^(\w+)\[(\d+)\]\.(\w+)$/);
-            if (match) {
-              const [, mainKey, index, subKey] = match;
-              if (!data[mainKey]) data[mainKey] = [];
-              if (!data[mainKey][parseInt(index)])
-                data[mainKey][parseInt(index)] = {};
-              data[mainKey][parseInt(index)][subKey] = value;
+        let data: Record<string, any> = {};
+        const enctype = args.request.headers.get("content-type");
+        if (enctype === "application/json") {
+          data = await args.request.json();
+        } else {
+          const formData = await args.request.formData();
+
+          for (const [key, value] of formData.entries()) {
+            if (key.endsWith("[]")) {
+              if (!data[key]) {
+                data[key] = [];
+              }
+              data[key].push(value);
+            } else if (key.includes("[") && key.includes("]")) {
+              const match = key.match(/^(\w+)\[(\d+)\]\.(\w+)$/);
+              if (match) {
+                const [, mainKey, index, subKey] = match;
+                if (!data[mainKey]) data[mainKey] = [];
+                if (!data[mainKey][parseInt(index)])
+                  data[mainKey][parseInt(index)] = {};
+                data[mainKey][parseInt(index)][subKey] = value;
+              } else {
+                console.log({ key, value });
+                // const match = key.match(/^(\w+)\[([a-f0-9-]+)\]$/);
+                // console.log(key, match);
+                // if (match) {
+                //   const [, mainKey, index] = match;
+                //   if (!data[mainKey]) data[mainKey] = [];
+                //   data[mainKey][parseInt(index)] = value;
+                // }
+              }
             } else {
-              console.log({ key, value });
-              // const match = key.match(/^(\w+)\[([a-f0-9-]+)\]$/);
-              // console.log(key, match);
-              // if (match) {
-              //   const [, mainKey, index] = match;
-              //   if (!data[mainKey]) data[mainKey] = [];
-              //   data[mainKey][parseInt(index)] = value;
-              // }
+              data[key] = value;
             }
-          } else {
-            data[key] = value;
           }
         }
-
         console.dir({ actionData: data }, { depth: null });
         const method = args.request.method;
         const _action = data._action;
@@ -165,6 +170,7 @@ export const safeAction = (
         console.dir({ validatedData }, { depth: null });
         return action.action(args, validatedData);
       } catch (error) {
+        console.log(error);
         return json(
           {
             success: false,
@@ -323,4 +329,26 @@ export function formatDateTime(date: Date) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(date));
+}
+export function generateRandomString(length: number) {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters[randomIndex];
+  }
+  return result;
+}
+
+export function formatCurrency(amount: number | string | null | undefined) {
+  if (amount === null || amount === undefined) return "0 ₫";
+
+  const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
+
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(numAmount);
 }
