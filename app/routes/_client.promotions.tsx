@@ -48,7 +48,7 @@ export default function PromotionsPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="container mx-auto py-8"
+      className="container mx-auto pb-8 pt-16"
     >
       <motion.h1
         initial={{ y: -20, opacity: 0 }}

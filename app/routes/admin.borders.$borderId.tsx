@@ -80,8 +80,8 @@ export const action = safeAction([
 export default function UpdateBorderPage() {
   const { border } = useLoaderData<typeof loader>();
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white ">
+    <>
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold">Cập nhật viền</h1>
           <nav className="text-sm text-gray-600">
@@ -99,6 +99,6 @@ export default function UpdateBorderPage() {
       <div className="py-10">
         <AddOrUpdateBorderForm border={border as unknown as Border} />
       </div>
-    </div>
+    </>
   );
 }

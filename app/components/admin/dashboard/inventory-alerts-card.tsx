@@ -30,7 +30,11 @@ export function InventoryAlertsCard({ materials }: InventoryAlertsCardProps) {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Nguyên liệu sắp hết</AlertTitle>
                 <AlertDescription>
-                  {material.name} còn {material.Inventory[0]?.quantity}{" "}
+                  {material.name} còn{" "}
+                  {material.Inventory.reduce(
+                    (acc, curr) => acc + Number(curr.quantity),
+                    0,
+                  ).toFixed(2)}{" "}
                   {material.unit}
                 </AlertDescription>
               </Alert>

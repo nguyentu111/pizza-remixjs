@@ -32,12 +32,6 @@ export const action = safeAction([
       { request },
       { username, password, redirectTo, remember },
     ): ActionZodResponse<typeof LoginSchema> => {
-      // if (!validateUsername(username)) {
-      //   return json(
-      //     { error: "username invalid", success: false },
-      //     { status: 400 },
-      //   );
-      // }
       const user = await verifyLogin(username, password);
       if (!user) {
         return json(
@@ -78,7 +72,7 @@ export default function LoginPage() {
   }, [actionData]);
   console.log(actionData);
   return (
-    <div className="flex min-h-full flex-col justify-center">
+    <div className="flex h-screen flex-col justify-center items-center">
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6">
           <div>
@@ -103,6 +97,7 @@ export default function LoginPage() {
                 }
                 aria-describedby="username-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+                defaultValue={"admin"}
               />
               {actionData?.fieldErrors?.username ? (
                 <div className="pt-1 text-red-700" id="username-error">
@@ -117,7 +112,7 @@ export default function LoginPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
             >
-              Password
+              Mật khẩu
             </label>
             <div className="mt-1">
               <input
@@ -131,6 +126,7 @@ export default function LoginPage() {
                 }
                 aria-describedby="password-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+                defaultValue={"@@aheng"}
               />
               {actionData?.fieldErrors?.password ? (
                 <div className="pt-1 text-red-700" id="password-error">
@@ -148,7 +144,7 @@ export default function LoginPage() {
             type="submit"
             className="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400"
           >
-            Log in
+            Đăng nhập
           </button>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -162,12 +158,12 @@ export default function LoginPage() {
                 htmlFor="remember"
                 className="ml-2 block text-sm text-gray-900"
               >
-                Remember me
+                Ghi nhớ tài khoản
               </label>
             </div>
 
             <div className="text-center text-sm text-gray-500">
-              Don&apos;t have an account?{" "}
+              Không có tài khoản?{" "}
               <Link
                 className="text-blue-500 underline"
                 to={{
@@ -175,7 +171,7 @@ export default function LoginPage() {
                   search: searchParams.toString(),
                 }}
               >
-                Sign up
+                Đăng ký
               </Link>
             </div>
           </div>

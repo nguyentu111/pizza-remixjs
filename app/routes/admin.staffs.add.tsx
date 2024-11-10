@@ -67,7 +67,7 @@ export default function AddUserPage() {
   const { roles } = useLoaderData<typeof loader>();
   return (
     <>
-      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white ">
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold">Thêm nhân viên</h1>
           <nav className="text-sm text-gray-600">

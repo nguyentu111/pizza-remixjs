@@ -21,7 +21,6 @@ export function useForm<T extends ZodSchema, E extends any = any>(options?: {
     defaultValues: flattenObject(options?.defaultValues || {}, "", {}),
   };
   useEffect(() => {
-    console.log(actionData);
     if (!isSubmitting && actionData?.success) {
       if (options?.onSuccess && typeof options.onSuccess === "function") {
         options.onSuccess(actionData as unknown as E);

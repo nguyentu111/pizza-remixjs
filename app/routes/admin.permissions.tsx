@@ -1,4 +1,4 @@
-import { ActionFunction, json } from "@remix-run/node";
+import { ActionFunction, json, LoaderFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { Table } from "~/components/ui/table";
 import { z } from "zod";
@@ -14,8 +14,15 @@ import { prisma } from "~/lib/db.server";
 import { FormField } from "~/components/shared/form/form-field";
 import { Label } from "~/components/ui/label";
 import { InputField } from "~/components/shared/form/form-fields/input-field";
+import { PermissionsEnum } from "~/lib/type";
+import { requirePermissions } from "~/use-cases/permission.server";
+import { requireStaffId } from "~/session.server";
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const currentUserId = await requireStaffId(request);
+  await requirePermissions(prisma, currentUserId, [
+    PermissionsEnum.ViewPermissions,
+  ]);
   const permissions = await getAllPermissions(prisma);
   return json(permissions);
 };
@@ -27,7 +34,11 @@ const addPermissionSchema = z.object({
 });
 export const action: ActionFunction = safeAction([
   {
-    action: async ({}, { name, description, displayName, group }) => {
+    action: async ({ request }, { name, description, displayName, group }) => {
+      const currentUserId = await requireStaffId(request);
+      await requirePermissions(prisma, currentUserId, [
+        PermissionsEnum.CreatePermissions,
+      ]);
       await createPermission({ name, description, displayName, group });
       return json({
         success: true,
@@ -39,6 +50,10 @@ export const action: ActionFunction = safeAction([
   {
     method: "DELETE",
     action: async ({ request }) => {
+      const currentUserId = await requireStaffId(request);
+      await requirePermissions(prisma, currentUserId, [
+        PermissionsEnum.DeletePermissions,
+      ]);
       const url = new URL(request.url);
       const searchParams = url.searchParams;
       const id = searchParams.get("id");

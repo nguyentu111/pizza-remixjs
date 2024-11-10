@@ -1,5 +1,4 @@
 import { prisma } from "~/lib/db.server";
-import { calculateOptimalRoute } from "~/use-cases/shipping.server";
 
 export async function getAvailableOrders() {
   return prisma.order.findMany({
@@ -49,10 +48,10 @@ export async function createDeliveryRoute(data: {
       if (orders.length === 0) {
         throw new Error("No valid orders found");
       }
-
-      // Calculate optimal route using GraphHopper
-      const route = await calculateOptimalRoute(orders);
-      console.dir(route, { depth: null });
+      await tx.order.updateMany({
+        where: { id: { in: orders.map((o) => o.id) } },
+        data: { shipperId: data.shipperId },
+      });
       // Create delivery route
       const deliveryRoute = await tx.delivery.create({
         data: {
@@ -60,12 +59,12 @@ export async function createDeliveryRoute(data: {
           status: "SHIPPING",
           // Ensure to include any new fields if necessary
           DeliveryOrder: {
-            create: route.steps.map((step, index) => ({
-              orderId: step.orderId,
+            create: orders.map((order, index) => ({
+              orderId: order.id,
               cancelNote: null,
               endTime: null,
               startTime: index === 0 ? new Date() : null,
-              status: index === 0 ? "SHIPPING" : "PENDING",
+              status: "PENDING",
             })),
           },
         },
@@ -169,13 +168,16 @@ export async function cancelDeliveryOrder(
       data: {
         status: "CANCELLED",
         cancelNote,
+        endTime: new Date(),
       },
     });
-
     await tx.order.update({
-      where: { id: deliveryOrder.orderId },
+      where: {
+        id: deliveryOrder.orderId,
+      },
       data: {
         status: "CANCELLED",
+        cancelledReason: cancelNote,
       },
     });
 

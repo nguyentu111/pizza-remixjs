@@ -22,8 +22,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function BorderManageHome() {
   const { borders } = useLoaderData<typeof loader>();
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white">
+    <>
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold">Quản lý viền</h1>
           <nav className="text-sm text-gray-600">
@@ -35,6 +35,6 @@ export default function BorderManageHome() {
         </div>
       </div>
       <BorderTable borders={borders as unknown as Border[]} />
-    </div>
+    </>
   );
 }

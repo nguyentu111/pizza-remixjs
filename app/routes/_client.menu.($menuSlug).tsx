@@ -22,14 +22,14 @@ export default function MenuPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="container mx-auto px-4 py-8"
+      className="container mx-auto px-4 pb-8 pt-16"
     >
       <motion.h1
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="text-3xl font-bold mb-6"
       >
-        Our Menu
+        Thực Đơn
       </motion.h1>
 
       <motion.div

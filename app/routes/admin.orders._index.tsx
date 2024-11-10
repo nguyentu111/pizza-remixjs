@@ -20,7 +20,7 @@ export default function OrdersPage() {
   const { orders } = useLoaderData<typeof loader>();
 
   return (
-    <div className="p-4">
+    <>
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold">Quản lý đơn hàng</h1>
@@ -33,6 +33,6 @@ export default function OrdersPage() {
         </div>
       </div>
       <OrderTable orders={orders as any} />
-    </div>
+    </>
   );
 }

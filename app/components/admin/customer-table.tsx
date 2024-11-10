@@ -15,6 +15,9 @@ import {
 import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
 import { Pagination } from "../shared/pagination";
+import { useStaffPermissions } from "~/hooks/use-staff-permissions";
+import { useStaffRoles } from "~/hooks/use-staff-roles";
+import { PermissionsEnum } from "~/lib/type";
 
 export function CustomerTable({
   customers,
@@ -38,6 +41,13 @@ export function CustomerTable({
   const paginatedCustomers = filteredCustomers.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
+  );
+  const permissions = useStaffPermissions();
+  const hasDeletePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.DeleteCustomers,
+  );
+  const hasUpdatePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.UpdateCustomers,
   );
 
   return (
@@ -91,19 +101,23 @@ export function CustomerTable({
               <TableCell>{format(customer.createdAt, "dd/MM/yyyy")}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <fetcherDelete.Form
-                    action={`/admin/customers/${customer.id}`}
-                    method="DELETE"
-                  >
-                    <Button variant={"ghost-destructive"}>
-                      <TrashIcon className="w-4 h-4" />
+                  {hasDeletePermission && (
+                    <fetcherDelete.Form
+                      action={`/admin/customers/${customer.id}`}
+                      method="DELETE"
+                    >
+                      <Button variant={"ghost-destructive"}>
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </fetcherDelete.Form>
+                  )}
+                  {hasUpdatePermission && (
+                    <Button asChild>
+                      <Link to={`/admin/customers/${customer.id}`}>
+                        <EditIcon className="w-4 h-4" />
+                      </Link>
                     </Button>
-                  </fetcherDelete.Form>
-                  <Button asChild>
-                    <Link to={`/admin/customers/${customer.id}`}>
-                      <EditIcon className="w-4 h-4" />
-                    </Link>
-                  </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

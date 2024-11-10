@@ -18,7 +18,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     include: {
       OrderDetail: {
         include: {
-          product: true,
+          product: { include: { Sizes: true } },
           size: true,
           border: true,
           topping: true,
@@ -74,7 +74,7 @@ export default function OrderDetailsPage() {
   };
 
   return (
-    <div className="p-4">
+    <>
       <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold">Chi tiết đơn hàng #{order.id}</h1>
@@ -112,11 +112,39 @@ export default function OrderDetailsPage() {
                 <p>{formatDate(order.createdAt)}</p>
               </div>
               <div>
+                <p className="text-sm text-gray-500">Tiền ship</p>
+                <p className="font-semibold">
+                  {formatPrice(Number(order.shippingFee))}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Mã giảm giá</p>
+                <p className="font-semibold">
+                  {order.coupon?.code || "Không có"}
+                </p>
+              </div>
+              <div>
                 <p className="text-sm text-gray-500">Tổng tiền</p>
                 <p className="font-semibold">
                   {formatPrice(Number(order.totalAmount))}
                 </p>
               </div>
+              <div>
+                <p className="text-sm text-gray-500">Nhân viên chế biến</p>
+                <p className="font-semibold">
+                  {order.chef?.fullname || "Chưa có"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Nhân viên giao hàng</p>
+                <p>{order.shipper?.fullname || "Chưa có"}</p>
+              </div>
+              {order.DeliveryOrder?.cancelNote && (
+                <div>
+                  <p className="text-sm text-gray-500">Lý do hủy</p>
+                  <p>{order.DeliveryOrder?.cancelNote}</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -142,25 +170,6 @@ export default function OrderDetailsPage() {
           </CardContent>
         </Card>
 
-        {/* Staff Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Thông tin nhân viên</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-500">Nhân viên chế biến</p>
-              <p className="font-semibold">
-                {order.chef?.fullname || "Chưa có"}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Nhân viên giao hàng</p>
-              <p>{order.shipper?.fullname || "Chưa có"}</p>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Order Details */}
         <Card>
           <CardHeader>
@@ -176,7 +185,8 @@ export default function OrderDetailsPage() {
                   <div>
                     <p className="font-semibold">{detail.product.name}</p>
                     <p className="text-sm text-gray-500">
-                      Size: {detail.size.name}
+                      {detail.product.Sizes.length > 1 &&
+                        `Kích thước: ${detail.size.name}`}
                       {detail.border && ` - Viền: ${detail.border.name}`}
                       {detail.topping && ` - Topping: ${detail.topping.name}`}
                     </p>
@@ -214,6 +224,6 @@ export default function OrderDetailsPage() {
           </Card>
         )}
       </div>
-    </div>
+    </>
   );
 }

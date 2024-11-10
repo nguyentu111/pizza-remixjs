@@ -16,6 +16,8 @@ import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
 import { getSmallImageUrl } from "~/lib/utils";
 import { Pagination } from "../shared/pagination";
+import { PermissionsEnum } from "~/lib/type";
+import { useStaffPermissions } from "~/hooks/use-staff-permissions";
 
 export function StaffTable({
   staffs,
@@ -40,13 +42,24 @@ export function StaffTable({
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
-
+  const permissions = useStaffPermissions();
+  const hasDeletePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.DeleteStaffs,
+  );
+  const hasUpdatePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.UpdateStaffs,
+  );
+  const hasCreatePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.CreateStaffs,
+  );
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Button asChild>
-          <Link to="/admin/staffs/add">Thêm nhân viên</Link>
-        </Button>
+        {hasCreatePermission && (
+          <Button asChild>
+            <Link to="/admin/staffs/add">Thêm nhân viên</Link>
+          </Button>
+        )}
         <Input
           type="text"
           placeholder="Tìm nhân viên..."
@@ -95,19 +108,23 @@ export function StaffTable({
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <fetcherDelete.Form
-                    action={`/admin/staffs/${staff.id}`}
-                    method="DELETE"
-                  >
-                    <Button variant={"ghost-destructive"}>
-                      <TrashIcon className="w-4 h-4" />
+                  {hasDeletePermission && (
+                    <fetcherDelete.Form
+                      action={`/admin/staffs/${staff.id}`}
+                      method="DELETE"
+                    >
+                      <Button variant={"ghost-destructive"}>
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </fetcherDelete.Form>
+                  )}
+                  {hasUpdatePermission && (
+                    <Button asChild>
+                      <Link to={`/admin/staffs/${staff.id}`}>
+                        <EditIcon className="w-4 h-4" />
+                      </Link>
                     </Button>
-                  </fetcherDelete.Form>
-                  <Button asChild>
-                    <Link to={`/admin/staffs/${staff.id}`}>
-                      <EditIcon className="w-4 h-4" />
-                    </Link>
-                  </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

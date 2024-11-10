@@ -1,11 +1,13 @@
 import { Role, Staff, StaffRole } from "@prisma/client";
 import { json, LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import * as _ from "lodash";
 import { z } from "zod";
 import { AddOrUpdateStaffForm } from "~/components/admin/add-or-update-staff-form";
-import { PermissionsEnum } from "~/lib/type";
+import { ErrorBoundary } from "~/components/shared/error-boudary";
 import { prisma } from "~/lib/db.server";
 import { updateStaffSchema } from "~/lib/schema";
+import { PermissionsEnum } from "~/lib/type";
 import { safeAction } from "~/lib/utils";
 import { getAllRoles, getStaffRoles } from "~/models/role.server";
 import {
@@ -17,9 +19,6 @@ import {
 } from "~/models/staff.server";
 import { requireStaff } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
-import * as _ from "lodash";
-import { CustomHttpError, ERROR_NAME } from "~/lib/error";
-import { ErrorBoundary } from "~/components/shared/error-boudary";
 
 export { ErrorBoundary };
 
@@ -40,9 +39,9 @@ export const action = safeAction([
     schema: updateStaffSchema, // Add the schema for validation
     action: async ({ request, params }, data) => {
       const currentUser = await requireStaff(prisma, request);
-      // await requirePermissions(prisma, currentUser.id, [
-      //   PermissionsEnum.UpdateUSers,
-      // ]);
+      await requirePermissions(prisma, currentUser.id, [
+        PermissionsEnum.UpdateStaffs,
+      ]);
       const validatedData = data as z.infer<typeof updateStaffSchema>;
 
       const id = params.userId as string | undefined;
@@ -132,7 +131,7 @@ export default function AddUserPage() {
   const { roles, staff } = useLoaderData<typeof loader>();
   return (
     <>
-      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white ">
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold">Sửa nhân viên</h1>
           <nav className="text-sm text-gray-600">

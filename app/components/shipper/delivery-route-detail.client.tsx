@@ -14,6 +14,7 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
+import { useStaffPermissions } from "~/hooks/use-staff-permissions";
 
 export function DeliveryRouteDetail({
   route,
@@ -21,24 +22,10 @@ export function DeliveryRouteDetail({
   route: NonNullable<Awaited<ReturnType<typeof getDeliveryInfo>>>;
 }) {
   const navigate = useNavigate();
-  const [position, setPosition] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
 
   const [cancelNote, setCancelNote] = useState("");
-  const { toast } = useToast();
-  const fetcher = useFetcher();
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition((position) => {
-      setPosition({
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      });
-    });
-  }, []);
-
+  const permissions = useStaffPermissions();
+  const isShipper = permissions?.some((p) => p.name === "Shipper");
   return (
     <div className="space-y-6">
       <Card className="p-6">
@@ -73,7 +60,7 @@ export function DeliveryRouteDetail({
       </Card>
 
       <div className="space-y-4">
-        <h3 className="font-semibold">Lộ trình giao hàng</h3>
+        <h3 className="font-semibold">Đơn hàng</h3>
 
         {route.DeliveryOrder.map((step, index) => (
           <Card
@@ -82,7 +69,6 @@ export function DeliveryRouteDetail({
           >
             <div className="flex justify-between">
               <div>
-                <Badge variant="outline">Điểm {index + 1}</Badge>
                 <p className="mt-2">Địa chỉ : {step.order.address}</p>
                 <p className="">
                   Trạng thái thanh toán :{" "}
@@ -100,8 +86,12 @@ export function DeliveryRouteDetail({
                     ? step.order.shipNote
                     : "Không có ghi chú"}
                 </p>
+                {step.cancelNote && (
+                  <p className="text-sm text-gray-500">
+                    Lý do hủy : {step.cancelNote}
+                  </p>
+                )}
               </div>
-
               <div>
                 <Badge>
                   {step.status === "PENDING"
@@ -115,59 +105,62 @@ export function DeliveryRouteDetail({
               </div>
             </div>
 
-            <div className="mt-4 flex gap-2">
-              <Form method="PUT">
-                <input type="hidden" name="deliveryOrderId" value={step.id} />
-                {step.status === "PENDING" && (
-                  <>
-                    <Button name="action" value="SHIPPING" className="mr-2">
-                      Đang giao hàng
-                    </Button>
-                  </>
-                )}
-                {(step.status === "SHIPPING" || step.status === "PENDING") && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="mr-2" variant={"outline"}>
-                        Hủy giao hàng
+            {isShipper && (
+              <div className="mt-4 flex gap-2">
+                <Form method="PUT">
+                  <input type="hidden" name="deliveryOrderId" value={step.id} />
+                  {step.status === "PENDING" && (
+                    <>
+                      <Button name="action" value="SHIPPING" className="mr-2">
+                        Đang giao hàng
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Lý do hủy giao hàng</DialogTitle>
-                      </DialogHeader>
-                      <Form method="PUT">
-                        <input
-                          type="hidden"
-                          name="deliveryOrderId"
-                          value={step.id}
-                        />
+                    </>
+                  )}
+                  {(step.status === "SHIPPING" ||
+                    step.status === "PENDING") && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="mr-2" variant={"outline"}>
+                          Hủy giao hàng
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Lý do hủy giao hàng</DialogTitle>
+                        </DialogHeader>
+                        <Form method="PUT">
+                          <input
+                            type="hidden"
+                            name="deliveryOrderId"
+                            value={step.id}
+                          />
 
-                        <div className="space-y-4">
-                          <div>
-                            <Label>Ghi chú</Label>
-                            <Textarea
-                              name="cancelNote"
-                              value={cancelNote}
-                              onChange={(e) => setCancelNote(e.target.value)}
-                              placeholder="Nhập lý do hủy..."
-                            />
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Ghi chú</Label>
+                              <Textarea
+                                name="cancelNote"
+                                value={cancelNote}
+                                onChange={(e) => setCancelNote(e.target.value)}
+                                placeholder="Nhập lý do hủy..."
+                              />
+                            </div>
+                            <Button type="submit" name="action" value="CANCEL">
+                              Hủy giao hàng
+                            </Button>
                           </div>
-                          <Button type="submit" name="action" value="CANCEL">
-                            Hủy giao hàng
-                          </Button>
-                        </div>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
-                )}
-                {step.status === "SHIPPING" && (
-                  <Button name="action" value="COMPLETED" className="mr-2">
-                    Đã giao hàng
-                  </Button>
-                )}
-              </Form>
-            </div>
+                        </Form>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  {step.status === "SHIPPING" && (
+                    <Button name="action" value="COMPLETED" className="mr-2">
+                      Đã giao hàng
+                    </Button>
+                  )}
+                </Form>
+              </div>
+            )}
           </Card>
         ))}
       </div>

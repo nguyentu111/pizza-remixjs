@@ -10,7 +10,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { formatCurrency } from "~/lib/utils";
+import { cn, formatCurrency } from "~/lib/utils";
 import {
   Select,
   SelectContent,
@@ -19,15 +19,22 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { DatePickerWithRange } from "~/components/ui/date-range-picker";
-import { addDays } from "date-fns";
+import { addDays, format } from "date-fns";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { useNavigate } from "@remix-run/react";
+import { MonthRangePicker } from "~/components/ui/monthrangepicker";
+import { CalendarIcon } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import { YearRangePicker } from "~/components/ui/yearrangepicker";
 
 interface RevenueData {
   date: string;
-  currentRevenue: number;
-  previousRevenue: number;
+  revenue: number;
 }
 
 interface RevenueComparisonChartProps {
@@ -74,9 +81,8 @@ export function RevenueComparisonChart({
     if (value >= 1000) {
       return `${(value / 1000).toFixed(1)}K`;
     }
-    return value;
+    return value.toString();
   };
-
   return (
     <motion.div
       variants={{ hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } }}
@@ -100,7 +106,86 @@ export function RevenueComparisonChart({
                 <SelectItem value="year">Theo năm</SelectItem>
               </SelectContent>
             </Select>
-            <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
+            {selectedPeriod === "day" && (
+              <DatePickerWithRange
+                date={dateRange}
+                onDateChange={(value) =>
+                  setDateRange({ from: value?.from, to: value?.to })
+                }
+              />
+            )}
+            {selectedPeriod === "month" && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[280px] justify-start text-left font-normal",
+                      !dateRange.from &&
+                        !dateRange.to &&
+                        "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange.from && dateRange.to ? (
+                      `${format(dateRange.from, "MM/yyyy")} - ${format(
+                        dateRange.to,
+                        "MM/yyyy",
+                      )}`
+                    ) : (
+                      <span>Chọn khoảng tháng</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <MonthRangePicker
+                    onMonthRangeSelect={(newDates) =>
+                      setDateRange({ from: newDates.start, to: newDates.end })
+                    }
+                    selectedMonthRange={{
+                      start: dateRange.from || new Date(),
+                      end: dateRange.to || new Date(),
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+            {selectedPeriod === "year" && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[280px] justify-start text-left font-normal",
+                      !dateRange.from &&
+                        !dateRange.to &&
+                        "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange.from && dateRange.to ? (
+                      `${format(dateRange.from, "yyyy")} - ${format(
+                        dateRange.to,
+                        "yyyy",
+                      )}`
+                    ) : (
+                      <span>Chọn khoảng năm</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <YearRangePicker
+                    onYearRangeSelect={(newDates) =>
+                      setDateRange({ from: newDates.start, to: newDates.end })
+                    }
+                    selectedYearRange={{
+                      start: dateRange.from || new Date(),
+                      end: dateRange.to || new Date(),
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
             <Button onClick={handleFilter}>Lọc</Button>
           </div>
         </CardHeader>
@@ -127,21 +212,16 @@ export function RevenueComparisonChart({
                 <YAxis tickFormatter={formatYAxis} width={80} />
                 <Tooltip
                   formatter={(value) => formatCurrency(Number(value))}
-                  labelFormatter={(label) => `Ngày: ${label}`}
+                  labelFormatter={(label) =>
+                    `${selectedPeriod === "day" ? "Ngày" : selectedPeriod === "month" ? "Tháng" : "Năm"}: ${label}`
+                  }
                 />
                 <Legend verticalAlign="top" height={36} />
                 <Line
                   type="monotone"
-                  dataKey="currentRevenue"
+                  dataKey="revenue"
                   stroke="#8884d8"
-                  name="Doanh thu hiện tại"
-                  strokeWidth={2}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="previousRevenue"
-                  stroke="#82ca9d"
-                  name="Doanh thu kỳ trước"
+                  name="Doanh thu"
                   strokeWidth={2}
                 />
               </LineChart>

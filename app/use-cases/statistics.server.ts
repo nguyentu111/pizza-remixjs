@@ -1,13 +1,12 @@
+import { format } from "date-fns";
 import { prisma } from "~/lib/db.server";
-import { format, subMonths, subYears } from "date-fns";
 
 export async function getRevenueStats(
   startDate: Date,
   endDate: Date,
   period: "day" | "month" | "year",
 ) {
-  // Get current period revenue
-  const currentPeriodRevenue = await prisma.order.groupBy({
+  const revenue = await prisma.order.groupBy({
     by: ["createdAt"],
     where: {
       status: "COMPLETED",
@@ -19,31 +18,13 @@ export async function getRevenueStats(
     _sum: {
       totalAmount: true,
     },
-  });
-
-  // Get previous period dates
-  const previousStartDate =
-    period === "year" ? subYears(startDate, 1) : subMonths(startDate, 1);
-  const previousEndDate =
-    period === "year" ? subYears(endDate, 1) : subMonths(endDate, 1);
-
-  // Get previous period revenue
-  const previousPeriodRevenue = await prisma.order.groupBy({
-    by: ["createdAt"],
-    where: {
-      status: "COMPLETED",
-      createdAt: {
-        gte: previousStartDate,
-        lte: previousEndDate,
-      },
-    },
-    _sum: {
-      totalAmount: true,
+    orderBy: {
+      createdAt: "asc",
     },
   });
 
-  // Format data for chart
-  const revenueData = currentPeriodRevenue.map((item) => {
+  // Format data for chart based on period
+  const revenueData = revenue.map((item) => {
     const date = format(
       item.createdAt,
       period === "year"
@@ -52,59 +33,58 @@ export async function getRevenueStats(
           ? "MM/yyyy"
           : "dd/MM/yyyy",
     );
-    const previousDate =
-      period === "year"
-        ? format(subYears(item.createdAt, 1), "yyyy")
-        : format(
-            subMonths(item.createdAt, 1),
-            period === "month" ? "MM/yyyy" : "dd/MM/yyyy",
-          );
-
-    const previousRevenue = previousPeriodRevenue.find(
-      (prev) =>
-        format(
-          prev.createdAt,
-          period === "year"
-            ? "yyyy"
-            : period === "month"
-              ? "MM/yyyy"
-              : "dd/MM/yyyy",
-        ) === previousDate,
-    );
 
     return {
       date,
-      currentRevenue: Number(item._sum.totalAmount) || 0,
-      previousRevenue: Number(previousRevenue?._sum.totalAmount) || 0,
+      revenue: Number(item._sum.totalAmount) || 0,
     };
   });
 
-  return revenueData;
+  // Group by formatted date to combine values for same month/year
+  const groupedData = revenueData.reduce(
+    (acc, curr) => {
+      const existingEntry = acc.find((item) => item.date === curr.date);
+      if (existingEntry) {
+        existingEntry.revenue += curr.revenue;
+      } else {
+        acc.push(curr);
+      }
+      return acc;
+    },
+    [] as Array<{ date: string; revenue: number }>,
+  );
+
+  return groupedData;
 }
 
 export async function getOverallStats(currentMonthStart: Date) {
-  const totalRevenue = await prisma.order.aggregate({
-    where: { status: "COMPLETED" },
-    _sum: { totalAmount: true },
-  });
-
-  const monthlyRevenue = await prisma.order.aggregate({
-    where: {
-      status: "COMPLETED",
-      createdAt: { gte: currentMonthStart },
-    },
-    _sum: { totalAmount: true },
-  });
-
-  const orderStats = await prisma.order.groupBy({
-    by: ["status"],
-    _count: true,
-  });
-
-  const totalCustomers = await prisma.customer.count();
-  const newCustomersThisMonth = await prisma.customer.count({
-    where: { createdAt: { gte: currentMonthStart } },
-  });
+  const [
+    totalRevenue,
+    monthlyRevenue,
+    orderStats,
+    totalCustomers,
+    newCustomersThisMonth,
+  ] = await Promise.all([
+    prisma.order.aggregate({
+      where: { status: "COMPLETED" },
+      _sum: { totalAmount: true },
+    }),
+    prisma.order.aggregate({
+      where: {
+        status: "COMPLETED",
+        createdAt: { gte: currentMonthStart },
+      },
+      _sum: { totalAmount: true },
+    }),
+    prisma.order.groupBy({
+      by: ["status"],
+      _count: true,
+    }),
+    prisma.customer.count(),
+    prisma.customer.count({
+      where: { createdAt: { gte: currentMonthStart } },
+    }),
+  ]);
 
   return {
     revenue: {
@@ -148,19 +128,27 @@ export async function getProductStats() {
 }
 
 export async function getLowStockMaterials() {
-  return prisma.material.findMany({
+  const results = await prisma.material.findMany({
     where: {
       Inventory: {
-        some: {
-          quantity: { lt: 10 },
-        },
+        some: {}, // Ensures the material is associated with inventory rows
       },
     },
     include: {
-      Inventory: true,
+      Inventory: true, // Include related inventory data for calculation
     },
-    take: 5,
   });
+
+  // Filter results based on total inventory quantity compared to warning limits
+  const filteredResults = results.filter((material) => {
+    const totalQuantity = material.Inventory.reduce((sum, inventory) => {
+      return sum + Number(inventory.quantity);
+    }, 0);
+
+    return totalQuantity < Number(material.warningLimits);
+  });
+
+  return filteredResults;
 }
 
 export async function getRevenueByCategory() {

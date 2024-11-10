@@ -84,82 +84,151 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function AdminDashboard() {
   const data = useLoaderData<typeof loader>();
-  const container = {
+
+  // Định nghĩa animation variants cho container chính
+  const pageContainerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.3,
+        delayChildren: 0.3,
+      },
+    },
+  };
+
+  // Định nghĩa animation variants cho từng item
+  const itemVariants = {
+    hidden: { opacity: 0, y: 50 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+      },
+    },
+  };
+
+  // Thêm variants mới cho container của 3 thẻ
+  const cardsContainerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15, // Điều chỉnh độ trễ giữa các thẻ
+        delayChildren: 0.1, // Độ trễ trước khi bắt đầu animation
+      },
+    },
+  };
+
+  // Variants cho từng thẻ con
+  const cardVariants = {
+    hidden: {
+      opacity: 0,
+      y: 50,
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
+  // Thêm variants mới cho container của 2 thẻ
+  const statsCardsContainerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2, // Độ trễ giữa 2 thẻ
+        delayChildren: 0.1, // Độ trễ trước khi bắt đầu
+        duration: 0.5,
+      },
+    },
+  };
+
+  // Variants cho từng thẻ thống kê
+  const statsCardVariants = {
+    hidden: {
+      opacity: 0,
+      y: 50,
+    },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
       },
     },
   };
 
   return (
-    <div className="p-6">
-      <motion.h1
-        className="text-3xl font-bold mb-6"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+    <motion.div
+      variants={pageContainerVariants}
+      initial="hidden"
+      animate="show"
+      className="p-6"
+    >
+      <motion.h1 variants={itemVariants} className="text-3xl font-bold mb-6">
         Tổng quan
       </motion.h1>
 
-      <div className="flex flex-col md:flex-row gap-6 flex-wrap">
-        <div className="flex flex-col gap-6">
-          <motion.div variants={container} initial="hidden" animate="show">
-            <RevenueCard
-              total={data.revenue.total}
-              monthly={data.revenue.monthly}
-            />
+      <motion.div
+        variants={cardsContainerVariants}
+        className="flex flex-col md:flex-row gap-6 flex-wrap"
+      >
+        <motion.div variants={cardVariants}>
+          <motion.div
+            variants={statsCardsContainerVariants}
+            className="flex flex-col gap-6"
+          >
+            <motion.div variants={statsCardVariants}>
+              <RevenueCard
+                total={data.revenue.total}
+                monthly={data.revenue.monthly}
+              />
+            </motion.div>
+            <motion.div variants={statsCardVariants}>
+              <CustomersCard
+                total={data.customers.total}
+                newThisMonth={data.customers.newThisMonth}
+              />
+            </motion.div>
           </motion.div>
+        </motion.div>
 
-          <motion.div variants={container} initial="hidden" animate="show">
-            schem
-            <CustomersCard
-              total={data.customers.total}
-              newThisMonth={data.customers.newThisMonth}
-            />
-          </motion.div>
-        </div>
-
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="flex-1 min-w-[300px]"
-        >
+        <motion.div variants={cardVariants} className="flex-1 min-w-[300px]">
           <OrdersCard orders={data.orders} />
         </motion.div>
 
-        <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={cardVariants}>
           <InventoryAlertsCard materials={data.lowStockMaterials as any} />
         </motion.div>
-      </div>
+      </motion.div>
 
-      <Masonry
-        className="mt-6"
-        breakpointCols={{
-          default: 2,
-          1024: 2,
-          768: 1,
-          640: 1,
-        }}
-      >
-        <motion.div variants={container} initial="hidden" animate="show">
-          <TopProductsChart products={data.topProducts as any} />
-        </motion.div>
+      <motion.div variants={itemVariants}>
+        <Masonry
+          className="mt-6"
+          breakpointCols={{
+            default: 2,
+            1024: 2,
+            768: 1,
+            640: 1,
+          }}
+        >
+          <motion.div variants={itemVariants}>
+            <TopProductsChart products={data.topProducts as any} />
+          </motion.div>
 
-        <motion.div variants={container} initial="hidden" animate="show">
-          <RevenueByProductChart data={data.revenueByCategory} />
-        </motion.div>
-      </Masonry>
+          <motion.div variants={itemVariants}>
+            <RevenueByProductChart data={data.revenueByCategory} />
+          </motion.div>
+        </Masonry>
+      </motion.div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="mt-6"
-      >
+      <motion.div variants={itemVariants} className="mt-6">
         <RevenueComparisonChart
           data={data.revenueComparison.data}
           startDate={new Date(data.revenueComparison.startDate)}
@@ -168,41 +237,33 @@ export default function AdminDashboard() {
         />
       </motion.div>
 
-      <Masonry
-        className="mt-6"
-        breakpointCols={{
-          default: 2,
-          1024: 2,
-          768: 1,
-          640: 1,
-        }}
-      >
-        <motion.div variants={container} initial="hidden" animate="show">
-          <CouponStatsCard {...data.couponStats} />
-        </motion.div>
+      <motion.div variants={itemVariants}>
+        <Masonry
+          className="mt-6"
+          breakpointCols={{
+            default: 2,
+            1024: 2,
+            768: 1,
+            640: 1,
+          }}
+        >
+          <motion.div variants={itemVariants}>
+            <CouponStatsCard {...data.couponStats} />
+          </motion.div>
 
-        <motion.div variants={container} initial="hidden" animate="show">
-          <InventoryStatsCard {...data.inventoryStats} />
-        </motion.div>
-      </Masonry>
+          <motion.div variants={itemVariants}>
+            <InventoryStatsCard {...data.inventoryStats} />
+          </motion.div>
+        </Masonry>
+      </motion.div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="mt-6"
-      >
+      <motion.div variants={itemVariants} className="mt-6">
         <RatingStatsCard stats={data.ratingStats as any} />
       </motion.div>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="mt-6"
-      >
+      <motion.div variants={itemVariants} className="mt-6">
         <DeliveryStatsCard stats={data.deliveryStats as any} />
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

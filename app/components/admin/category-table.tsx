@@ -15,6 +15,8 @@ import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
 import { getSmallImageUrl } from "~/lib/utils";
 import { Pagination } from "../shared/pagination";
+import { useStaffPermissions } from "~/hooks/use-staff-permissions";
+import { PermissionsEnum } from "~/lib/type";
 
 export function CategoryTable({ categories }: { categories: Category[] }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,13 +35,24 @@ export function CategoryTable({ categories }: { categories: Category[] }) {
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
-
+  const permissions = useStaffPermissions();
+  const hasDeletePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.DeleteCategories,
+  );
+  const hasUpdatePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.UpdateCategories,
+  );
+  const hasCreatePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.CreateCategories,
+  );
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Button asChild>
-          <Link to="/admin/categories/add">Thêm danh mục</Link>
-        </Button>
+        {hasCreatePermission && (
+          <Button asChild>
+            <Link to="/admin/categories/add">Thêm danh mục</Link>
+          </Button>
+        )}
         <Input
           type="text"
           placeholder="Tìm danh mục..."
@@ -72,19 +85,23 @@ export function CategoryTable({ categories }: { categories: Category[] }) {
               <TableCell>{category.slug}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <fetcherDelete.Form
-                    action={`/admin/categories/${category.id}`}
-                    method="DELETE"
-                  >
-                    <Button variant={"ghost-destructive"}>
-                      <TrashIcon className="w-4 h-4" />
+                  {hasDeletePermission && (
+                    <fetcherDelete.Form
+                      action={`/admin/categories/${category.id}`}
+                      method="DELETE"
+                    >
+                      <Button variant={"ghost-destructive"}>
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </fetcherDelete.Form>
+                  )}
+                  {hasUpdatePermission && (
+                    <Button asChild>
+                      <Link to={`/admin/categories/${category.id}`}>
+                        <EditIcon className="w-4 h-4" />
+                      </Link>
                     </Button>
-                  </fetcherDelete.Form>
-                  <Button asChild>
-                    <Link to={`/admin/categories/${category.id}`}>
-                      <EditIcon className="w-4 h-4" />
-                    </Link>
-                  </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

@@ -34,7 +34,7 @@ export const action = safeAction([
       const exist = await getRoleByName(data.name);
       if (exist)
         return json(
-          { error: "Role with that name already exist.", success: false },
+          { error: "Vai trò đã tồn tại.", success: false },
           { status: 400 },
         );
 

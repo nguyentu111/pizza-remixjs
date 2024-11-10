@@ -71,8 +71,8 @@ export default function OrderDetailsPage() {
   const { order } = useLoaderData<typeof loader>();
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white ">
+    <>
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold">Chi tiết đơn hàng #{order.id}</h1>
           <nav className="text-sm text-gray-600">
@@ -90,6 +90,6 @@ export default function OrderDetailsPage() {
       <div className="py-10">
         <OrderDetails order={order} />
       </div>
-    </div>
+    </>
   );
 }

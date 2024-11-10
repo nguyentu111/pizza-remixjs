@@ -1,16 +1,19 @@
 import { Permission, Role, RolePermission } from "@prisma/client";
-import { groupBy } from "lodash";
 import { useFetcher } from "@remix-run/react";
+import { groupBy } from "lodash";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "~/hooks/use-toast";
-import { useRef, useState } from "react";
-import { ErrorMessage } from "../shared/form/error-message";
 import { InputField } from "../shared/form/form-fields/input-field";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
-import { JsonObject } from "@prisma/client/runtime/library";
+import { ParsedActionResult } from "~/lib/type";
+import { roleSchema } from "~/lib/schema";
+import { useForm } from "~/hooks/use-form";
+import { FormField } from "../shared/form/form-field";
+import { ErrorMessage } from "../shared/form/error-message";
 
 export const AddOrUpdateRoleForm = ({
   permissions,
@@ -20,8 +23,13 @@ export const AddOrUpdateRoleForm = ({
   permissions: Permission[];
 }) => {
   const { toast } = useToast();
-  const fetcher = useFetcher();
-  const formRef = useRef<HTMLFormElement>(null);
+  const { fetcher, formRef, control } = useForm<typeof roleSchema>({
+    defaultValues: {
+      name: role?.name,
+      description: role?.description || "",
+      "permissions[]": role?.permissions.map((r) => r.permissionId) || [],
+    },
+  });
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>(
     role?.permissions.map((r) => r.permissionId) || [],
   );
@@ -72,39 +80,38 @@ export const AddOrUpdateRoleForm = ({
       encType: "application/json",
     });
   };
-  console.log(fetcher.data);
-  // if (fetcher.data?.) {
-  //   toast({
-  //     title: role?.id ? "Sửa vai trò thành công" : "Thêm vai trò thành công",
-  //     description: "",
-  //   });
-  // }
-
+  useEffect(() => {
+    const data = fetcher.data as ParsedActionResult<typeof roleSchema>;
+    if (data?.error) {
+      toast({
+        title: "Có lỗi xảy ra",
+        description: data.error,
+      });
+    }
+  }, [fetcher.data]);
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
         <CardTitle>{role?.id ? "Sửa vai trò" : "Thêm vai trò"}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+        <fetcher.Form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
           <div className="space-y-4">
-            <div>
+            <FormField control={control} name="name">
               <Label>Tên vai trò</Label>
-              <InputField
-                name="name"
-                defaultValue={role?.name}
-                className="w-full"
-              />
-            </div>
+              <InputField className="w-full" />
+              <ErrorMessage />
+            </FormField>
 
-            <div>
+            <FormField control={control} name="description">
               <Label>Mô tả</Label>
-              <InputField
-                name="description"
-                defaultValue={role?.description || ""}
-                className="w-full"
-              />
-            </div>
+              <InputField className="w-full" />
+              <ErrorMessage />
+            </FormField>
           </div>
 
           <div className="space-y-4">
@@ -163,7 +170,7 @@ export const AddOrUpdateRoleForm = ({
                   : "Thêm vai trò"}
             </Button>
           </div>
-        </form>
+        </fetcher.Form>
       </CardContent>
     </Card>
   );

@@ -126,10 +126,3 @@ export const action = safeAction([
     },
   },
 ]);
-export default function ImportIdLayout() {
-  return (
-    <div className="p-4">
-      <Outlet />
-    </div>
-  );
-}

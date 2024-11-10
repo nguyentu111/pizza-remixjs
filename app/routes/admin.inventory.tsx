@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { ShouldRevalidateFunctionArgs, useLoaderData } from "@remix-run/react";
 import { prisma } from "~/lib/db.server";
 import { requireStaffId } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
@@ -8,6 +8,7 @@ import { InventoryTable } from "../components/admin/inventory-table";
 import { safeAction } from "~/lib/utils";
 import { z } from "zod";
 import { Material } from "@prisma/client";
+import { deleteInventorySchema } from "~/lib/schema";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await requireStaffId(request);
@@ -28,16 +29,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   return json({ inventory });
 };
+export function shouldRevalidate({
+  defaultShouldRevalidate,
+  actionResult,
+}: ShouldRevalidateFunctionArgs) {
+  if (actionResult?.success) {
+    return true;
+  }
 
+  return false;
+}
 export const action = safeAction([
   {
     method: "DELETE",
-    schema: z.object({
-      materialId: z.string(),
-      expiredDate: z.string(),
-    }),
+    schema: deleteInventorySchema,
     action: async ({ request }, data) => {
-      console.log(data);
       const user = await requireStaffId(request);
       await requirePermissions(prisma, user, [PermissionsEnum.ManageInventory]);
 

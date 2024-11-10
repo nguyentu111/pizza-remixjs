@@ -31,6 +31,7 @@ export default function AccountPage() {
             whileTap={{ scale: 0.95 }}
           >
             <NavLink
+              end={item.to === "/account"}
               to={item.to}
               className={({ isActive }) =>
                 `text-blue-500 hover:text-blue-800 transition-colors ${

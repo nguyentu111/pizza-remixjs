@@ -27,14 +27,14 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="h-screen overflow-hidden">
+      <body className="">
         <ModalProvider>
           <Outlet />
         </ModalProvider>
         <Toaster />
-        <ScrollRestoration />
         <Scripts />
         <LiveReload />
+        <ScrollRestoration />
       </body>
     </html>
   );

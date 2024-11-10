@@ -15,6 +15,8 @@ import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
 import { getSmallImageUrl } from "~/lib/utils";
 import { Pagination } from "../shared/pagination";
+import { PermissionsEnum } from "~/lib/type";
+import { useStaffPermissions } from "~/hooks/use-staff-permissions";
 
 export function ProductTable({ products }: { products: Product[] }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,13 +35,24 @@ export function ProductTable({ products }: { products: Product[] }) {
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
-
+  const permissions = useStaffPermissions();
+  const hasDeletePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.DeleteProducts,
+  );
+  const hasUpdatePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.UpdateProducts,
+  );
+  const hasCreatePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.CreateProducts,
+  );
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Button asChild>
-          <Link to="/admin/products/add">Thêm sản phẩm</Link>
-        </Button>
+        {hasCreatePermission && (
+          <Button asChild>
+            <Link to="/admin/products/add">Thêm sản phẩm</Link>
+          </Button>
+        )}
         <Input
           type="text"
           placeholder="Tìm sản phẩm..."
@@ -76,19 +89,23 @@ export function ProductTable({ products }: { products: Product[] }) {
               <TableCell>{product.slug}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <fetcherDelete.Form
-                    action={`/admin/products/${product.id}`}
-                    method="DELETE"
-                  >
-                    <Button variant={"ghost-destructive"}>
-                      <TrashIcon className="w-4 h-4" />
+                  {hasDeletePermission && (
+                    <fetcherDelete.Form
+                      action={`/admin/products/${product.id}`}
+                      method="DELETE"
+                    >
+                      <Button variant={"ghost-destructive"}>
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </fetcherDelete.Form>
+                  )}
+                  {hasUpdatePermission && (
+                    <Button asChild>
+                      <Link to={`/admin/products/${product.id}`}>
+                        <EditIcon className="w-4 h-4" />
+                      </Link>
                     </Button>
-                  </fetcherDelete.Form>
-                  <Button asChild>
-                    <Link to={`/admin/products/${product.id}`}>
-                      <EditIcon className="w-4 h-4" />
-                    </Link>
-                  </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

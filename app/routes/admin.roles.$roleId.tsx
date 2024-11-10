@@ -4,6 +4,7 @@ import { useLoaderData } from "@remix-run/react";
 import { z } from "zod";
 import { AddOrUpdateRoleForm } from "~/components/admin/add-or-update-role-form";
 import { ErrorBoundary } from "~/components/shared/error-boudary";
+import { DefaultRoles } from "~/lib/config";
 import { prisma } from "~/lib/db.server";
 import { roleSchema } from "~/lib/schema";
 import { PermissionsEnum } from "~/lib/type";
@@ -33,6 +34,14 @@ export const action = safeAction([
       await requirePermissions(prisma, userId, [PermissionsEnum.DeleteRoles]);
       const id = params.roleId as string;
       if (!id) return json({ success: false, error: "missing id." }, 400);
+      const role = await getRoleById(prisma, id);
+      if (!role)
+        return json({ success: false, error: "Không tìm thấy vai trò" }, 404);
+      if (DefaultRoles.includes(role.name))
+        return json(
+          { success: false, error: "Không thể xóa vai trò mặc định" },
+          400,
+        );
       await deleteRole(id);
       return json({ success: true });
     },
@@ -60,7 +69,14 @@ export const action = safeAction([
 
         const validatedData = data as z.infer<typeof roleSchema>;
         const newPermissionIds = validatedData["permissions[]"] || [];
-
+        if (
+          DefaultRoles.includes(role.name) &&
+          process.env.NODE_ENV === "production"
+        )
+          return json(
+            { success: false, error: "Không thể sửa vai trò mặc định" },
+            400,
+          );
         // Update role name and description
         await db.role.update({
           where: { id },
@@ -86,7 +102,6 @@ export const action = safeAction([
         const permissionsToRemove = existingPermissionIds.filter(
           (id) => !newPermissionIds.includes(id),
         );
-        console.log({ permissionsToAdd, permissionsToRemove });
         // Remove permissions
         if (permissionsToRemove.length > 0) {
           await db.rolePermission.deleteMany({
@@ -115,7 +130,7 @@ export default function UpdateRolePage() {
   const { permissions, role } = useLoaderData<typeof loader>();
   return (
     <>
-      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white ">
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold">Sửa vai trò</h1>
           <nav className="text-sm text-gray-600">

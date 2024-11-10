@@ -115,7 +115,7 @@ export const insertMaterialSchema = z.object({
 
 // New schema for inserting a Size
 export const insertSizeSchema = z.object({
-  name: z.string().min(1, "Tên kích thước là bắt buộc"),
+  name: z.string().min(1, "Tên kích thước l�� bắt buộc"),
   image: z.string().optional(),
 });
 
@@ -177,9 +177,27 @@ export const insertCouponSchema = z.object({
   image: z.string().optional(), // New field
   bannerImage: z.string().optional(),
 });
-export const updateCustomerSchema = z.object({
-  fullname: z.string().min(1, "Tên không được để trống"),
-});
+export const updateCustomerSchema = z
+  .object({
+    fullname: z.string().min(1, "Họ tên không được để trống"),
+    phoneNumbers: z.string().min(10, "Số điện thoại không hợp lệ"),
+    status: z.enum(["on", "banned"]),
+    avatarUrl: z.string().optional(),
+    password: z.string().optional(),
+    passwordConfirm: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.password || data.passwordConfirm) {
+        return data.password === data.passwordConfirm;
+      }
+      return true;
+    },
+    {
+      message: "Mật khẩu xác nhận không khớp",
+      path: ["passwordConfirm"],
+    },
+  );
 export const insertImportSchema = z
   .object({
     providerId: z.string().min(1, "Provider is required"),
@@ -260,3 +278,7 @@ export const changePasswordSchema = z
       });
     }
   });
+export const deleteInventorySchema = z.object({
+  materialId: z.string(),
+  expiredDate: z.string(),
+});

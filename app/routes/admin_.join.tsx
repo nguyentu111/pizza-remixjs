@@ -225,7 +225,7 @@ export default function Join() {
                   search: searchParams.toString(),
                 }}
               >
-                Log in
+                Đăng nhập
               </Link>
             </div>
           </div>

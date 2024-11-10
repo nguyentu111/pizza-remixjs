@@ -13,8 +13,9 @@ import {
 import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
 import { getSmallImageUrl } from "~/lib/utils";
-import { ToppingWithMaterial } from "~/lib/type";
+import { PermissionsEnum, ToppingWithMaterial } from "~/lib/type";
 import { Pagination } from "../shared/pagination";
+import { useStaffPermissions } from "~/hooks/use-staff-permissions";
 
 export function ToppingTable({
   toppings,
@@ -37,13 +38,24 @@ export function ToppingTable({
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
-
+  const permissions = useStaffPermissions();
+  const hasCreatePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.CreateToppings,
+  );
+  const hasUpdatePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.UpdateToppings,
+  );
+  const hasDeletePermission = permissions?.some(
+    (p) => p.name === PermissionsEnum.DeleteToppings,
+  );
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Button asChild>
-          <Link to="/admin/toppings/add">Thêm topping</Link>
-        </Button>
+        {hasCreatePermission && (
+          <Button asChild>
+            <Link to="/admin/toppings/add">Thêm topping</Link>
+          </Button>
+        )}
         <Input
           type="text"
           placeholder="Tìm topping..."
@@ -78,19 +90,23 @@ export function ToppingTable({
               <TableCell>{topping.Material?.name}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  <fetcherDelete.Form
-                    action={`/admin/toppings/${topping.id}`}
-                    method="DELETE"
-                  >
-                    <Button variant={"ghost-destructive"}>
-                      <TrashIcon className="w-4 h-4" />
+                  {hasDeletePermission && (
+                    <fetcherDelete.Form
+                      action={`/admin/toppings/${topping.id}`}
+                      method="DELETE"
+                    >
+                      <Button variant={"ghost-destructive"}>
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </fetcherDelete.Form>
+                  )}
+                  {hasUpdatePermission && (
+                    <Button asChild>
+                      <Link to={`/admin/toppings/${topping.id}`}>
+                        <EditIcon className="w-4 h-4" />
+                      </Link>
                     </Button>
-                  </fetcherDelete.Form>
-                  <Button asChild>
-                    <Link to={`/admin/toppings/${topping.id}`}>
-                      <EditIcon className="w-4 h-4" />
-                    </Link>
-                  </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

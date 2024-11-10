@@ -1,11 +1,5 @@
 import { Material } from "@prisma/client";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../ui/accordion";
-import {
   Table,
   TableBody,
   TableCell,
@@ -15,7 +9,13 @@ import {
 } from "../ui/table";
 import { Button } from "../ui/button";
 import { formatDate } from "~/lib/utils";
-import { AlertCircle, Search, Trash2 } from "lucide-react";
+import {
+  AlertCircle,
+  ChevronDown,
+  ChevronRight,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { Badge } from "../ui/badge";
 import { useFetcher } from "@remix-run/react";
 import {
@@ -30,8 +30,21 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Input } from "../ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pagination } from "../shared/pagination";
+import {
+  ColumnDef,
+  ExpandedState,
+  flexRender,
+  getCoreRowModel,
+  getExpandedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { ParsedActionResult } from "~/lib/type";
+import { deleteInventorySchema } from "~/lib/schema";
+import { useToast } from "~/hooks/use-toast";
 
 type InventoryMaterial = Material & {
   Inventory: Array<{
@@ -47,22 +60,10 @@ export function InventoryTable({
 }: {
   inventory: InventoryMaterial[];
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const fetcher = useFetcher();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-
-  const handleDestroy = (materialId: string, expiredDate: string) => {
-    fetcher.submit(
-      { materialId, expiredDate },
-      {
-        method: "DELETE",
-        action: "/admin/inventory",
-        encType: "application/json",
-      },
-    );
-  };
-
+  const [expanded, setExpanded] = useState<ExpandedState>({});
+  const { toast } = useToast();
+  const fetcher =
+    useFetcher<ParsedActionResult<typeof deleteInventorySchema>>();
   const isExpired = (date: Date) => {
     return new Date(date) < new Date();
   };
@@ -74,17 +75,128 @@ export function InventoryTable({
     );
   };
 
-  const filteredInventory = inventory.filter((material) =>
-    material.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const handleDestroy = async (materialId: string, expiredDate: string) => {
+    fetcher.submit(
+      { materialId, expiredDate },
+      {
+        method: "DELETE",
+        action: "/admin/inventory",
+        encType: "application/json",
+      },
+    );
+  };
+  useEffect(() => {
+    if (!fetcher.data) return;
+    if (fetcher.data?.success) {
+      toast({
+        title: "Tiêu hủy nguyên liệu thành công",
+      });
+    } else {
+      toast({
+        title: "Uh oh. Có lỗi xảy ra.",
+        description: fetcher.data?.error,
+        variant: "destructive",
+      });
+    }
+  }, [fetcher.data]);
+  const columns: ColumnDef<InventoryMaterial>[] = [
+    {
+      id: "expand",
+      header: "",
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-0 hover:bg-transparent w-10"
+          onClick={() => row.toggleExpanded()}
+        >
+          {row.getIsExpanded() ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </Button>
+      ),
+    },
+    {
+      id: "image",
+      header: "",
+      cell: ({ row }) => (
+        <img
+          src={row.original.image || ""}
+          alt={row.original.name}
+          className="w-10 h-10 rounded-md"
+        />
+      ),
+    },
+    {
+      accessorKey: "name",
+      header: "Tên nguyên liệu",
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.name}</span>
+      ),
+    },
+    {
+      id: "totalQuantity",
+      header: "Tổng số lượng",
+      cell: ({ row }) => {
+        const totalQuantity = getTotalQuantity(row.original);
+        return (
+          <div className="flex items-center gap-1">
+            <span>{totalQuantity}</span>
+            <span className="text-muted-foreground text-sm">
+              {row.original.unit}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "status",
+      header: "Trạng thái",
+      cell: ({ row }) => {
+        const hasExpiredItems = row.original.Inventory.some((inv) =>
+          isExpired(inv.expiredDate),
+        );
+        const expiredItemsBadge = hasExpiredItems ? (
+          <Badge variant="destructive" className="flex items-center gap-1">
+            <AlertCircle className="w-4 h-4" />
+            Có hàng hết hạn
+          </Badge>
+        ) : null;
+        const lowMaterialBadge =
+          Number(row.original.warningLimits) >=
+          row.original.Inventory.reduce(
+            (sum, inv) => sum + Number(inv.quantity),
+            0,
+          ) ? (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <AlertCircle className="w-4 h-4" />
+              Nguyên liệu ít hơn mức cảnh báo, hãy nhập thêm
+            </Badge>
+          ) : null;
+        return (
+          <div className="flex flex-col gap-2">
+            {expiredItemsBadge}
+            {lowMaterialBadge}
+          </div>
+        );
+      },
+    },
+  ];
 
-  const totalItems = filteredInventory.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
-
-  const paginatedInventory = filteredInventory.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  const table = useReactTable({
+    data: inventory,
+    columns,
+    state: {
+      expanded,
+    },
+    onExpandedChange: setExpanded,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+  });
 
   return (
     <div className="space-y-4">
@@ -92,45 +204,50 @@ export function InventoryTable({
         <div className="relative">
           <Input
             placeholder="Tìm kiếm nguyên liệu..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) =>
+              table.getColumn("name")?.setFilterValue(e.target.value)
+            }
             className="pl-10 max-w-[300px]"
           />
           <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[50%]">Tên nguyên liệu</TableHead>
-            <TableHead className="w-[25%]">Tổng số lượng</TableHead>
-            <TableHead className="w-[25%]">Trạng thái</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedInventory.map((material) => {
-            const hasExpiredItems = material.Inventory.some((inv) =>
-              isExpired(inv.expiredDate),
-            );
-            const totalQuantity = getTotalQuantity(material);
-
-            return (
-              <TableRow key={material.id} className="group">
-                <TableCell>
-                  <Accordion type="single" collapsible>
-                    <AccordionItem value={material.id} className="border-none">
-                      <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={material.image || ""}
-                            alt={material.name}
-                            className="w-10 h-10 rounded-md"
-                          />
-                          <span className="font-medium">{material.name}</span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <>
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+                {row.getIsExpanded() && (
+                  <TableRow>
+                    <TableCell colSpan={columns.length}>
+                      <div className="p-4">
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -141,15 +258,14 @@ export function InventoryTable({
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {material.Inventory.map((inv) => {
+                            {row.original.Inventory.map((inv) => {
                               const expired = isExpired(inv.expiredDate);
-
                               return (
                                 <TableRow key={inv.expiredDate.toString()}>
                                   <TableCell className="flex items-center gap-1">
                                     <span>{Number(inv.quantity)}</span>
                                     <span className="text-muted-foreground text-sm">
-                                      {material.unit}
+                                      {row.original.unit}
                                     </span>
                                   </TableCell>
                                   <TableCell>
@@ -185,8 +301,8 @@ export function InventoryTable({
                                             <AlertDialogDescription>
                                               Bạn có chắc chắn muốn tiêu hủy{" "}
                                               {Number(inv.quantity)}{" "}
-                                              {material.unit} {material.name} đã
-                                              hết hạn?
+                                              {row.original.unit}{" "}
+                                              {row.original.name} đã hết hạn?
                                             </AlertDialogDescription>
                                           </AlertDialogHeader>
                                           <AlertDialogFooter>
@@ -196,7 +312,7 @@ export function InventoryTable({
                                             <AlertDialogAction
                                               onClick={() =>
                                                 handleDestroy(
-                                                  material.id,
+                                                  row.original.id,
                                                   inv.expiredDate as unknown as string,
                                                 )
                                               }
@@ -213,44 +329,24 @@ export function InventoryTable({
                             })}
                           </TableBody>
                         </Table>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </TableCell>
-                <TableCell className="flex items-center gap-1">
-                  <span>{totalQuantity}</span>
-                  <span className="text-muted-foreground text-sm">
-                    {material.unit}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  {hasExpiredItems && (
-                    <Badge
-                      variant="destructive"
-                      className="flex items-center gap-1"
-                    >
-                      <AlertCircle className="w-4 h-4" />
-                      Có hàng hết hạn
-                    </Badge>
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
       <div className="flex justify-end mt-4">
         <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          pageSize={pageSize}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setCurrentPage(1);
-          }}
-          totalItems={totalItems}
+          currentPage={table.getState().pagination.pageIndex + 1}
+          totalPages={table.getPageCount()}
+          onPageChange={(page) => table.setPageIndex(page - 1)}
+          pageSize={table.getState().pagination.pageSize}
+          onPageSizeChange={table.setPageSize}
+          totalItems={inventory.length}
         />
       </div>
     </div>

@@ -26,7 +26,7 @@ export function OrderTable({
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const roles = useStaffRoles();
+  const { roles } = useStaffRoles();
   const filteredOrders = orders.filter(
     (order) =>
       order.customer.fullname
@@ -121,7 +121,7 @@ export function OrderTable({
               <TableCell>{formatDate(order.createdAt)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
-                  {roles?.some((role) => role.name === "Admin") && (
+                  {roles?.some((role) => role.name === "Manager") && (
                     <Button asChild variant="ghost" size="icon">
                       <Link to={`/admin/orders/${order.id}`}>
                         <EyeIcon className="w-4 h-4" />

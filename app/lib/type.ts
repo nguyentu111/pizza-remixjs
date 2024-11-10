@@ -16,6 +16,8 @@ import {
 import { TypedResponse } from "@remix-run/node";
 import { z, ZodSchema } from "zod";
 export enum PermissionsEnum {
+  ViewDashboard = "view-dashboard",
+
   ViewCustomers = "view-customers",
   CreateCustomers = "create-customers",
   UpdateCustomers = "update-customers",
@@ -32,6 +34,10 @@ export enum PermissionsEnum {
   UpdateRoles = "update-roles",
   UpdateUserRoles = "update-user-roles",
   DeleteRoles = "delete-roles",
+
+  ViewPermissions = "view-permissions",
+  CreatePermissions = "create-permissions",
+  DeletePermissions = "delete-permissions",
 
   ViewProducts = "view-products",
   CreateProducts = "create-products",

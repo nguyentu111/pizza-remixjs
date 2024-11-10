@@ -1,18 +1,19 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
-import { useEffect, useRef } from "react";
 import { z } from "zod";
 import { safeAction } from "~/lib/utils";
 
+import { useForm } from "~/hooks/use-form";
+import { DEFAULT_REDIRECT } from "~/lib/config.server";
+import { ActionZodResponse } from "~/lib/type";
 import { verifyCustomerLogin } from "~/models/customer.server";
 import { createCustomerSession, getCustomerId } from "~/session.server";
-import {
-  ActionResultType,
-  ActionZodResponse,
-  RawActionResult,
-} from "~/lib/type";
-import { DEFAULT_REDIRECT } from "~/lib/config.server";
+import { useToast } from "~/hooks/use-toast";
+import { InputField } from "~/components/shared/form/form-fields/input-field";
+import { FormField } from "~/components/shared/form/form-field";
+import { Label } from "~/components/ui/label";
+import { ErrorMessage } from "~/components/shared/form/error-message";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const customerId = await getCustomerId(request);
@@ -59,90 +60,49 @@ export const meta: MetaFunction = () => [{ title: "Đăng nhập" }];
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || DEFAULT_REDIRECT;
-  const actionData =
-    useActionData<
-      RawActionResult<z.inferFlattenedErrors<typeof LoginSchema>["fieldErrors"]>
-    >();
-  const phoneNumberRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (actionData?.fieldErrors?.phoneNumber) {
-      phoneNumberRef.current?.focus();
-    } else if (actionData?.fieldErrors?.password) {
-      passwordRef.current?.focus();
-    }
-  }, [actionData]);
+  const { toast } = useToast();
+  const { fetcher, control } = useForm<typeof LoginSchema>({
+    onError: (error) => {
+      toast({
+        title: "Uh oh! Có lỗi xảy ra!",
+        description: error,
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Đăng nhập thành công.",
+      });
+    },
+  });
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
+    <div className="flex flex-col justify-center min-h-[80vh] items-center">
       <div className="mx-auto w-full max-w-md px-8">
-        <Form method="post" className="space-y-6">
+        <fetcher.Form method="post" className="space-y-6">
           <div>
-            <label
-              htmlFor="phoneNumber"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Số điện thoại
-            </label>
             <div className="mt-1">
-              <input
-                ref={phoneNumberRef}
-                id="phoneNumber"
-                required
-                autoFocus={true}
-                name="phoneNumber"
-                type="tel"
-                autoComplete="tel"
-                aria-invalid={
-                  actionData?.fieldErrors?.phoneNumber ? true : undefined
-                }
-                aria-describedby="phoneNumber-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.fieldErrors?.phoneNumber && (
-                <div className="pt-1 text-red-700" id="phoneNumber-error">
-                  {actionData.fieldErrors.phoneNumber}
-                </div>
-              )}
+              <FormField control={control} name="phoneNumber">
+                <Label>Số điện thoại</Label>
+                <InputField />
+                <ErrorMessage />
+              </FormField>
             </div>
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Mật khẩu
-            </label>
-            <div className="mt-1">
-              <input
-                id="password"
-                ref={passwordRef}
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={
-                  actionData?.fieldErrors?.password ? true : undefined
-                }
-                aria-describedby="password-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.fieldErrors?.password && (
-                <div className="pt-1 text-red-700" id="password-error">
-                  {actionData.fieldErrors.password}
-                </div>
-              )}
-            </div>
+            <FormField control={control} name="password">
+              <Label>Mật khẩu</Label>
+              <InputField type="password" />
+              <ErrorMessage />
+            </FormField>
           </div>
 
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          {actionData?.error && (
-            <p className="text-destructive">{actionData.error}</p>
-          )}
+
           <button
             type="submit"
-            className="w-full rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:bg-blue-400"
+            className="w-full rounded bg-blue-900 px-4 py-2 text-white hover:bg-blue-800 focus:bg-blue-700"
           >
             Đăng nhập
           </button>
@@ -174,7 +134,7 @@ export default function LoginPage() {
               </Link>
             </div>
           </div>
-        </Form>
+        </fetcher.Form>
       </div>
     </div>
   );

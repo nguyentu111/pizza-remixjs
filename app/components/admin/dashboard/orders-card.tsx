@@ -8,17 +8,39 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { OrderStatus } from "@prisma/client";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 interface OrdersCardProps {
   orders: Array<{
-    status: string;
+    status: OrderStatus;
     _count: number;
   }>;
 }
-
+const getOrderStatus = (status: OrderStatus) => {
+  switch (status) {
+    case OrderStatus.PENDING:
+      return "Đang chờ";
+    case OrderStatus.COOKING:
+      return "Đang nấu";
+    case OrderStatus.COOKED:
+      return "Đã nấu";
+    case OrderStatus.SHIPPING:
+      return "Đang giao";
+    case OrderStatus.COMPLETED:
+      return "Đã giao";
+    case OrderStatus.CANCELLED:
+      return "Đã hủy";
+    default:
+      return status;
+  }
+};
 export function OrdersCard({ orders }: OrdersCardProps) {
+  const _orders = orders.map((order) => ({
+    status: getOrderStatus(order.status),
+    _count: order._count,
+  }));
   return (
     <motion.div
       variants={{ hidden: { y: 20, opacity: 0 }, show: { y: 0, opacity: 1 } }}
@@ -30,13 +52,13 @@ export function OrdersCard({ orders }: OrdersCardProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold mb-4">
-            {orders.reduce((acc, curr) => acc + curr._count, 0)}
+            {_orders.reduce((acc, curr) => acc + curr._count, 0)}
           </div>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={orders}
+                  data={_orders}
                   dataKey="_count"
                   nameKey="status"
                   cx="50%"
@@ -66,12 +88,12 @@ export function OrdersCard({ orders }: OrdersCardProps) {
                         textAnchor={x > cx ? "start" : "end"}
                         dominantBaseline="central"
                       >
-                        {`${orders[index].status} (${value})`}
+                        {`${_orders[index].status} (${value})`}
                       </text>
                     );
                   }}
                 >
-                  {orders.map((_, index) => (
+                  {_orders.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}

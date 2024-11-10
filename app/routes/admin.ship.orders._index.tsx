@@ -20,8 +20,8 @@ export default function ShipperOrdersPage() {
   const { orders } = useLoaderData<typeof loader>();
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4 sticky top-4 bg-white">
+    <>
+      <div className="flex justify-between items-center mb-4">
         <div>
           <h1 className="text-2xl font-bold">Đơn hàng cần giao</h1>
           <nav className="text-sm text-gray-600">
@@ -35,6 +35,6 @@ export default function ShipperOrdersPage() {
       <ShipmentOrderTable
         orders={orders as unknown as OrderWithDetailsCustomerCoupon[]}
       />
-    </div>
+    </>
   );
 }

@@ -34,11 +34,6 @@ export const requirePermissions = async (
       name: ERROR_NAME.NOT_FOUND,
       statusCode: 404,
     });
-  if (
-    user.username === "admin" &&
-    process.env.ALLOW_ADMIN_FULL_ACCESS === "true"
-  )
-    return;
   const missingPermissons = await userMissingPermissions(
     db,
     userid,

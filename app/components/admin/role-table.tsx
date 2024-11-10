@@ -14,6 +14,7 @@ import {
 import { useForm } from "~/hooks/use-form";
 import { Input } from "../ui/input";
 import { Pagination } from "../shared/pagination";
+import { DefaultRoles } from "~/lib/config";
 
 export function RoleTable({ roles }: { roles: Role[] }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,7 +33,6 @@ export function RoleTable({ roles }: { roles: Role[] }) {
     (currentPage - 1) * pageSize,
     currentPage * pageSize,
   );
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -67,15 +67,28 @@ export function RoleTable({ roles }: { roles: Role[] }) {
                     action={`/admin/roles/${role.id}`}
                     method="DELETE"
                   >
-                    <Button variant={"ghost-destructive"}>
+                    <Button
+                      variant={"ghost-destructive"}
+                      disabled={DefaultRoles.includes(role.name)}
+                    >
                       <TrashIcon className="w-4 h-4" />
                     </Button>
                   </fetcherDelete.Form>
-                  <Button asChild>
-                    <Link to={`/admin/roles/${role.id}`}>
-                      <EditIcon className="w-4 h-4" />
-                    </Link>
-                  </Button>
+                  {process.env.NODE_ENV === "development" ? (
+                    <Button asChild>
+                      <Link to={`/admin/roles/${role.id}`}>
+                        <EditIcon className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                  ) : (
+                    !DefaultRoles.includes(role.name) && (
+                      <Button asChild>
+                        <Link to={`/admin/roles/${role.id}`}>
+                          <EditIcon className="w-4 h-4" />
+                        </Link>
+                      </Button>
+                    )
+                  )}
                 </div>
               </TableCell>
             </TableRow>
