@@ -6,6 +6,8 @@ import { requirePermissions } from "~/use-cases/permission.server";
 import { PermissionsEnum } from "~/lib/type";
 import { OrderTable } from "~/components/admin/order-table";
 import { getOrders } from "~/models/order.server";
+import { ErrorBoundary } from "~/components/shared/error-boudary";
+export { ErrorBoundary };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const staffId = await requireStaffId(request);

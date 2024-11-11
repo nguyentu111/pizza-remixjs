@@ -14,7 +14,8 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
-import { useStaffPermissions } from "~/hooks/use-staff-permissions";
+import { useStaffRoles } from "~/hooks/use-staff-roles";
+import { useStaff } from "~/hooks/use-staff";
 
 export function DeliveryRouteDetail({
   route,
@@ -22,10 +23,11 @@ export function DeliveryRouteDetail({
   route: NonNullable<Awaited<ReturnType<typeof getDeliveryInfo>>>;
 }) {
   const navigate = useNavigate();
-
+  const staff = useStaff();
   const [cancelNote, setCancelNote] = useState("");
-  const permissions = useStaffPermissions();
-  const isShipper = permissions?.some((p) => p.name === "Shipper");
+  const { isShipper } = useStaffRoles();
+  const isBelongToShipper = staff?.id === route.staffId;
+
   return (
     <div className="space-y-6">
       <Card className="p-6">
@@ -105,7 +107,7 @@ export function DeliveryRouteDetail({
               </div>
             </div>
 
-            {isShipper && (
+            {isBelongToShipper && isShipper && (
               <div className="mt-4 flex gap-2">
                 <Form method="PUT">
                   <input type="hidden" name="deliveryOrderId" value={step.id} />

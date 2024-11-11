@@ -1,25 +1,20 @@
 import { Media, Staff } from "@prisma/client";
 import { ActionFunction, json, LoaderFunction } from "@remix-run/node";
-import { Form, Outlet, ShouldRevalidateFunction } from "@remix-run/react";
-import { LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { Outlet, ShouldRevalidateFunction } from "@remix-run/react";
+import Sidebar from "~/components/admin/sidebar";
+import { prisma } from "~/lib/db.server";
+import { PermissionsEnum } from "~/lib/type";
+import { ca } from "~/lib/utils";
+import { getAllMedia } from "~/models/media.server";
+import { getUserPermission } from "~/models/permission.server";
+import { getStaffRoles } from "~/models/role.server";
+import { requireStaff } from "~/session.server";
 import {
   deleteMediaAction,
   updateMediaAction,
   uploadMedia,
 } from "~/use-cases/media.server";
-import { Button } from "~/components/ui/button";
-import { PermissionsEnum } from "~/lib/type";
-import { prisma } from "~/lib/db.server";
-import { ca, cn } from "~/lib/utils";
-import { getAllMedia } from "~/models/media.server";
-import { requireStaff } from "~/session.server";
 import { requirePermissions } from "~/use-cases/permission.server";
-import { getUserPermission } from "~/models/permission.server";
-import Sidebar from "~/components/admin/sidebar";
-import { getStaffRoles } from "~/models/role.server";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "@remix-run/react";
 
 export const action: ActionFunction = ca(async ({ request }) => {
   const user = await requireStaff(prisma, request);
@@ -62,7 +57,9 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   return (
     _action === "upload-media" ||
     _action === "delete-media" ||
-    !!formAction?.startsWith("/admin/staffs")
+    !!formAction?.startsWith("/admin/staffs") ||
+    !!formAction?.startsWith("/admin/roles") ||
+    !!formAction?.startsWith("/admin/permissions")
   );
 };
 export default function AdminLayout() {

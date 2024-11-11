@@ -72,7 +72,23 @@ export function ImportTable({ imports }: ImportTableProps) {
         return "outline";
     }
   };
-
+  const getTranlatedStatus = (status: ImportStatus) => {
+    switch (status) {
+      case "PENDING":
+        return "Chờ duyệt";
+      case "WAITING_APPROVAL":
+        return "Chờ duyệt";
+      case "APPROVED":
+        return "Đã duyệt";
+      case "COMPLETED":
+        return "Đã nhập";
+      case "REJECTED":
+      case "CANCELLED":
+        return "Đã hủy";
+      default:
+        return status;
+    }
+  };
   const canApprove = !!permissions?.find(
     (p) => p.name === PermissionsEnum.ApproveImports,
   );
@@ -85,7 +101,9 @@ export function ImportTable({ imports }: ImportTableProps) {
   const canReceive = !!permissions?.find(
     (p) => p.name === PermissionsEnum.ReceiveImports,
   );
-
+  const canCreateImport = permissions?.some(
+    (p) => p.name === PermissionsEnum.CreateImports,
+  );
   const canEditImport = (status: ImportStatus) => {
     return (status === "PENDING" || status === "WAITING_APPROVAL") && canEdit;
   };
@@ -97,9 +115,11 @@ export function ImportTable({ imports }: ImportTableProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Button asChild>
-          <Link to="/admin/imports/add">Thêm phiếu nhập</Link>
-        </Button>
+        {canCreateImport && (
+          <Button asChild>
+            <Link to="/admin/imports/add">Thêm phiếu nhập</Link>
+          </Button>
+        )}
         <Input
           type="text"
           placeholder="Tìm phiếu nhập..."
@@ -112,6 +132,7 @@ export function ImportTable({ imports }: ImportTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Mã phiếu nhập</TableHead>
             <TableHead>Nhà cung cấp</TableHead>
             <TableHead>Tổng tiền</TableHead>
             <TableHead>Trạng thái</TableHead>
@@ -124,11 +145,12 @@ export function ImportTable({ imports }: ImportTableProps) {
         <TableBody>
           {paginatedImports.map((import_) => (
             <TableRow key={import_.id}>
+              <TableCell>{import_.id.slice(0, 8)}</TableCell>
               <TableCell>{import_.provider.name}</TableCell>
               <TableCell>{formatPrice(Number(import_.totalAmount))}</TableCell>
               <TableCell>
                 <Badge variant={getStatusVariant(import_.status)}>
-                  {import_.status}
+                  {getTranlatedStatus(import_.status)}
                 </Badge>
               </TableCell>
               <TableCell>{import_.createdBy?.fullname}</TableCell>

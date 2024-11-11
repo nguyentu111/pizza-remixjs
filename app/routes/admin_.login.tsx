@@ -5,14 +5,13 @@ import { useEffect, useRef } from "react";
 import { z } from "zod";
 import { safeAction } from "~/lib/utils";
 
+import { DEFAULT_REDIRECT } from "~/lib/config.server";
+import { ActionZodResponse, RawActionResult } from "~/lib/type";
+import { safeAdminRedirect } from "~/lib/utils.server";
+import { getStaffRoles } from "~/models/role.server";
 import { verifyLogin } from "~/models/staff.server";
 import { createStaffSession, getStaffId } from "~/session.server";
-import {
-  ActionResultType,
-  ActionZodResponse,
-  RawActionResult,
-} from "~/lib/type";
-import { DEFAULT_REDIRECT } from "~/lib/config.server";
+import { prisma } from "~/lib/db.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = await getStaffId(request);
@@ -41,8 +40,9 @@ export const action = safeAction([
       }
       if (user.status === "banned")
         return json({ error: "This account has been banned.", success: false });
+      const roles = await getStaffRoles(prisma, user.id);
       return createStaffSession({
-        redirectTo,
+        redirectTo: safeAdminRedirect(roles, redirectTo),
         remember: remember === "on" ? true : false,
         request,
         staffId: user.id,

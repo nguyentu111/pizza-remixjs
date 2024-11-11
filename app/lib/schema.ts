@@ -134,16 +134,17 @@ export const insertProductSchema = z.object({
   detailDescription: z.string().optional(),
   slug: z.string().min(1, "Slug là bắt buộc"),
   categoryId: z.string().min(1, "Danh mục là bắt buộc"),
-  "borderIds[]": z.array(z.string()).optional(),
-  "toppingIds[]": z.array(z.string()).optional(),
-  sizes: z
-    .array(z.object({ sizeId: z.string(), price: stringAsPositiveNumber }))
-    .optional(),
-  recipes: z
-    .array(
-      z.object({ materialId: z.string(), quantity: stringAsPositiveNumber }),
-    )
-    .optional(),
+  borderIds: z.array(z.string()).optional(),
+  toppingIds: z.array(z.string()).optional(),
+  sizes: z.array(
+    z.object({
+      sizeId: z.string().min(1, "Vui lòng chọn kích thước"),
+      price: stringAsPositiveNumber,
+    }),
+  ),
+  recipes: z.array(
+    z.object({ materialId: z.string(), quantity: stringAsPositiveNumber }),
+  ),
   image: z.string().optional(),
   image_mobile: z.string().optional(),
 });

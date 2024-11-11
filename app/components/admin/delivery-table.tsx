@@ -81,9 +81,7 @@ export function DeliveryTable({
             const status = STATUS_BADGES[delivery.status];
             return (
               <TableRow key={delivery.id}>
-                <TableCell className="font-medium">
-                  {delivery.id.slice(0, 8)}
-                </TableCell>
+                <TableCell className="">#{delivery.id.slice(0, 8)}</TableCell>
                 <TableCell>{delivery.staff.fullname}</TableCell>
                 <TableCell>
                   <Badge variant={status.variant}>{status.label}</Badge>

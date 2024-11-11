@@ -74,6 +74,7 @@ const adminRoutes = [
     path: "/admin/categories",
     icon: ListOrdered,
     label: "Danh mục",
+    requiredPermissions: [PermissionsEnum.ViewCategories],
   },
   {
     path: "/admin/borders",
@@ -85,6 +86,7 @@ const adminRoutes = [
     path: "/admin/materials",
     icon: Package,
     label: "Nguyên liệu",
+    requiredPermissions: [PermissionsEnum.ViewMaterials],
   },
   {
     path: "/admin/sizes",
@@ -96,6 +98,7 @@ const adminRoutes = [
     path: "/admin/toppings",
     icon: Cherry,
     label: "Topping",
+    requiredPermissions: [PermissionsEnum.ViewToppings],
   },
   {
     path: "/admin/coupons",
@@ -119,6 +122,7 @@ const adminRoutes = [
     path: "/admin/orders",
     icon: ClipboardList,
     label: "Đơn hàng",
+    requiredPermissions: [PermissionsEnum.ViewOrders],
   },
   {
     path: "/admin/ship/orders",
