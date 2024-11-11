@@ -97,6 +97,7 @@ export const safeAction = (
           const formData = await args.request.formData();
 
           for (const [key, value] of formData.entries()) {
+            console.log({ key, value });
             if (key.endsWith("[]")) {
               if (!data[key]) {
                 data[key] = [];

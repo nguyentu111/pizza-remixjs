@@ -66,8 +66,8 @@ export const action = safeAction([
           image_mobile: validatedData.image_mobile ?? null,
         },
         {
-          borderIds: validatedData["borderIds[]"],
-          toppingIds: validatedData["toppingIds[]"],
+          borderIds: validatedData.borderIds,
+          toppingIds: validatedData.toppingIds,
           sizes: validatedData.sizes?.map(({ sizeId, price }) => ({
             sizeId,
             price: Number(price),

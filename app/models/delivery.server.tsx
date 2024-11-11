@@ -7,6 +7,7 @@ export async function getDeliveries() {
       staff: true,
       DeliveryOrder: { include: { order: true } },
     },
+    orderBy: { createdAt: "desc" },
   });
 }
 export async function getDeliveryInfo({ routeId }: { routeId: string }) {

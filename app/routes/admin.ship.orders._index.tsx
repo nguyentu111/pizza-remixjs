@@ -7,6 +7,7 @@ import { PermissionsEnum } from "~/lib/type";
 import { prisma } from "~/lib/db.server";
 import { OrderWithDetailsCustomerCoupon } from "~/lib/type";
 import { ShipmentOrderTable } from "~/components/shipper/shipment-order-table";
+import { ErrorBoundary } from "~/components/shared/error-boudary";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const staffId = await requireStaffId(request);
@@ -15,7 +16,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const orders = await getAvailableOrders();
   return json({ orders });
 };
-
+export { ErrorBoundary };
 export default function ShipperOrdersPage() {
   const { orders } = useLoaderData<typeof loader>();
 
