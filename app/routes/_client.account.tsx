@@ -13,7 +13,7 @@ export default function AccountPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="container mx-auto px-4 py-8"
+      className="container mx-auto px-4 pt-16 min-h-[80vh]"
     >
       <motion.nav
         initial={{ y: -20, opacity: 0 }}

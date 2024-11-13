@@ -26,7 +26,7 @@ export const MediaButton = ({
       onClick={() => {
         setOpen(
           <CustomModal
-            title="Media bucket"
+            title="Thư viện tài nguyên"
             subheading=""
             contentClass="w-[95vw] max-w-[1300px] !px-0 pb-4"
             headerClass="p-4"

@@ -5,3 +5,4 @@ export const MANAGER_REDIRECT = "/admin";
 export const CHEF_REDIRECT = "/admin/orders";
 export const SHIPPER_REDIRECT = "/admin/orders";
 export const ACCOUNTANT_REDIRECT = "/admin/imports";
+export const WAREHOUSE_REDIRECT = "/admin/inventory";

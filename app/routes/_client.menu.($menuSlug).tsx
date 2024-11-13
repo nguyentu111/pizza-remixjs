@@ -1,5 +1,10 @@
 import { json, LoaderFunctionArgs } from "@remix-run/node";
-import { NavLink, useLoaderData } from "@remix-run/react";
+import {
+  NavLink,
+  useLoaderData,
+  useParams,
+  useSearchParams,
+} from "@remix-run/react";
 import { cn } from "~/lib/utils";
 import { getAllCategories } from "~/models/category.server";
 import { getProductByCategorySlug } from "~/models/product.server";
@@ -16,6 +21,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 };
 
 export default function MenuPage() {
+  const params = useParams();
   const { categories, products } = useLoaderData<typeof loader>();
 
   return (
@@ -39,6 +45,8 @@ export default function MenuPage() {
       >
         {categories.map((category) => (
           <NavLink
+            replace
+            preventScrollReset
             to={`/menu/${category.slug}`}
             key={category.id}
             className={({ isActive }) =>
@@ -56,7 +64,7 @@ export default function MenuPage() {
       <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
         {products.map((product, index) => (
           <motion.div
-            key={product.id}
+            key={`${product.id}-${params.menuSlug}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}

@@ -172,7 +172,7 @@ export function AddOrUpdateImportForm({
                 updateMaterial={(field, value) =>
                   updateMaterial(index, field, value)
                 }
-                showPrice={!!formData.quotationLink}
+                hasQuotationLink={!!formData.quotationLink}
               />
             ))}
           </div>
@@ -197,7 +197,7 @@ function MaterialForm<T extends FormControl>({
   removeMaterial,
   updateMaterial,
   materials,
-  showPrice,
+  hasQuotationLink,
   control,
 }: {
   control: T;
@@ -209,7 +209,7 @@ function MaterialForm<T extends FormControl>({
     field: keyof ImportFormData["materials"][0],
     value: any,
   ) => void;
-  showPrice: boolean;
+  hasQuotationLink: boolean;
 }) {
   return (
     <div className="space-y-4 p-4 border rounded-lg">
@@ -278,31 +278,36 @@ function MaterialForm<T extends FormControl>({
           </FormField>
         </div>
 
-        <div>
-          <FormField control={control} name={`materials[${index}].expiredDate`}>
-            <Label>Hạn sử dụng</Label>
-            <DateField placeholder="Chọn ngày" />
-            <ErrorMessage />
-          </FormField>
-        </div>
+        {hasQuotationLink && (
+          <>
+            <div>
+              <FormField
+                control={control}
+                name={`materials[${index}].expiredDate`}
+              >
+                <Label>Hạn sử dụng</Label>
+                <DateField placeholder="Chọn ngày" />
+                <ErrorMessage />
+              </FormField>
+            </div>
 
-        {showPrice && (
-          <div>
-            <FormField
-              control={control}
-              name={`materials[${index}].pricePerUnit`}
-            >
-              <Label>Đơn giá</Label>
-              <InputField
-                type="number"
-                onChange={(e) =>
-                  updateMaterial("pricePerUnit", Number(e.target.value))
-                }
-                required={showPrice}
-                placeholder="Nhập đơn giá..."
-              />
-            </FormField>
-          </div>
+            <div>
+              <FormField
+                control={control}
+                name={`materials[${index}].pricePerUnit`}
+              >
+                <Label>Đơn giá</Label>
+                <InputField
+                  type="number"
+                  onChange={(e) =>
+                    updateMaterial("pricePerUnit", Number(e.target.value))
+                  }
+                  required={hasQuotationLink}
+                  placeholder="Nhập đơn giá..."
+                />
+              </FormField>
+            </div>
+          </>
         )}
       </div>
     </div>

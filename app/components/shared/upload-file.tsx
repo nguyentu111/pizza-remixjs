@@ -1,9 +1,9 @@
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useState, useRef } from "react";
-import { MediaType } from "@prisma/client";
 import { useForm } from "~/hooks/use-form";
-export const UploadFile = ({ mediaType }: { mediaType: MediaType }) => {
+import { Media } from "@prisma/client";
+export const UploadFile = ({ mediaType }: { mediaType: Media["type"] }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false); // State for drag status
   const { fetcher } = useForm();
@@ -54,8 +54,10 @@ export const UploadFile = ({ mediaType }: { mediaType: MediaType }) => {
       >
         <p className="block text-center">
           {isDragging
-            ? "Drop here"
-            : `Upload files ${selectedFiles.length > 1 ? `(${selectedFiles.length})` : ""}`}
+            ? "Thả file vào đây"
+            : selectedFiles.length > 0
+              ? `Tải lên ${selectedFiles.length > 1 ? `(${selectedFiles.length})` : ""}`
+              : "Chọn file hoặc kéo và thả file vào đây"}
         </p>
         {selectedFiles.slice(0, 5).map((f) => (
           <p className="block text-center" key={f.name}>
@@ -78,11 +80,11 @@ export const UploadFile = ({ mediaType }: { mediaType: MediaType }) => {
       </label>
       <Button
         type="submit"
-        disabled={fetcher.state === "submitting"}
+        disabled={fetcher.state === "submitting" || selectedFiles.length === 0}
         name="_action"
         value="upload-media"
       >
-        {fetcher.state === "submitting" ? "Uploading..." : "Upload File"}
+        {fetcher.state === "submitting" ? "Đang tải ..." : "Tải lên"}
       </Button>
     </fetcher.Form>
   );

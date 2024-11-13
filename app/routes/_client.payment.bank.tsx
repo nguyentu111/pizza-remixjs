@@ -89,7 +89,7 @@ export default function BankPaymentPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-16">
       <div className="max-w-4xl mx-auto">
         <AnimatePresence>
           {paymentSuccess ? (

@@ -5,6 +5,7 @@ import {
   ACCOUNTANT_REDIRECT,
   MANAGER_REDIRECT,
   DEFAULT_ADMIN_REDIRECT,
+  WAREHOUSE_REDIRECT,
 } from "./config.server";
 
 export function isManager(roles: Role[]) {
@@ -22,6 +23,9 @@ export function isShipper(roles: Role[]) {
 export function isAccountant(roles: Role[]) {
   return roles.some((r) => r.name === "Accountant");
 }
+export function isWarehouse(roles: Role[]) {
+  return roles.some((r) => r.name === "WarehouseKepper");
+}
 
 export function safeAdminRedirect(roles: Role[], redirectTo?: string) {
   if (isManager(roles)) return redirectTo ?? MANAGER_REDIRECT;
@@ -29,5 +33,6 @@ export function safeAdminRedirect(roles: Role[], redirectTo?: string) {
   if (isChef(roles)) return CHEF_REDIRECT;
   if (isShipper(roles)) return SHIPPER_REDIRECT;
   if (isAccountant(roles)) return ACCOUNTANT_REDIRECT;
+  if (isWarehouse(roles)) return WAREHOUSE_REDIRECT;
   return DEFAULT_ADMIN_REDIRECT;
 }
