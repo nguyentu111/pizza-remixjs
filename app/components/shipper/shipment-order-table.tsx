@@ -13,7 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useStaffRoles } from "~/hooks/use-staff-roles";
 import { OrderWithDetailsCustomerCoupon } from "~/lib/type";
 import { formatDate, formatPrice } from "~/lib/utils";
@@ -243,7 +243,7 @@ export function ShipmentOrderTable({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <>
+              <React.Fragment key={row.id}>
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -314,7 +314,7 @@ export function ShipmentOrderTable({
                     </TableCell>
                   </TableRow>
                 )}
-              </>
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>

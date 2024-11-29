@@ -1,1 +1,7 @@
-export const DefaultRoles = ["Manager", "Chef", "Shipper", "Accountant"];
+export const DefaultRoles = [
+  "Manager",
+  "Chef",
+  "Shipper",
+  "Accountant",
+  "WarehouseKepper",
+];

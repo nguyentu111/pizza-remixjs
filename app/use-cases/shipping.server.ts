@@ -18,6 +18,7 @@ export async function calculateRoute(
     );
 
     if (!response.ok) {
+      console.log(response);
       throw new Error("Failed to calculate route");
     }
 

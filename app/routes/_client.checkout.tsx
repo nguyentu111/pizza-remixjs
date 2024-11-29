@@ -137,7 +137,6 @@ export const action = safeAction([
 
         // Generate payment code for bank transfer
         const paymentCode = generateRandomString(10).toUpperCase();
-        console.log("create paymentCode", paymentCode);
 
         // Create order with payment info
         const order = await createOrder(tx, {
@@ -318,7 +317,7 @@ export default function CheckoutPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="container mx-auto px-4 py-8"
+      className="container mx-auto px-4 py-16"
     >
       <motion.h1
         initial={{ y: -20, opacity: 0 }}

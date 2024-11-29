@@ -182,7 +182,6 @@ export const updateCustomerSchema = z
   .object({
     fullname: z.string().min(1, "Họ tên không được để trống"),
     phoneNumbers: z.string().min(10, "Số điện thoại không hợp lệ"),
-    status: z.enum(["on", "banned"]),
     avatarUrl: z.string().optional(),
     password: z.string().optional(),
     passwordConfirm: z.string().optional(),
@@ -201,17 +200,43 @@ export const updateCustomerSchema = z
   );
 export const insertImportSchema = z
   .object({
-    providerId: z.string().min(1, "Provider is required"),
-    expectedDeliveryDate: z.string().optional(),
-    quotationLink: z.string().optional(),
+    providerId: z
+      .string()
+      .min(1, "Vui lòng chọn nhà cung cấp trước khi tiếp tục."),
+    expectedDeliveryDate: z
+      .string()
+      .min(1, "Vui lòng chọn ngày dự kiến nhận hàng trước khi tiếp tục."),
+    quotationLink: z
+      .string()
+      .min(1, "Vui lòng chọn file báo giá trước khi tiếp tục."),
     totalAmount: stringAsPositiveNumber.optional(),
     materials: z.array(
       z.object({
-        materialId: z.string().min(1, "Material is required"),
-        expectedQuantity: stringAsPositiveNumber.optional(),
-        qualityStandard: z.string().optional(),
-        expiredDate: z.string().optional(),
-        pricePerUnit: stringAsPositiveNumber.optional(),
+        materialId: z
+          .string()
+          .min(1, "Vui lòng chọn nguyên liệu trước khi tiếp tục."),
+        expectedQuantity: z
+          .string()
+          .min(1, "Số lượng dự kiến là bắt buộc")
+          .refine(
+            (value) => {
+              const num = parseFloat(value);
+              return !isNaN(num) && num > 0;
+            },
+            { message: "Số lượng không hợp lệ." },
+          ),
+        qualityStandard: z.string().min(1, "Tiêu chuẩn chất lượng là bắt buộc"),
+        expiredDate: z.string().min(1, "Ngày hết hạn là bắt buộc"),
+        pricePerUnit: z
+          .string()
+          .min(1, "Giá nhập là bắt buộc")
+          .refine(
+            (value) => {
+              const num = parseFloat(value);
+              return !isNaN(num) && num > 0;
+            },
+            { message: "Đơn giá không hợp lệ." },
+          ),
       }),
     ),
   })

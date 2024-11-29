@@ -132,24 +132,28 @@ export function AddOrUpdateImportForm({
             <Label>Ngày dự kiến nhận hàng</Label>
             <FormField control={control} name="expectedDeliveryDate">
               <DateField placeholder="Chọn ngày" />
+              <ErrorMessage />
             </FormField>
           </div>
 
           <div>
             <Label>Bảng báo giá</Label>
-            <FileSelector
-              initialFile={formData.quotationLink}
-              mediaType="raw"
-              placeholderText="Tải lên bảng báo giá (PDF, Excel, Word...)"
-              onFileSelected={(fileUrl) =>
-                setFormData((prev) => ({ ...prev, quotationLink: fileUrl }))
-              }
-            />
-            <input
-              type="hidden"
-              name="quotationLink"
-              value={formData.quotationLink || ""}
-            />
+            <FormField control={control} name="quotationLink">
+              <FileSelector
+                initialFile={formData.quotationLink}
+                mediaType="raw"
+                placeholderText="Tải lên bảng báo giá (PDF, Excel, Word...)"
+                onFileSelected={(fileUrl) =>
+                  setFormData((prev) => ({ ...prev, quotationLink: fileUrl }))
+                }
+              />
+              <input
+                type="hidden"
+                name="quotationLink"
+                value={formData.quotationLink || ""}
+              />
+              <ErrorMessage />
+            </FormField>
           </div>
 
           <div className="space-y-4">
@@ -278,37 +282,36 @@ function MaterialForm<T extends FormControl>({
           </FormField>
         </div>
 
-        {hasQuotationLink && (
-          <>
-            <div>
-              <FormField
-                control={control}
-                name={`materials[${index}].expiredDate`}
-              >
-                <Label>Hạn sử dụng</Label>
-                <DateField placeholder="Chọn ngày" />
-                <ErrorMessage />
-              </FormField>
-            </div>
+        <>
+          <div>
+            <FormField
+              control={control}
+              name={`materials[${index}].expiredDate`}
+            >
+              <Label>Hạn sử dụng</Label>
+              <DateField placeholder="Chọn ngày" />
+              <ErrorMessage />
+            </FormField>
+          </div>
 
-            <div>
-              <FormField
-                control={control}
-                name={`materials[${index}].pricePerUnit`}
-              >
-                <Label>Đơn giá</Label>
-                <InputField
-                  type="number"
-                  onChange={(e) =>
-                    updateMaterial("pricePerUnit", Number(e.target.value))
-                  }
-                  required={hasQuotationLink}
-                  placeholder="Nhập đơn giá..."
-                />
-              </FormField>
-            </div>
-          </>
-        )}
+          <div>
+            <FormField
+              control={control}
+              name={`materials[${index}].pricePerUnit`}
+            >
+              <Label>Đơn giá</Label>
+              <InputField
+                type="number"
+                onChange={(e) =>
+                  updateMaterial("pricePerUnit", Number(e.target.value))
+                }
+                required={hasQuotationLink}
+                placeholder="Nhập đơn giá..."
+              />
+              <ErrorMessage />
+            </FormField>
+          </div>
+        </>
       </div>
     </div>
   );
