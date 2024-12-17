@@ -115,7 +115,7 @@ export const insertMaterialSchema = z.object({
 
 // New schema for inserting a Size
 export const insertSizeSchema = z.object({
-  name: z.string().min(1, "Tên kích thước l�� bắt buộc"),
+  name: z.string().min(1, "Tên kích thước là bắt buộc"),
   image: z.string().optional(),
 });
 
@@ -308,3 +308,44 @@ export const deleteInventorySchema = z.object({
   materialId: z.string(),
   expiredDate: z.string(),
 });
+
+export const settingsSchema = z
+  .object({
+    orderStartTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+      message: "Thời gian không hợp lệ. Định dạng: HH:mm",
+    }),
+    orderEndTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+      message: "Thời gian không hợp lệ. Định dạng: HH:mm",
+    }),
+    autoCancelOrderAfter: stringAsPositiveNumber,
+    maxDeliveryRadius: stringAsPositiveNumber,
+    storeLat: z
+      .string()
+      .refine(
+        (val) => !isNaN(Number(val)) && Number(val) >= -90 && Number(val) <= 90,
+        {
+          message: "Vĩ độ không hợp lệ",
+        },
+      ),
+    storeLng: z
+      .string()
+      .refine(
+        (val) =>
+          !isNaN(Number(val)) && Number(val) >= -180 && Number(val) <= 180,
+        {
+          message: "Kinh độ không hợp lệ",
+        },
+      ),
+  })
+  .superRefine((data, ctx) => {
+    const start = new Date(`1970-01-01T${data.orderStartTime}`);
+    const end = new Date(`1970-01-01T${data.orderEndTime}`);
+
+    if (start >= end) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc",
+        path: ["orderStartTime"],
+      });
+    }
+  });

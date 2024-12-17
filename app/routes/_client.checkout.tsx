@@ -34,8 +34,14 @@ import { requireCustomer } from "~/session.server";
 import { calculateRoute } from "~/use-cases/shipping.server";
 import { OrderDetailItem } from "~/components/client/order-details";
 import { motion, AnimatePresence } from "framer-motion";
+import { parse, isWithinInterval, set } from "date-fns";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const [orderStartSetting, orderEndSetting] = await Promise.all([
+    prisma.settings.findFirst({ where: { name: "orderStartTime" } }),
+    prisma.settings.findFirst({ where: { name: "orderEndTime" } }),
+  ]);
+
   const customer = await requireCustomer(prisma, request);
   return json({ customer });
 };
@@ -49,6 +55,68 @@ export const action = safeAction([
       const customer = await requireCustomer(prisma, request);
 
       return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        // Get all required settings
+        const settings = await tx.settings.findMany({
+          where: {
+            name: {
+              in: [
+                "maxDeliveryRadius",
+                "storeLat",
+                "storeLng",
+                "orderStartTime",
+                "orderEndTime",
+              ],
+            },
+          },
+        });
+
+        // Check if current time is within delivery hours
+        const now = new Date();
+        const orderStartTime =
+          settings.find((s) => s.name === "orderStartTime")?.value || "08:00";
+        const orderEndTime =
+          settings.find((s) => s.name === "orderEndTime")?.value || "21:00";
+
+        // Parse time settings into full Date objects
+        const startTime = parse(orderStartTime, "HH:mm", new Date());
+        const endTime = parse(orderEndTime, "HH:mm", new Date());
+
+        // Set the parsed times to today's date for comparison
+        const startDateTime = set(now, {
+          hours: startTime.getHours(),
+          minutes: startTime.getMinutes(),
+          seconds: 0,
+          milliseconds: 0,
+        });
+
+        const endDateTime = set(now, {
+          hours: endTime.getHours(),
+          minutes: endTime.getMinutes(),
+          seconds: 0,
+          milliseconds: 0,
+        });
+
+        // Handle case where end time is on the next day
+        if (endDateTime < startDateTime) {
+          endDateTime.setDate(endDateTime.getDate() + 1);
+        }
+
+        const isWithinDeliveryHours = isWithinInterval(now, {
+          start: startDateTime,
+          end: endDateTime,
+        });
+
+        if (!isWithinDeliveryHours) {
+          throw new Error(
+            `Chúng tôi chỉ nhận đơn hàng từ ${orderStartTime} đến ${orderEndTime}`,
+          );
+        }
+
+        const storeLocation = {
+          lat: Number(settings.find((s) => s.name === "storeLat")?.value) || 0,
+          lng: Number(settings.find((s) => s.name === "storeLng")?.value) || 0,
+        };
+
         // Validate coupon if provided
         let couponId: string | undefined;
         let coupon: Coupon | null = null;
@@ -127,10 +195,28 @@ export const action = safeAction([
           ? subtotal * (1 - Number(coupon.discount) / 100)
           : subtotal;
         // Apply discount if coupon exists
+
+        const maxRadius = Number(
+          settings.find((s) => s.name === "maxDeliveryRadius")?.value || 0,
+        );
+
+        // Calculate distance from store to delivery address
         const route = await calculateRoute(
           Number(validatedData.lat),
           Number(validatedData.lng),
+          storeLocation.lat,
+          storeLocation.lng,
         );
+
+        const distanceInKm = route.paths[0].distance / 1000;
+
+        if (distanceInKm > maxRadius) {
+          console.log(
+            `Địa chỉ giao hàng nằm ngoài phạm vi cho phép (${maxRadius}km từ cửa hàng)`,
+          );
+          throw new Error(`Địa chỉ giao hàng nằm ngoài phạm vi cho phép.`);
+        }
+
         const shippingFee = calculateShippingFee(route.paths[0].distance);
         // Add shipping fee to final total
         const finalTotal = discountedSubtotal + shippingFee;

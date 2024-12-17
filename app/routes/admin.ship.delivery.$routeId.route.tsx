@@ -32,36 +32,50 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const routeId = params.routeId;
   if (!routeId) throw new Response("Not Found", { status: 404 });
 
-  const delivery = await prisma.delivery.findUnique({
-    where: { id: routeId },
-    include: {
-      DeliveryOrder: {
-        include: {
-          order: {
-            include: {
-              customer: true,
-              OrderDetail: {
-                include: {
-                  product: true,
-                  size: true,
-                  border: true,
-                  topping: true,
+  const [delivery, settings] = await Promise.all([
+    prisma.delivery.findUnique({
+      where: { id: routeId },
+      include: {
+        DeliveryOrder: {
+          include: {
+            order: {
+              include: {
+                customer: true,
+                OrderDetail: {
+                  include: {
+                    product: true,
+                    size: true,
+                    border: true,
+                    topping: true,
+                  },
                 },
               },
             },
           },
         },
       },
-    },
-  });
+    }),
+    prisma.settings.findMany({
+      where: {
+        name: {
+          in: ["storeLat", "storeLng"],
+        },
+      },
+    }),
+  ]);
 
   if (!delivery) throw new Response("Not Found", { status: 404 });
 
-  return json({ delivery });
+  const storeLocation = {
+    lat: Number(settings.find((s) => s.name === "storeLat")?.value || 0),
+    lng: Number(settings.find((s) => s.name === "storeLng")?.value || 0),
+  };
+
+  return json({ delivery, storeLocation });
 };
 
 export default function DeliveryRouteDetailPage() {
-  const { delivery } = useLoaderData<typeof loader>();
+  const { delivery, storeLocation } = useLoaderData<typeof loader>();
   const params = useParams();
   const routeId = params.routeId;
   const [route, setRoute] = useState<OptimizedRoute | null>(null);
@@ -105,6 +119,7 @@ export default function DeliveryRouteDetailPage() {
         searchParams.set("currentPosition", pos.join(","));
 
         const response = await fetch(`/api/calculate-route?${searchParams}`);
+
         const data = (await response.json()) as CalculatedRoute;
 
         setRoute(data.route);
@@ -280,6 +295,7 @@ export default function DeliveryRouteDetailPage() {
                 }
                 routePoints={currentRoute?.points || []}
                 currentPosition={currentPosition}
+                storeLocation={storeLocation}
               >
                 <NavigationInstructions
                   instructions={currentRoute?.instructions}

@@ -95,7 +95,6 @@ export const action = safeAction([
         approvedById: currentUserId,
         cancledReason: data.action === "REJECT" ? data.reason : undefined,
       });
-
       return json({ success: true });
     },
   },

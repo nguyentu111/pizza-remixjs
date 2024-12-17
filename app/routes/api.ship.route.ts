@@ -13,11 +13,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   try {
-    const routeData = await calculateRoute(
-      Number(lat),
-      Number(lng),
-      Boolean(calcPoints),
-    );
+    const routeData = await calculateRoute(Number(lat), Number(lng));
 
     const shippingFee = calculateShippingFee(routeData.paths[0].distance);
 

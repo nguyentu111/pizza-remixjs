@@ -1,38 +1,7 @@
 import { CustomHttpError, ERROR_NAME } from "~/lib/error";
 import { GraphhopperRouteCalculation } from "~/lib/type";
 import { Decimal } from "@prisma/client/runtime/library";
-
-const STORE_LOCATION = {
-  lat: 10.8482445,
-  lng: 106.7869449,
-};
-
-export async function calculateRoute(
-  lat: number,
-  lng: number,
-  calcPoints = false,
-) {
-  try {
-    const response = await fetch(
-      `https://graphhopper.com/api/1/route?point=${STORE_LOCATION.lat},${STORE_LOCATION.lng}&point=${lat},${lng}&vehicle=scooter&locale=vi&calc_points=${calcPoints}&key=${process.env.GRAPHHOPPER_API_KEY}`,
-    );
-
-    if (!response.ok) {
-      console.log(response);
-      throw new Error("Failed to calculate route");
-    }
-
-    const data = await response.json();
-    return data as GraphhopperRouteCalculation;
-  } catch (error) {
-    console.error("Route calculation error:", error);
-    throw new CustomHttpError({
-      message: "Failed to calculate route",
-      statusCode: 500,
-      name: ERROR_NAME.DEFAULT,
-    });
-  }
-}
+import { prisma } from "~/lib/db.server";
 
 type Location = {
   id: string;
@@ -105,21 +74,88 @@ interface GraphHopperOptimizationResponse {
   };
 }
 
+export async function calculateRoute(
+  lat: number,
+  lng: number,
+  storeLat?: number,
+  storeLng?: number,
+  calcPoints = false,
+) {
+  try {
+    if (!storeLat || !storeLng) {
+      const settings = await prisma.settings.findMany({
+        where: {
+          name: {
+            in: ["storeLat", "storeLng"],
+          },
+        },
+      });
+
+      storeLat = Number(
+        settings.find((s) => s.name === "storeLat")?.value || 0,
+      );
+      storeLng = Number(
+        settings.find((s) => s.name === "storeLng")?.value || 0,
+      );
+
+      if (!storeLat || !storeLng) {
+        throw new Error("Store location not configured");
+      }
+    }
+
+    const response = await fetch(
+      `https://graphhopper.com/api/1/route?point=${storeLat},${storeLng}&point=${lat},${lng}&vehicle=car&locale=vi&calc_points=${calcPoints}&key=${process.env.GRAPHHOPPER_API_KEY}`,
+    );
+
+    if (!response.ok) {
+      console.log(response);
+      throw new Error("Failed to calculate route");
+    }
+
+    const data = await response.json();
+    return data as GraphhopperRouteCalculation;
+  } catch (error) {
+    console.error("Route calculation error:", error);
+    throw new CustomHttpError({
+      message: "Failed to calculate route",
+      statusCode: 500,
+      name: ERROR_NAME.DEFAULT,
+    });
+  }
+}
+
 export async function calculateOptimalRoute(
   orders: Location[],
 ): Promise<OptimalRoute> {
   try {
-    // Prepare vehicle
+    const settings = await prisma.settings.findMany({
+      where: {
+        name: {
+          in: ["storeLat", "storeLng"],
+        },
+      },
+    });
+
+    const storeLat = Number(
+      settings.find((s) => s.name === "storeLat")?.value || 0,
+    );
+    const storeLng = Number(
+      settings.find((s) => s.name === "storeLng")?.value || 0,
+    );
+
+    if (!storeLat || !storeLng) {
+      throw new Error("Store location not configured");
+    }
+
     const vehicle: GraphHopperVehicle = {
       vehicle_id: "delivery_scooter",
       start_address: {
         location_id: "store",
-        lon: STORE_LOCATION.lng,
-        lat: STORE_LOCATION.lat,
+        lon: storeLng,
+        lat: storeLat,
       },
     };
 
-    // Prepare services (delivery points)
     const services: GraphHopperService[] = orders.map((order) => ({
       id: order.id,
       name: `Vận chuyển đến ${order.address}`,
@@ -130,7 +166,6 @@ export async function calculateOptimalRoute(
       },
     }));
 
-    // Prepare request body for GraphHopper Optimization API
     const requestBody = {
       vehicles: [vehicle],
       services: services,
@@ -149,12 +184,11 @@ export async function calculateOptimalRoute(
       vehicle_types: [
         {
           type_id: "custom_vehicle_type",
-          profile: "scooter",
+          profile: "car",
         },
       ],
     };
 
-    // Call GraphHopper Optimization API
     const response = await fetch(
       `https://graphhopper.com/api/1/vrp?key=${process.env.GRAPHHOPPER_API_KEY}`,
       {
@@ -171,7 +205,6 @@ export async function calculateOptimalRoute(
 
     const result = (await response.json()) as GraphHopperOptimizationResponse;
 
-    // Get the optimized route
     const solution = result.solution;
     if (!solution || !solution.routes || !solution.routes[0]) {
       throw new Error("No route found in optimization response");
@@ -179,15 +212,15 @@ export async function calculateOptimalRoute(
 
     const optimizedRoute = solution.routes[0];
 
-    // Get detailed route information for each step
     const steps: RouteStep[] = await Promise.all(
       optimizedRoute.activities
         .filter((activity: GraphHopperActivity) => activity.type === "service")
         .map(async (activity: GraphHopperActivity) => {
-          // Get detailed route for this step
           const routeDetails = await calculateRoute(
             activity.address.lat,
             activity.address.lon,
+            storeLat,
+            storeLng,
             true,
           );
 

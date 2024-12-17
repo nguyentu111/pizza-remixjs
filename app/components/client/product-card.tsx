@@ -38,7 +38,7 @@ export function ProductCard({ product }: { product: ProductWithDetails }) {
             }
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
           >
-            Order Now
+            Đặt hàng
           </button>
         </div>
       </div>

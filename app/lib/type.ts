@@ -102,6 +102,7 @@ export enum PermissionsEnum {
 
   ViewInventory = "view-inventory",
   ManageInventory = "manage-inventory",
+  ManageSettings = "manage-settings",
 }
 
 export enum OrderStatus {

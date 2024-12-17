@@ -59,6 +59,7 @@ interface Props {
   };
   routePoints: RoutePoint[];
   currentPosition: [number, number] | null;
+  storeLocation: { lat: number; lng: number };
   children?: React.ReactNode;
 }
 
@@ -69,6 +70,7 @@ export function DeliveryRouteMap({
   delivery,
   routePoints,
   currentPosition,
+  storeLocation,
   children,
 }: Props) {
   // Center map on current instruction or current order
@@ -79,7 +81,7 @@ export function DeliveryRouteMap({
           route.steps[currentOrderIndex].latitude,
           route.steps[currentOrderIndex].longitude,
         ]
-      : [10.8482445, 106.7869449];
+      : [storeLocation.lat, storeLocation.lng];
 
   return (
     <div className="relative h-full w-full">
@@ -99,7 +101,7 @@ export function DeliveryRouteMap({
 
         {/* Store location marker */}
         <Marker
-          position={[10.8482445, 106.7869449]}
+          position={[storeLocation.lat, storeLocation.lng]}
           icon={createCustomIcon("S", "#22C55E")}
         >
           <Popup>Cửa hàng</Popup>

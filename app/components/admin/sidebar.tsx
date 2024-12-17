@@ -20,6 +20,7 @@ import {
   TruckIcon,
   Boxes,
   LayoutDashboard,
+  Settings,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useStaffRoles } from "~/hooks/use-staff-roles";
@@ -141,6 +142,12 @@ const adminRoutes = [
       PermissionsEnum.ViewOrders,
       PermissionsEnum.ViewDeliveries,
     ],
+  },
+  {
+    path: "/admin/settings",
+    icon: Settings,
+    label: "Cài đặt",
+    requiredPermissions: [PermissionsEnum.ManageSettings],
   },
 ];
 
